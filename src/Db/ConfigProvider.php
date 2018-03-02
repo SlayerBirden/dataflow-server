@@ -10,11 +10,10 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
-use SlayerBirden\DataFlowServer\Db\Validator\Callback;
-use SlayerBirden\DataFlowServer\Zend\InputFilter\ImprovedInputFilter;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
+use Zend\Validator\Callback;
 
 class ConfigProvider
 {
@@ -23,6 +22,14 @@ class ConfigProvider
      */
     public function __invoke()
     {
+        $eitherOrUrlvalidator = new Callback(function ($value, $context) {
+            return $value || ($context['url'] !== null);
+        });
+        $eitherOrUrlvalidator->setMessage(
+            "This is required field if 'url' is not set.",
+            Callback::INVALID_VALUE
+        );
+
         return [
             ConfigAbstractFactory::class => [
                 AddConfigAction::class => [
@@ -90,9 +97,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'user' => [
@@ -105,9 +110,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'password' => [
@@ -120,9 +123,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'host' => [
@@ -135,9 +136,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'driver' => [
@@ -150,9 +149,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'port' => [
@@ -165,9 +162,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            new Callback(function ($value, $context) {
-                                return $value || ($context['url'] !== null);
-                            }),
+                            $eitherOrUrlvalidator
                         ]
                     ],
                     'url' => [
