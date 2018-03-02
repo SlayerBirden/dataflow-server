@@ -1,0 +1,116 @@
+<?php
+declare(strict_types=1);
+
+namespace SlayerBirden\DataFlowServer\Db\Controller;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\ORMException;
+use Doctrine\ORM\ORMInvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Notification\DangerMessage;
+use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use Zend\Diactoros\Response\JsonResponse;
+use Zend\Hydrator\ClassMethods;
+use Zend\InputFilter\InputFilterInterface;
+
+class AddConfigAction implements MiddlewareInterface
+{
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
+    /**
+     * @var ClassMethods
+     */
+    private $hydrator;
+    /**
+     * @var InputFilterInterface
+     */
+    private $inputFilter;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ClassMethods $hydrator,
+        InputFilterInterface $inputFilter,
+        LoggerInterface $logger
+    ) {
+        $this->entityManager = $entityManager;
+        $this->hydrator = $hydrator;
+        $this->inputFilter = $inputFilter;
+        $this->logger = $logger;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $data = $request->getParsedBody();
+
+        #### get current user
+        $user = $this->entityManager
+            ->getRepository(User::class)
+            ->find(1);
+        $data['owner_id'] = $user;
+        ###
+
+        $this->inputFilter->setData($data);
+
+        $message = null;
+        $validation = [];
+        $created = false;
+
+        if ($this->inputFilter->isValid()) {
+            try {
+                $config = $this->getConfiguration($data);
+                $this->entityManager->persist($config);
+                $this->entityManager->flush();
+                $message = new SuccessMessage('Configuration has been successfully created!');
+                $created = true;
+            } catch (ORMInvalidArgumentException $exception) {
+                $message = new DangerMessage($exception->getMessage());
+            } catch (ORMException $exception) {
+                $this->logger->error((string)$exception);
+                $message = new DangerMessage('Error during creation operation.');
+            }
+        } else {
+            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
+                $message = new DangerMessage('There were validation errors.');
+                $validation[] = [
+                    'field' => $key,
+                    'msg' => reset($input->getMessages())
+                ];
+            }
+        }
+
+        return new JsonResponse([
+            'msg' => $message,
+            'success' => $created,
+            'data' => [
+                'validation' => $validation,
+            ]
+        ]);
+    }
+
+    /**
+     * @param array $data
+     * @return DbConfiguration
+     */
+    private function getConfiguration(array $data): DbConfiguration
+    {
+        $config = new DbConfiguration();
+        $this->hydrator->hydrate($data, $config);
+
+        return $config;
+    }
+}
