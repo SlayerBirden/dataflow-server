@@ -35,13 +35,13 @@ class ConfigProvider
                 AddConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'AddConfigInputFilter',
+                    'ConfigInputFilter',
                     LoggerInterface::class
                 ],
                 UpdateConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'UpdateConfigInputFilter',
+                    'ConfigInputFilter',
                     LoggerInterface::class
                 ],
                 GetConfigsAction::class => [
@@ -72,7 +72,7 @@ class ConfigProvider
                 ],
             ],
             'input_filter_specs' => [
-                'AddConfigInputFilter' => [
+                'ConfigInputFilter' => [
                     'title' => [
                         'name' => 'title',
                         'required' => true,
