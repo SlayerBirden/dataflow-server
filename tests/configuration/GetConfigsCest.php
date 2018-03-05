@@ -12,6 +12,7 @@ class GetConfigsCest
             'id' => 1,
             'first' => 'Tester',
             'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
 
         $user = $I->grabEntityFromRepository(User::class, ['id' => 1]);

@@ -25,6 +25,11 @@ class User
      * @var string
      **/
     private $last;
+    /**
+     * @ORM\Column(type="string", unique=true)
+     * @var string
+     **/
+    private $email;
 
     /**
      * @return int|null
@@ -64,5 +69,21 @@ class User
     public function setLast(string $last): void
     {
         $this->last = $last;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
+     */
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
     }
 }

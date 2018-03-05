@@ -11,6 +11,7 @@ class AddConfigCest
             'id' => 1,
             'first' => 'Tester',
             'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
     }
 

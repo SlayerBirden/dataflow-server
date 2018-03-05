@@ -4,7 +4,7 @@ use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
-class GetConfigCest
+class DeleteConfigCest
 {
     public function _before(ApiTester $I)
     {
@@ -12,6 +12,7 @@ class GetConfigCest
             'id' => 1,
             'first' => 'Tester',
             'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
         $user = $I->grabEntityFromRepository(User::class, ['id' => 1]);
         $I->haveInRepository(DbConfiguration::class, [
@@ -22,11 +23,11 @@ class GetConfigCest
         ]);
     }
 
-    public function getConfiguration(ApiTester $I)
+    public function deleteConfiguration(ApiTester $I)
     {
-        $I->wantTo('get db configuration');
+        $I->wantTo('delete db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/config/1');
+        $I->sendDELETE('/config/1');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
             'success' => true,
@@ -38,11 +39,11 @@ class GetConfigCest
         ]);
     }
 
-    public function getNonExistingConfiguration(ApiTester $I)
+    public function deleteNonExistingConfiguration(ApiTester $I)
     {
-        $I->wantTo('get none existing db configuration');
+        $I->wantTo('delete none existing db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/config/0');
+        $I->sendDELETE('/config/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
             'success' => false,
