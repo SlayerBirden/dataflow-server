@@ -1,0 +1,23 @@
+# suite config
+suites:
+    api:
+        actor: ApiTester
+        path: .
+        modules:
+            enabled:
+                - REST:
+                    url: https://dataflow.test
+                    depends: PhpBrowser
+                - CleanDoctrine2:
+                    depends: ZendExpressive3
+                    cleanup: true
+
+paths:
+    tests: tests
+    output: tests/_output
+    data: tests/_data
+    support: tests/_support
+
+settings:
+    shuffle: false
+    lint: true

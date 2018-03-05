@@ -1,0 +1,5 @@
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/codeception.yml export-ignore
+/config/autoload/db.travis.php export-ignore
+/test export-ignore

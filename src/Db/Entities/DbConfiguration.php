@@ -25,6 +25,7 @@ class DbConfiguration
     private $title;
     /**
      * @ORM\ManyToOne(targetEntity="\SlayerBirden\DataFlowServer\Domain\Entities\User")
+     * @ORM\JoinColumn(nullable=false)
      * @var User
      **/
     private $owner;

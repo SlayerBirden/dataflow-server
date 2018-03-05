@@ -17,6 +17,8 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ClassMethods;
+use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class AddConfigAction implements MiddlewareInterface
@@ -37,17 +39,23 @@ class AddConfigAction implements MiddlewareInterface
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ExtractionInterface
+     */
+    private $extractor;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        ClassMethods $hydrator,
+        HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        ExtractionInterface $extractor
     ) {
         $this->entityManager = $entityManager;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
+        $this->extractor = $extractor;
     }
 
     /**
@@ -57,11 +65,12 @@ class AddConfigAction implements MiddlewareInterface
     {
         $data = $request->getParsedBody();
 
+        // todo get owner
         #### get current user
         $user = $this->entityManager
             ->getRepository(User::class)
             ->find(1);
-        $data['owner_id'] = $user;
+        $data['owner'] = $user;
         ###
 
         $this->inputFilter->setData($data);
@@ -69,6 +78,7 @@ class AddConfigAction implements MiddlewareInterface
         $message = null;
         $validation = [];
         $created = false;
+        $status = 200;
 
         if ($this->inputFilter->isValid()) {
             try {
@@ -79,9 +89,11 @@ class AddConfigAction implements MiddlewareInterface
                 $created = true;
             } catch (ORMInvalidArgumentException $exception) {
                 $message = new DangerMessage($exception->getMessage());
+                $status = 400;
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
                 $message = new DangerMessage('Error during creation operation.');
+                $status = 500;
             }
         } else {
             foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
@@ -91,6 +103,7 @@ class AddConfigAction implements MiddlewareInterface
                     'msg' => reset($input->getMessages())
                 ];
             }
+            $status = 400;
         }
 
         return new JsonResponse([
@@ -98,8 +111,9 @@ class AddConfigAction implements MiddlewareInterface
             'success' => $created,
             'data' => [
                 'validation' => $validation,
+                'configuration' => !empty($config) ? $this->extractor->extract($config) : null,
             ]
-        ]);
+        ], $status);
     }
 
     /**

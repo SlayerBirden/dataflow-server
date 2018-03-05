@@ -10,6 +10,7 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
+use SlayerBirden\DataFlowServer\Extractor\RecursiveEntitiesExtractor;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -22,10 +23,10 @@ class ConfigProvider
      */
     public function __invoke()
     {
-        $eitherOrUrlvalidator = new Callback(function ($value, $context) {
+        $eitherOrUrlValidator = new Callback(function ($value, $context) {
             return $value || ($context['url'] !== null);
         });
-        $eitherOrUrlvalidator->setMessage(
+        $eitherOrUrlValidator->setMessage(
             "This is required field if 'url' is not set.",
             Callback::INVALID_VALUE
         );
@@ -35,28 +36,30 @@ class ConfigProvider
                 AddConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'ConfigInputFilter',
-                    LoggerInterface::class
+                    'AddConfigInputFilter',
+                    LoggerInterface::class,
+                    RecursiveEntitiesExtractor::class
                 ],
                 UpdateConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'ConfigInputFilter',
-                    LoggerInterface::class
+                    LoggerInterface::class,
+                    RecursiveEntitiesExtractor::class,
                 ],
                 GetConfigsAction::class => [
                     EntityManagerInterface::class,
-                    ClassMethods::class,
-                    LoggerInterface::class
+                    LoggerInterface::class,
+                    RecursiveEntitiesExtractor::class,
                 ],
                 GetConfigAction::class => [
                     EntityManagerInterface::class,
-                    ClassMethods::class,
-                    LoggerInterface::class
+                    LoggerInterface::class,
+                    RecursiveEntitiesExtractor::class,
                 ],
                 DeleteConfigAction::class => [
                     EntityManagerInterface::class,
-                    LoggerInterface::class
+                    LoggerInterface::class,
+                    RecursiveEntitiesExtractor::class,
                 ],
             ],
             'dependencies' => [
@@ -72,7 +75,7 @@ class ConfigProvider
                 ],
             ],
             'input_filter_specs' => [
-                'ConfigInputFilter' => [
+                'AddConfigInputFilter' => [
                     'title' => [
                         'name' => 'title',
                         'required' => true,
@@ -97,7 +100,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'user' => [
@@ -110,7 +113,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'password' => [
@@ -123,7 +126,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'host' => [
@@ -136,7 +139,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'driver' => [
@@ -149,7 +152,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'port' => [
@@ -162,7 +165,7 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlvalidator
+                            $eitherOrUrlValidator
                         ]
                     ],
                     'url' => [

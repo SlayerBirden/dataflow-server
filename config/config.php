@@ -11,7 +11,7 @@ $cacheConfig = [
     'config_cache_path' => 'data/config-cache.php',
 ];
 
-$aggregator = new ConfigAggregator([
+$configs = [
     \Zend\Hydrator\ConfigProvider::class,
     \Zend\Expressive\ConfigProvider::class,
     \Zend\Expressive\Router\ConfigProvider::class,
@@ -40,6 +40,12 @@ $aggregator = new ConfigAggregator([
     new PhpFileProvider('config/autoload/{{,*.}global,{,*.}local}.php'),
     // Load development config if it exists
     new PhpFileProvider('config/development.config.php'),
-], $cacheConfig['config_cache_path']);
+];
+
+if (getenv('APP_MODE') === 'test') {
+    $configs[] = new PhpFileProvider('config/autoload/{{,*.}test}.php');
+}
+
+$aggregator = new ConfigAggregator($configs, $cacheConfig['config_cache_path']);
 
 return $aggregator->getMergedConfig();

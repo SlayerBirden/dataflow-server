@@ -15,3 +15,17 @@ $app->get('/', function () {
 
     return $response;
 });
+
+/** @var \Doctrine\ORM\EntityManagerInterface $em */
+$em = $container->get(\Doctrine\ORM\EntityManagerInterface::class);
+
+$app->get('/transact', function () use ($em) {
+
+    $em->beginTransaction();
+    $em->getConnection()->query("insert into users set first='test1', last='test2'");
+    $em->rollback();
+
+    $response = new \Zend\Diactoros\Response\JsonResponse([]);
+
+    return $response;
+});
