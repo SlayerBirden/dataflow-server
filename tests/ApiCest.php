@@ -1,6 +1,7 @@
 <?php
-class ApiCest 
-{    
+
+class ApiCest
+{
     public function tryApi(ApiTester $I)
     {
         $I->sendGET('/');

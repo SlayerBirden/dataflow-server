@@ -14,10 +14,6 @@ class AddConfigCest
         ]);
     }
 
-    public function _after(ApiTester $I)
-    {
-    }
-
     public function addConfiguration(ApiTester $I)
     {
         $I->wantTo('create db configuration');

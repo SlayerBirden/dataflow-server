@@ -48,7 +48,7 @@ class GetConfigsAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getQueryParams();
-        $page = isset($data['p']) ? abs($data['p']) : 1;
+        $page = isset($data['p']) ? abs($data['p']) : null;
         $filters = $data['f'] ?? [];
         $sorting = $data['s'] ?? [];
         $success = false;
@@ -81,7 +81,7 @@ class GetConfigsAction implements MiddlewareInterface
 
         return new JsonResponse([
             'data' => [
-                'users' => $arrayConfigs ?? [],
+                'configurations' => $arrayConfigs ?? [],
                 'count' => $count ?? 0,
             ],
             'success' => $success,
@@ -96,12 +96,14 @@ class GetConfigsAction implements MiddlewareInterface
      * @param int $limit
      * @return Criteria
      */
-    private function buildCriteria(array $filters = [], array $sorting = [], int $page = 1, int $limit = 10): Criteria
+    private function buildCriteria(array $filters = [], array $sorting = [], ?int $page = null, int $limit = 10): Criteria
     {
         // todo add filter for current user
-        $criteria = Criteria::create()
-            ->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit);
+        $criteria = Criteria::create();
+        if ($page !== null) {
+            $criteria->setFirstResult(($page - 1) * $limit)
+                ->setMaxResults($limit);
+        }
         foreach ($filters as $key => $value) {
             $criteria->andWhere(Criteria::expr()->contains($key, $value));
         }
@@ -109,8 +111,6 @@ class GetConfigsAction implements MiddlewareInterface
             foreach ($sorting as $key => $dir) {
                 $criteria->orderBy($sorting);
             }
-        } else {
-            $criteria->orderBy(['id' => 'desc']);
         }
 
         return $criteria;

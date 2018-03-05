@@ -60,7 +60,7 @@ class DeleteConfigAction implements MiddlewareInterface
                 $deleted = true;
             } else {
                 $msg = new DangerMessage('Could not find configuration to delete.');
-                $status = 400;
+                $status = 404;
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);

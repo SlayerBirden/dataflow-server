@@ -52,5 +52,8 @@ EOF;
 
             $this->debugSection('Database', 'Database Is Dropped!');
         }
+
+        $this->clean();
+        $this->em->getConnection()->close();
     }
 }
