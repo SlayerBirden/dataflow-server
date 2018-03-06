@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 chdir(dirname(__DIR__));
 
-require 'vendor/autoload.php';
+require_once 'vendor/autoload.php';
 
 call_user_func(function () {
     require 'config/pipeline.php';

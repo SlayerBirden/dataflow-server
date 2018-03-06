@@ -21,3 +21,13 @@ paths:
 settings:
     shuffle: false
     lint: true
+
+coverage:
+    enabled: true
+    include:
+        - src/*
+    remote_context_options:
+        http:
+            timeout: 60
+        ssl:
+            verify_peer: false
