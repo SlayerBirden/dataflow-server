@@ -1,0 +1,11 @@
+suites:
+  api:
+    actor: ApiTester
+    modules:
+      enabled:
+        - REST:
+            url: http://localhost:8080
+            depends: PhpBrowser
+        - CleanDoctrine2:
+            depends: ZendExpressive3
+            cleanup: true

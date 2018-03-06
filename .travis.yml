@@ -1,0 +1,33 @@
+language: php
+
+php:
+  - "7.2"
+  - "7.1"
+
+install: composer install
+
+env:
+  global:
+    - APP_MODE=test
+
+cache:
+  directories:
+    - "$HOME/.composer/cache"
+
+before_script:
+  - mysql -e 'create database dataflow-server;'
+  - cp -f config/autoload/db.travis.php config/autoload/db.test.php
+  - php -S localhost:8080 --docroot http &>/dev/null&
+
+script:
+  - ./vendor/bin/codecept run --coverage-xml
+
+after_script:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover ./tests/_output/coverage.xml
+
+notifications:
+  email: true
+
+matrix:
+  fast_finish: true
