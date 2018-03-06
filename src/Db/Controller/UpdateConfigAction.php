@@ -101,6 +101,7 @@ class UpdateConfigAction implements MiddlewareInterface
         if (isset($data['id'])) {
             unset($data['id']);
         }
+        // todo set current user as owner
         $this->hydrator->hydrate($data, $config);
 
         return $config;

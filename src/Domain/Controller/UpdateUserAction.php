@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
@@ -84,6 +85,9 @@ class UpdateUserAction implements MiddlewareInterface
                 $status = 404;
             } catch (ORMInvalidArgumentException $exception) {
                 $message = new DangerMessage($exception->getMessage());
+                $status = 400;
+            } catch (UniqueConstraintViolationException $exception) {
+                $message = new DangerMessage('Email address already taken.');
                 $status = 400;
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
