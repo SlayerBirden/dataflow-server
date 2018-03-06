@@ -15,7 +15,7 @@ class GetUserCest
         ]);
     }
 
-    public function getConfiguration(ApiTester $I)
+    public function getUser(ApiTester $I)
     {
         $I->wantTo('get user');
         $I->haveHttpHeader('Content-Type', 'application/json');
@@ -35,7 +35,7 @@ class GetUserCest
     {
         $I->wantTo('get none existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/config/0');
+        $I->sendGET('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
             'success' => false,

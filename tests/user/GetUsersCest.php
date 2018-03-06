@@ -71,10 +71,13 @@ class GetUsersCest
                         'email' => 'test1@example.com',
                     ],
                     [
+                        'email' => 'test10@example.com',
+                    ],
+                    [
                         'email' => 'test11@example.com',
                     ],
                 ],
-                'count' => 2,
+                'count' => 3,
             ]
         ]);
     }
@@ -83,7 +86,7 @@ class GetUsersCest
     {
         $I->wantTo('get users sorted by id desc');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/configs?s[id]=desc');
+        $I->sendGET('/users?s[id]=desc');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
             'success' => true,
@@ -102,7 +105,7 @@ class GetUsersCest
     {
         $I->wantTo('attempt to get users with wrong filters');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/configs?f[email]=bla');
+        $I->sendGET('/users?f[email]=bla');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
             'success' => false,

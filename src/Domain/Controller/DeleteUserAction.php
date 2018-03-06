@@ -1,21 +1,22 @@
 <?php
 declare(strict_types=1);
 
-namespace SlayerBirden\DataFlowServer\Db\Controller;
+namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
+use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Log\LoggerInterface;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 
-class GetConfigAction implements MiddlewareInterface
+class DeleteUserAction implements MiddlewareInterface
 {
     /**
      * @var EntityManagerInterface
@@ -46,32 +47,32 @@ class GetConfigAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $id = $request->getAttribute('id');
-        $success = false;
-        $msg = '';
+        $deleted = false;
         $status = 200;
 
         try {
-            $config = $this->entityManager
-                ->getRepository(DbConfiguration::class)
-                ->find($id);
-            if ($config !== null) {
-                $success = true;
+            $user = $this->entityManager->find(User::class, $id);
+            if ($user) {
+                $this->entityManager->remove($user);
+                $this->entityManager->flush();
+                $msg = new SuccessMessage('User deleted');
+                $deleted = true;
             } else {
-                $msg = new DangerMessage('Could not find configuration.');
+                $msg = new SuccessMessage('Could not find user.');
                 $status = 404;
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $msg = new DangerMessage('Could not find configuration. An error occurred.');
+            $msg = new DangerMessage('Could not remove the user.');
             $status = 400;
         }
 
         return new JsonResponse([
-            'data' => [
-                'configuration' => !empty($config) ? $this->extraction->extract($config) : null,
-            ],
-            'success' => $success,
             'msg' => $msg,
+            'success' => $deleted,
+            'data' => [
+                'user' => isset($user) ? $this->extraction->extract($user) : null,
+            ]
         ], $status);
     }
 }

@@ -35,7 +35,7 @@ class DeleteUserCest
     {
         $I->wantTo('delete none existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendDELETE('/config/0');
+        $I->sendDELETE('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
             'success' => false,

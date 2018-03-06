@@ -1,23 +1,23 @@
 <?php
 declare(strict_types=1);
 
-namespace SlayerBirden\DataFlowServer\Db\Controller;
+namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Psr\Http\Server\MiddlewareInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 
-class GetConfigsAction implements MiddlewareInterface
+class GetUsersAction implements MiddlewareInterface
 {
     /**
      * @var EntityManagerInterface
@@ -58,30 +58,31 @@ class GetConfigsAction implements MiddlewareInterface
         try {
             $criteria = $this->buildCriteria($filters, $sorting, $page);
 
-            /** @var Collection $configs */
-            $configs = $this->entityManager
-                ->getRepository(DbConfiguration::class)
+            /** @var Collection $users */
+            $users = $this->entityManager
+                ->getRepository(User::class)
                 ->matching($criteria);
             // before collection load to count all records without pagination
-            $count = $configs->count();
+            $count = $users->count();
+
             if ($count > 0) {
-                $arrayConfigs = array_map(function ($user) {
+                $arrayUsers = array_map(function ($user) {
                     return $this->extraction->extract($user);
-                }, $configs->toArray());
+                }, $users->toArray());
                 $success = true;
             } else {
-                $msg = new DangerMessage('Could not find configurations using given conditions.');
+                $msg = new DangerMessage('Could not find users using given conditions.');
                 $status = 404;
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $msg = new DangerMessage('Could not fetch configs.');
+            $msg = new DangerMessage('Could not fetch users.');
             $status = 400;
         }
 
         return new JsonResponse([
             'data' => [
-                'configurations' => $arrayConfigs ?? [],
+                'users' => $arrayUsers ?? [],
                 'count' => $count ?? 0,
             ],
             'success' => $success,
@@ -91,7 +92,6 @@ class GetConfigsAction implements MiddlewareInterface
 
     private function buildCriteria(array $filters = [], array $sorting = [], ?int $page, int $limit = 10): Criteria
     {
-        // todo add filter for current user
         $criteria = Criteria::create();
         if ($page !== null) {
             $criteria->setFirstResult(($page - 1) * $limit)
@@ -101,9 +101,7 @@ class GetConfigsAction implements MiddlewareInterface
             $criteria->andWhere(Criteria::expr()->contains($key, $value));
         }
         if ($sorting) {
-            foreach ($sorting as $key => $dir) {
-                $criteria->orderBy($sorting);
-            }
+            $criteria->orderBy($sorting);
         }
 
         return $criteria;

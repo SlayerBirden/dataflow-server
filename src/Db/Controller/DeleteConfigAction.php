@@ -65,14 +65,14 @@ class DeleteConfigAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $msg = new DangerMessage('There was an error while removing configuration.');
-            $status = 500;
+            $status = 400;
         }
 
         return new JsonResponse([
             'msg' => $msg,
             'success' => $deleted,
             'data' => [
-                'configuration' => !empty($config) ? $this->extraction->extract($config) : $config
+                'configuration' => !empty($config) ? $this->extraction->extract($config) : null
             ],
         ], $status);
     }

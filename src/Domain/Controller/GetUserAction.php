@@ -1,21 +1,21 @@
 <?php
 declare(strict_types=1);
 
-namespace SlayerBirden\DataFlowServer\Db\Controller;
+namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Psr\Http\Server\MiddlewareInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 
-class GetConfigAction implements MiddlewareInterface
+class GetUserAction implements MiddlewareInterface
 {
     /**
      * @var EntityManagerInterface
@@ -51,24 +51,23 @@ class GetConfigAction implements MiddlewareInterface
         $status = 200;
 
         try {
-            $config = $this->entityManager
-                ->getRepository(DbConfiguration::class)
+            $user = $this->entityManager
+                ->getRepository(User::class)
                 ->find($id);
-            if ($config !== null) {
+            if ($user) {
                 $success = true;
             } else {
-                $msg = new DangerMessage('Could not find configuration.');
                 $status = 404;
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $msg = new DangerMessage('Could not find configuration. An error occurred.');
+            $msg = new DangerMessage('Could not find user.');
             $status = 400;
         }
 
         return new JsonResponse([
             'data' => [
-                'configuration' => !empty($config) ? $this->extraction->extract($config) : null,
+                'user' => isset($user) ? $this->extraction->extract($user): null,
             ],
             'success' => $success,
             'msg' => $msg,

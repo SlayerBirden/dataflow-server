@@ -35,9 +35,9 @@ class UpdateUserCest
         ]);
     }
 
-    public function addIncompleteConfig(ApiTester $I)
+    public function updateNonExistingUser(ApiTester $I)
     {
-        $I->wantTo('update non existing db configuration');
+        $I->wantTo('update non existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/user/2', [
             'first' => 'John',

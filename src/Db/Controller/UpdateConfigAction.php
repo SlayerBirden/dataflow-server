@@ -79,7 +79,7 @@ class UpdateConfigAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $message = new DangerMessage('Error while updating configuration.');
-            $status = 500;
+            $status = 400;
         }
 
         return new JsonResponse([
