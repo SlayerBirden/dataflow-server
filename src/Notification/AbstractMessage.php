@@ -60,14 +60,6 @@ abstract class AbstractMessage implements MessageInterface
     }
 
     /**
-     * @param string $id
-     */
-    public function setId(string $id): void
-    {
-        $this->id = $id;
-    }
-
-    /**
      * @inheritdoc
      */
     public function jsonSerialize()

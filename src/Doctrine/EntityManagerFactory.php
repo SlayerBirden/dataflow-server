@@ -77,18 +77,19 @@ class EntityManagerFactory
         foreach ($configuration as $key => $value) {
             $method = $this->guessMethod($key, $configurationObject);
             try {
-                $configurationObject->$method($value);
-            } catch (\TypeError $error) {
-                // attempt to get from Container
-                if ($container->has($value)) {
+                if (is_string($value) && $container->has($value)) {
                     $configurationObject->$method($container->get($value));
+                } elseif (strpos($method, 'add') === 0 and is_array($value)) {
+                    $configurationObject->$method(...$value);
                 } else {
-                    throw new Exception\InvalidArgumentDoctrineConfigException(
-                        'Invalid argument in Doctrine config',
-                        0,
-                        $error
-                    );
+                    $configurationObject->$method($value);
                 }
+            } catch (\TypeError $error) {
+                throw new Exception\InvalidArgumentDoctrineConfigException(
+                    'Invalid argument in Doctrine config',
+                    0,
+                    $error
+                );
             }
         }
     }
@@ -108,8 +109,8 @@ class EntityManagerFactory
             return $setter;
         }
 
-        if (method_exists($adder, $setter)) {
-            return $setter;
+        if (method_exists($object, $adder)) {
+            return $adder;
         }
 
         throw new Exception\InvalidArgumentDoctrineConfigException(

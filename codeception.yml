@@ -1,33 +1,19 @@
-# suite config
-suites:
-    api:
-        actor: ApiTester
-        path: .
-        modules:
-            enabled:
-                - REST:
-                    url: https://dataflow.test
-                    depends: PhpBrowser
-                - CleanDoctrine2:
-                    depends: ZendExpressive3
-                    cleanup: true
-
 paths:
-    tests: tests
-    output: tests/_output
-    data: tests/_data
-    support: tests/_support
+  tests: tests
+  output: tests/_output
+  data: tests/_data
+  support: tests/_support
 
 settings:
-    shuffle: false
-    lint: true
+  shuffle: false
+  lint: true
 
 coverage:
-    enabled: true
-    include:
-        - src/*
-    remote_context_options:
-        http:
-            timeout: 60
-        ssl:
-            verify_peer: false
+  enabled: true
+  include:
+    - src/*
+  remote_context_options:
+    http:
+      timeout: 60
+    ssl:
+      verify_peer: false

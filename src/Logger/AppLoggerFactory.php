@@ -31,6 +31,7 @@ class AppLoggerFactory
                 foreach ($handlers as $handler) {
                     if (is_object($handler) && $handler instanceof HandlerInterface) {
                         $logger->pushHandler($handler);
+                        $handlersAdded = true;
                     }
                 }
             }

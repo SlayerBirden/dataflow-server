@@ -101,12 +101,27 @@ class GetUsersCest
         ]);
     }
 
+    public function getNoResultsFilterUsers(ApiTester $I)
+    {
+        $I->wantTo('attempt to get users with no resulsts filters');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendGET('/users?f[email]=bla');
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
+        $I->seeResponseContainsJson([
+            'success' => false,
+            'data' => [
+                'users' => [],
+                'count' => 0,
+            ]
+        ]);
+    }
+
     public function getWrongFilterUsers(ApiTester $I)
     {
         $I->wantTo('attempt to get users with wrong filters');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/users?f[email]=bla');
-        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
+        $I->sendGET('/users?f[age]=30');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
             'success' => false,
             'data' => [
