@@ -1,9 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
 $container = require __DIR__ . '/container.php';
 /** @var \Zend\Expressive\Application $app */
 $app = $container->get(\Zend\Expressive\Application::class);
