@@ -2,8 +2,10 @@ actor: ApiTester
 modules:
   enabled:
     - REST:
-        url: https://dataflow.test
         depends: PhpBrowser
     - CleanDoctrine2:
         depends: ZendExpressive3
         cleanup: true
+  config:
+    REST:
+      url: https://dataflow.test
