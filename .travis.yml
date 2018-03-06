@@ -20,7 +20,7 @@ before_script:
   - php -S localhost:8080 --docroot http &>/dev/null&
 
 script:
-  - ./vendor/bin/codecept run --coverage-xml
+  - ./vendor/bin/codecept run --env travis --coverage-xml
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
