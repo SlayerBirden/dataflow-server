@@ -15,7 +15,7 @@ cache:
     - "$HOME/.composer/cache"
 
 before_script:
-  - mysql -e 'create database dataflow-server;'
+  - mysql -e 'create database `dataflow-server`;'
   - cp -f config/autoload/db.travis.php config/autoload/db.test.php
   - php -S localhost:8080 --docroot http &>/dev/null&
 

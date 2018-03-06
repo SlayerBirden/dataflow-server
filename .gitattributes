@@ -5,4 +5,5 @@
 /c3.php export-ignore
 /codeception.yml export-ignore
 /config/autoload/db.travis.php export-ignore
+/phpmd.xml.dist export-ignore
 /tests export-ignore
