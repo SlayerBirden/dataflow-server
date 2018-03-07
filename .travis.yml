@@ -9,6 +9,7 @@ install: composer install
 env:
   global:
     - APP_MODE=test
+    - TMPDIR=/tmp
 
 cache:
   directories:
