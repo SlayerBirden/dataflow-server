@@ -33,3 +33,7 @@ tools:
 filter:
     excluded_paths:
       - "c3.php"
+build:
+    environment:
+        php:
+            version: 7.1
