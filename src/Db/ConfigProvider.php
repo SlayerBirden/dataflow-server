@@ -10,10 +10,12 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
+use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Extractor\RecursiveEntitiesExtractor;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
+use Zend\ServiceManager\Factory\InvokableFactory;
 use Zend\Validator\Callback;
 
 class ConfigProvider
@@ -23,14 +25,6 @@ class ConfigProvider
      */
     public function __invoke()
     {
-        $eitherOrUrlValidator = new Callback(function ($value, $context) {
-            return $value || ($context['url'] !== null);
-        });
-        $eitherOrUrlValidator->setMessage(
-            "This is required field if 'url' is not set.",
-            Callback::INVALID_VALUE
-        );
-
         return [
             ConfigAbstractFactory::class => [
                 AddConfigAction::class => [
@@ -66,12 +60,20 @@ class ConfigProvider
                 'delegators' => [
                     Application::class => [
                         Factory\RoutesDelegator::class,
-                    ]
-                ]
+                    ],
+                ],
             ],
             'doctrine' => [
                 'paths' => [
                     'src/Db/Entities'
+                ],
+            ],
+            'validators' => [
+                'aliases' => [
+                    'configValidator' => ConfigValidator::class,
+                ],
+                'factories' => [
+                    ConfigValidator::class => InvokableFactory::class,
                 ],
             ],
             'input_filter_specs' => [
@@ -100,7 +102,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'user' => [
@@ -113,7 +117,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'password' => [
@@ -126,7 +132,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'host' => [
@@ -139,7 +147,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'driver' => [
@@ -152,7 +162,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'port' => [
@@ -165,7 +177,9 @@ class ConfigProvider
                             ]
                         ],
                         'validators' => [
-                            $eitherOrUrlValidator
+                            [
+                                'name' => 'configValidator',
+                            ]
                         ]
                     ],
                     'url' => [
