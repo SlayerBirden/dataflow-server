@@ -21,31 +21,33 @@ class AppLoggerFactory
     {
         $config = $container->has('config') ? $container->get('config') : [];
         $loggerConfig = $config['logger'] ?? [];
-        $handlersAdded = false;
 
         $logger = new Logger('app');
 
         if (!empty($loggerConfig)) {
-            $handlers = $loggerConfig['handlers'] ?? [];
-            if (!empty($handlers) && is_array($handlers)) {
-                foreach ($handlers as $handler) {
-                    if (is_object($handler) && $handler instanceof HandlerInterface) {
-                        $logger->pushHandler($handler);
-                        $handlersAdded = true;
-                    } elseif (is_string($handler) && $container->has($handler)) {
-                        $logger->pushHandler($container->get($handler));
-                        $handlersAdded = true;
-                    }
-                }
-            }
+            $this->addHandlers($logger, $loggerConfig, $container);
         }
 
-        if (!$handlersAdded) {
+        if (!$logger->getHandlers()) {
             // add default handler
             $baseHandler = new StreamHandler('data/log/app.log');
             $logger->pushHandler($baseHandler);
         }
 
         return $logger;
+    }
+
+    private function addHandlers(Logger $logger, array $loggerConfig, ContainerInterface $container): void
+    {
+        $handlers = $loggerConfig['handlers'] ?? [];
+        if (!empty($handlers) && is_array($handlers)) {
+            foreach ($handlers as $handler) {
+                if (is_object($handler) && $handler instanceof HandlerInterface) {
+                    $logger->pushHandler($handler);
+                } elseif (is_string($handler) && $container->has($handler)) {
+                    $logger->pushHandler($container->get($handler));
+                }
+            }
+        }
     }
 }

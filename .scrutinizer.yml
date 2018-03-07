@@ -30,3 +30,6 @@ tools:
     php_hhvm:
         enabled: true
     sensiolabs_security_checker: true
+filter:
+    excluded_paths:
+      - "c3.php"
