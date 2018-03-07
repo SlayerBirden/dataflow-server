@@ -9,7 +9,6 @@ install: composer install
 env:
   global:
     - APP_MODE=test
-    - TMPDIR=/tmp
 
 cache:
   directories:
@@ -18,6 +17,8 @@ cache:
 before_script:
   - mysql -e 'create database `dataflow-server`;'
   - cp -f config/autoload/db.travis.php config/autoload/db.test.php
+  # add tmp dir?
+  - mkdir /tmp
   # launch php server
   - php -S localhost:8080 --docroot http &>/dev/null&
 
