@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Zend\InputFilter;
 
 use Zend\InputFilter\InputFilter;
+use Zend\InputFilter\InputInterface;
 
 class ImprovedInputFilter extends InputFilter
 {
@@ -16,9 +17,11 @@ class ImprovedInputFilter extends InputFilter
     public function setData($data)
     {
         foreach ($this->getInputs() as $input) {
-            $name = $input->getName();
-            if (!array_key_exists($name, $data)) {
-                $data[$name] = null;
+            if ($input instanceof InputInterface) {
+                $name = $input->getName();
+                if (!array_key_exists($name, $data)) {
+                    $data[$name] = null;
+                }
             }
         }
 
