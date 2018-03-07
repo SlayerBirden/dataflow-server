@@ -17,7 +17,7 @@ cache:
 before_script:
   - mysql -e 'create database `dataflow-server`;'
   - cp -f config/autoload/db.travis.php config/autoload/db.test.php
-  - php -S localhost:8080 --docroot http &>/dev/null&
+  - php -S localhost:8080 --docroot http codecept-test-index.php &>/dev/null&
 
 script:
   - ./vendor/bin/codecept run --env travis --coverage-xml
