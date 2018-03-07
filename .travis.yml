@@ -17,9 +17,6 @@ cache:
 before_script:
   - mysql -e 'create database `dataflow-server`;'
   - cp -f config/autoload/db.travis.php config/autoload/db.test.php
-  # change index to test one
-  - rm -f http/index.php
-  - mv http/codecept-test-index.php http/index.php
   # launch php server
   - php -S localhost:8080 --docroot http &>/dev/null&
 

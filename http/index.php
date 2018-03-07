@@ -5,6 +5,10 @@ chdir(dirname(__DIR__));
 
 require_once 'vendor/autoload.php';
 
+if (getenv('APP_MODE') === 'test') {
+    require 'c3.php';
+}
+
 call_user_func(function () {
     require 'config/pipeline.php';
     require 'config/routes.php';
