@@ -1,9 +1,9 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
-/.scrutinizer.yml
-/.travis.yml
+/.scrutinizer.yml export-ignore
+/.travis.yml export-ignore
 /c3.php export-ignore
-/codeception.yml export-ignore
+/codeception.dist.yml export-ignore
 /config/autoload/db.travis.php export-ignore
 /phpmd.xml.dist export-ignore
 /tests export-ignore

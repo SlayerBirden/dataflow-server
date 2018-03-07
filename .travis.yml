@@ -18,6 +18,7 @@ before_script:
   - mysql -e 'create database `dataflow-server`;'
   - cp -f config/autoload/db.travis.php config/autoload/db.test.php
   - cp -f config/autoload/doctrine.travis.php config/autoload/doctrine.test.php
+  - cp -f config/travis.config.php config/test.config.php
   # launch php server
   - php -S localhost:8080 --docroot http &>/dev/null&
 

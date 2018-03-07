@@ -44,6 +44,7 @@ $configs = [
 
 if (getenv('APP_MODE') === 'test') {
     $configs[] = new PhpFileProvider('config/autoload/{{,*.}test}.php');
+    $configs[] = new PhpFileProvider('config/test.config.php');
 }
 
 $aggregator = new ConfigAggregator($configs, $cacheConfig['config_cache_path']);

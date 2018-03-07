@@ -32,6 +32,9 @@ class AppLoggerFactory
                     if (is_object($handler) && $handler instanceof HandlerInterface) {
                         $logger->pushHandler($handler);
                         $handlersAdded = true;
+                    } elseif (is_string($handler) && $container->has($handler)) {
+                        $logger->pushHandler($container->get($handler));
+                        $handlersAdded = true;
                     }
                 }
             }

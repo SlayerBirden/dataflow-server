@@ -21,9 +21,21 @@
  * - Configuration caching is _disabled_.
  */
 
+use Monolog\Handler\NoopHandler;
 use Zend\ConfigAggregator\ConfigAggregator;
+use Zend\ServiceManager\Factory\InvokableFactory;
 
 return [
     'debug' => true,
     ConfigAggregator::ENABLE_CACHE => false,
+    'logger' => [
+        'handlers' => [
+            NoopHandler::class
+        ],
+    ],
+    'dependencies' => [
+        'factories' => [
+            NoopHandler::class => InvokableFactory::class
+        ],
+    ],
 ];
