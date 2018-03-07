@@ -37,6 +37,27 @@ class AddUserCest
         ]);
     }
 
+    public function addIncompleteUser(ApiTester $I)
+    {
+        $I->wantTo('create user with incomplete data');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/user', [
+            'last' => 'User',
+            'email' => 'test@example.com',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'success' => false,
+            'data' => [
+                'validation' => [
+                    [
+                        'field' => 'first',
+                    ]
+                ]
+            ]
+        ]);
+    }
+
     public function addUserWithWrongEmail(ApiTester $I)
     {
         $I->wantTo('create user with wrong email');
