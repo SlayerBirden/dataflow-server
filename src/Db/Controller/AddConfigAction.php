@@ -98,9 +98,10 @@ class AddConfigAction implements MiddlewareInterface
         } else {
             foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
                 $message = new DangerMessage('There were validation errors.');
+                $messages = $input->getMessages();
                 $validation[] = [
                     'field' => $key,
-                    'msg' => reset($input->getMessages())
+                    'msg' => reset($messages)
                 ];
             }
             $status = 400;

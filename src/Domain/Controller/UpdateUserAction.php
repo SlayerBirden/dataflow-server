@@ -96,9 +96,10 @@ class UpdateUserAction implements MiddlewareInterface
             }
         } else {
             foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
+                $messages = $input->getMessages();
                 $validation[] = [
                     'field' => $key,
-                    'msg' => reset($input->getMessages())
+                    'msg' => reset($messages)
                 ];
             }
             $status = 400;
@@ -119,7 +120,7 @@ class UpdateUserAction implements MiddlewareInterface
         /** @var User $user */
         $user = $this->entityManager->find(User::class, $id);
         if (!$user) {
-            throw new NonExistingEntity(sprintf('Could not find user by id %d.', $data['id']));
+            throw new NonExistingEntity(sprintf('Could not find user by id %d.', $id));
         }
         if (isset($data['id'])) {
             unset($data['id']);

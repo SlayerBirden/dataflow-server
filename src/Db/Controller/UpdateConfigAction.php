@@ -96,7 +96,7 @@ class UpdateConfigAction implements MiddlewareInterface
         /** @var DbConfiguration $config */
         $config = $this->entityManager->find(DbConfiguration::class, $id);
         if (!$config) {
-            throw new NonExistingEntity(sprintf('Could not find config by id %d.', $data['id']));
+            throw new NonExistingEntity(sprintf('Could not find config by id %d.', $id));
         }
         if (isset($data['id'])) {
             unset($data['id']);
