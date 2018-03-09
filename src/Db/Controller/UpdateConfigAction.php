@@ -38,17 +38,23 @@ class UpdateConfigAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var InputFilterInterface
+     */
+    private $inputFilter;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         HydratorInterface $hydrator,
+        InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         ExtractionInterface $extraction
     ) {
         $this->entityManager = $entityManager;
-        $this->extraction = $extraction;
-        $this->logger = $logger;
         $this->hydrator = $hydrator;
+        $this->inputFilter = $inputFilter;
+        $this->logger = $logger;
+        $this->extraction = $extraction;
     }
 
     /**
@@ -60,25 +66,40 @@ class UpdateConfigAction implements MiddlewareInterface
         $data = $request->getParsedBody();
         $id = (int)$request->getAttribute('id');
 
+        $this->inputFilter->setData($data);
+
         $message = null;
+        $validation = [];
         $updated = false;
         $status = 200;
 
-        try {
-            $config = $this->getConfig($id, $data);
-            $this->entityManager->persist($config);
-            $this->entityManager->flush();
-            $message = new SuccessMessage('Configuration has been updated!');
-            $updated = true;
-        } catch (NonExistingEntity $exception) {
-            $message = new DangerMessage($exception->getMessage());
-            $status = 404;
-        } catch (ORMInvalidArgumentException $exception) {
-            $message = new DangerMessage($exception->getMessage());
-            $status = 400;
-        } catch (ORMException $exception) {
-            $this->logger->error((string)$exception);
-            $message = new DangerMessage('Error while updating configuration.');
+        if ($this->inputFilter->isValid()) {
+            try {
+                $config = $this->getConfig($id, $data);
+                $this->entityManager->persist($config);
+                $this->entityManager->flush();
+                $message = new SuccessMessage('Configuration has been updated!');
+                $updated = true;
+            } catch (NonExistingEntity $exception) {
+                $message = new DangerMessage($exception->getMessage());
+                $status = 404;
+            } catch (ORMInvalidArgumentException $exception) {
+                $message = new DangerMessage($exception->getMessage());
+                $status = 400;
+            } catch (ORMException $exception) {
+                $this->logger->error((string)$exception);
+                $message = new DangerMessage('Error while updating configuration.');
+                $status = 400;
+            }
+        } else {
+            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
+                $message = new DangerMessage('There were validation errors.');
+                $messages = $input->getMessages();
+                $validation[] = [
+                    'field' => $key,
+                    'msg' => reset($messages)
+                ];
+            }
             $status = 400;
         }
 

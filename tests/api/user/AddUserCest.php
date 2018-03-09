@@ -92,9 +92,6 @@ class AddUserCest
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
             'success' => false,
-            'data' => [
-                'user' => null
-            ]
         ]);
     }
 }

@@ -30,6 +30,7 @@ class UpdateConfigCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/config/1', [
             'title' => 'sqlite updated',
+            'url' => 'sqlite:///data/db/db.sqlite',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
@@ -49,12 +50,33 @@ class UpdateConfigCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/config/2', [
             'title' => 'Test config',
+            'url' => 'sqlite:///data/db/db.sqlite',
         ]);
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
             'success' => false,
             'data' => [
                 'configuration' => null
+            ]
+        ]);
+    }
+
+    public function updateIncompleteConfig(ApiTester $I)
+    {
+        $I->wantTo('update incomplete db configuration');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/config', [
+            'title' => 'Test config',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'success' => false,
+            'data' => [
+                'validation' => [
+                    [
+                        'field' => 'user',
+                    ]
+                ]
             ]
         ]);
     }

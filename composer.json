@@ -30,7 +30,8 @@
         "monolog/monolog": "^2.0-dev",
         "doctrine/orm": "^2.5",
         "doctrine/dbal": "2.7.x-dev as 2.6.4",
-        "slayerbirden/dataflow": "^1.0.0-dev"
+        "slayerbirden/dataflow": "^1.0.0-dev",
+        "zendframework/zend-diactoros": "^1.7"
     },
     "require-dev": {
         "zendframework/zend-expressive-tooling": "^1.0.0-dev",

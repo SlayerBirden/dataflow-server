@@ -27,6 +27,8 @@ class UpdateUserCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/user/1', [
             'first' => 'Bob',
+            'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
@@ -47,6 +49,8 @@ class UpdateUserCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/user/3', [
             'first' => 'John',
+            'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
@@ -64,6 +68,8 @@ class UpdateUserCest
         $I->sendPUT('/user/1', [
             'id' => 2,
             'first' => 'John',
+            'last' => 'Tester',
+            'email' => 'test@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
@@ -84,6 +90,8 @@ class UpdateUserCest
         $I->wantTo('update user set invalid email');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/user/1', [
+            'first' => 'Tester',
+            'last' => 'Tester',
             'email' => 'testing',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
@@ -103,6 +111,8 @@ class UpdateUserCest
         $I->wantTo('update user set existing email');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPUT('/user/1', [
+            'first' => 'Tester',
+            'last' => 'Tester',
             'email' => 'test2@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);

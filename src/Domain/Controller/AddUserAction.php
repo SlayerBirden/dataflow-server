@@ -16,7 +16,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -74,8 +73,8 @@ class AddUserAction implements MiddlewareInterface
 
         if ($this->inputFilter->isValid()) {
             try {
-                $user = $this->getUser($data);
-                $this->entityManager->persist($user);
+                $entity = $this->getEntity($data);
+                $this->entityManager->persist($entity);
                 $this->entityManager->flush();
                 $message = new SuccessMessage('User has been successfully created!');
                 $created = true;
@@ -85,7 +84,6 @@ class AddUserAction implements MiddlewareInterface
             } catch (UniqueConstraintViolationException $exception) {
                 $message = new DangerMessage('Provided email already exists.');
                 $status = 400;
-                $user = null;
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
                 $message = new DangerMessage('Error during creation operation.');
@@ -107,7 +105,7 @@ class AddUserAction implements MiddlewareInterface
             'success' => $created,
             'data' => [
                 'validation' => $validation,
-                'user' => isset($user) ? $this->extraction->extract($user) : null,
+                'user' => isset($entity) ? $this->extraction->extract($entity) : null,
             ]
         ], $status);
     }
@@ -116,11 +114,11 @@ class AddUserAction implements MiddlewareInterface
      * @param array $data
      * @return User
      */
-    private function getUser(array $data): User
+    private function getEntity(array $data): User
     {
-        $user = new User();
-        $this->hydrator->hydrate($data, $user);
+        $entity = new User();
+        $this->hydrator->hydrate($data, $entity);
 
-        return $user;
+        return $entity;
     }
 }

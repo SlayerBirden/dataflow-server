@@ -16,7 +16,6 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -28,7 +27,7 @@ class AddConfigAction implements MiddlewareInterface
      */
     private $entityManager;
     /**
-     * @var ClassMethods
+     * @var HydratorInterface
      */
     private $hydrator;
     /**

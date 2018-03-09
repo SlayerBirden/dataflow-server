@@ -16,10 +16,12 @@ class ImprovedInputFilter extends InputFilter
      */
     public function setData($data)
     {
-        foreach ($this->getInputs() as $input) {
+        foreach ($this->getInputs() as $name => $input) {
             if ($input instanceof InputInterface) {
-                $name = $input->getName();
-                if (!array_key_exists($name, $data)) {
+                if (is_numeric($name)) {
+                    $name = $input->getName();
+                }
+                if (!empty($name) && !array_key_exists($name, $data)) {
                     $data[$name] = null;
                 }
             }

@@ -17,24 +17,21 @@ use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 
 class ConfigProvider
 {
-    /**
-     * @return array
-     */
-    public function __invoke()
+    public function __invoke(): array
     {
         return [
             ConfigAbstractFactory::class => [
                 AddUserAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'AddUserInputFilter',
+                    'UserInputFilter',
                     LoggerInterface::class,
                     RecursiveEntitiesExtractor::class
                 ],
                 UpdateUserAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'UpdateUserInputFilter',
+                    'UserInputFilter',
                     LoggerInterface::class,
                     RecursiveEntitiesExtractor::class,
                 ],
@@ -67,9 +64,8 @@ class ConfigProvider
                 ]
             ],
             'input_filter_specs' => [
-                'AddUserInputFilter' => [
+                'UserInputFilter' => [
                     'first' => [
-                        'name' => 'firstname',
                         'required' => true,
                         'filters' => [
                             [
@@ -86,7 +82,6 @@ class ConfigProvider
                         ]
                     ],
                     'last' => [
-                        'name' => 'lastname',
                         'required' => true,
                         'filters' => [
                             [
@@ -103,7 +98,6 @@ class ConfigProvider
                         ]
                     ],
                     'email' => [
-                        'name' => 'email',
                         'required' => true,
                         'filters' => [
                             [
@@ -117,51 +111,7 @@ class ConfigProvider
                             [
                                 'name' => 'emailAddress',
                             ],
-                        ]
-                    ],
-                ],
-                'UpdateUserInputFilter' => [
-                    'first' => [
-                        'name' => 'firstname',
-                        'required' => false,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
                         ],
-                        'validators' => [
-                            [
-                                'name' => 'alpha',
-                            ],
-                        ]
-                    ],
-                    'last' => [
-                        'name' => 'lastname',
-                        'required' => false,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
-                        'validators' => [
-                            [
-                                'name' => 'alpha',
-                            ],
-                        ]
-                    ],
-                    'email' => [
-                        'name' => 'email',
-                        'required' => false,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
-                        'validators' => [
-                            [
-                                'name' => 'emailAddress',
-                            ],
-                        ]
                     ],
                 ],
             ],

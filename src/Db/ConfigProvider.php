@@ -16,27 +16,24 @@ use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
-use Zend\Validator\Callback;
 
 class ConfigProvider
 {
-    /**
-     * @return array
-     */
-    public function __invoke()
+    public function __invoke(): array
     {
         return [
             ConfigAbstractFactory::class => [
                 AddConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
-                    'AddConfigInputFilter',
+                    'ConfigInputFilter',
                     LoggerInterface::class,
                     RecursiveEntitiesExtractor::class
                 ],
                 UpdateConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
+                    'ConfigInputFilter',
                     LoggerInterface::class,
                     RecursiveEntitiesExtractor::class,
                 ],
@@ -77,9 +74,8 @@ class ConfigProvider
                 ],
             ],
             'input_filter_specs' => [
-                'AddConfigInputFilter' => [
+                'ConfigInputFilter' => [
                     'title' => [
-                        'name' => 'title',
                         'required' => true,
                         'filters' => [
                             [
@@ -93,7 +89,6 @@ class ConfigProvider
                         ]
                     ],
                     'dbname' => [
-                        'name' => 'dbname',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -108,7 +103,6 @@ class ConfigProvider
                         ]
                     ],
                     'user' => [
-                        'name' => 'user',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -123,7 +117,6 @@ class ConfigProvider
                         ]
                     ],
                     'password' => [
-                        'name' => 'password',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -138,7 +131,6 @@ class ConfigProvider
                         ]
                     ],
                     'host' => [
-                        'name' => 'host',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -153,7 +145,6 @@ class ConfigProvider
                         ]
                     ],
                     'driver' => [
-                        'name' => 'driver',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -168,7 +159,6 @@ class ConfigProvider
                         ]
                     ],
                     'port' => [
-                        'name' => 'port',
                         'required' => false,
                         'continue_if_empty' => true,
                         'filters' => [
@@ -183,7 +173,6 @@ class ConfigProvider
                         ]
                     ],
                     'url' => [
-                        'name' => 'url',
                         'required' => false,
                         'filters' => [
                             [

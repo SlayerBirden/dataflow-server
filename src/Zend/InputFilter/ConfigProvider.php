@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Zend\InputFilter;
 
-use Zend\ServiceManager\Factory\InvokableFactory;
-
 class ConfigProvider
 {
     /**
