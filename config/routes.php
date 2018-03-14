@@ -5,9 +5,11 @@ $container = require __DIR__ . '/container.php';
 /** @var \Zend\Expressive\Application $app */
 $app = $container->get(\Zend\Expressive\Application::class);
 
-$app->get('/', function () {
+$app->get('/', function ($request, $handler) {
     $response = new \Zend\Diactoros\Response\JsonResponse([
-        'data' => 'Welcome to the DataFlow server!'
+        'success' => true,
+        'data' => [],
+        'msg' => 'Welcome to the DataFlow server!',
     ]);
 
     return $response;

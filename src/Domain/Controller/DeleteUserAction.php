@@ -5,12 +5,12 @@ namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
-use Psr\Http\Server\MiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Zend\Diactoros\Response\JsonResponse;
@@ -44,7 +44,7 @@ class DeleteUserAction implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, DelegateInterface $handler): ResponseInterface
     {
         $id = $request->getAttribute('id');
         $deleted = false;

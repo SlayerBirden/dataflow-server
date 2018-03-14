@@ -33,7 +33,7 @@ class GetUserCest
 
     public function getNonExistingUser(ApiTester $I)
     {
-        $I->wantTo('get none existing user');
+        $I->wantTo('get non-existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);

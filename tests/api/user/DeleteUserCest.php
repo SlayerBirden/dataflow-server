@@ -33,7 +33,7 @@ class DeleteUserCest
 
     public function deleteNonExistingUser(ApiTester $I)
     {
-        $I->wantTo('delete none existing user');
+        $I->wantTo('delete non-existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);

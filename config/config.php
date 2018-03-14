@@ -15,7 +15,6 @@ $configs = [
     \Zend\Hydrator\ConfigProvider::class,
     \Zend\Expressive\ConfigProvider::class,
     \Zend\Expressive\Router\ConfigProvider::class,
-    \Zend\Expressive\Helper\ConfigProvider::class,
     \Zend\I18n\ConfigProvider::class,
     \Zend\InputFilter\ConfigProvider::class,
     \Zend\Expressive\Flash\ConfigProvider::class,

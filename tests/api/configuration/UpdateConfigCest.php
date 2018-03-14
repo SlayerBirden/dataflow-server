@@ -48,7 +48,7 @@ class UpdateConfigCest
     {
         $I->wantTo('update non existing db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPUT('/config/2', [
+        $I->sendPUT('/config/0', [
             'title' => 'Test config',
             'url' => 'sqlite:///data/db/db.sqlite',
         ]);
@@ -65,7 +65,7 @@ class UpdateConfigCest
     {
         $I->wantTo('update incomplete db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPOST('/config', [
+        $I->sendPUT('/config/1', [
             'title' => 'Test config',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);

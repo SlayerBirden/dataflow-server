@@ -6,10 +6,10 @@ namespace SlayerBirden\DataFlowServer\Db\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Exception\NonExistingEntity;
@@ -60,7 +60,7 @@ class UpdateConfigAction implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, DelegateInterface $handler): ResponseInterface
     {
         // todo check current user
         $data = $request->getParsedBody();
@@ -108,6 +108,7 @@ class UpdateConfigAction implements MiddlewareInterface
             'success' => $updated,
             'data' => [
                 'configuration' => !empty($config) ? $this->extraction->extract($config) : null,
+                'validation' => $validation,
             ]
         ], $status);
     }

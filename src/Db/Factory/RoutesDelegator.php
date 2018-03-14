@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Factory;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Db\Controller\AddConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
@@ -11,17 +11,16 @@ use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
 use Zend\Expressive\Application;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
+use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
 
-class RoutesDelegator
+class RoutesDelegator implements DelegatorFactoryInterface
 {
-    /**
-     * @param ContainerInterface $container
-     * @param string $serviceName
-     * @param callable $callback
-     * @return Application
-     */
-    public function __invoke(ContainerInterface $container, string $serviceName, callable $callback)
-    {
+    public function __invoke(
+        ContainerInterface $container,
+        $name,
+        callable $callback,
+        array $options = null
+    ): Application {
         /** @var $app Application */
         $app = $callback();
 

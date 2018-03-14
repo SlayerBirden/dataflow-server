@@ -20,7 +20,7 @@ $app->pipe(ServerUrlMiddleware::class);
 $app->pipe(SessionMiddleware::class);
 $app->pipe(FlashMessageMiddleware::class);
 
-$app->pipe(\Zend\Expressive\Router\Middleware\PathBasedRoutingMiddleware::class);
+$app->pipe(\Zend\Expressive\Router\Middleware\RouteMiddleware::class);
 $app->pipe(ImplicitHeadMiddleware::class);
 $app->pipe(ImplicitOptionsMiddleware::class);
 $app->pipe(UrlHelperMiddleware::class);

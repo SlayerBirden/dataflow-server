@@ -5,11 +5,11 @@ namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
-use Psr\Http\Server\MiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
@@ -43,7 +43,7 @@ class GetUserAction implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, DelegateInterface $handler): ResponseInterface
     {
         $id = $request->getAttribute('id');
         $success = false;

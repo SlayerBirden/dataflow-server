@@ -41,7 +41,7 @@ class DeleteConfigCest
 
     public function deleteNonExistingConfiguration(ApiTester $I)
     {
-        $I->wantTo('delete none existing db configuration');
+        $I->wantTo('delete non-existing db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('/config/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);

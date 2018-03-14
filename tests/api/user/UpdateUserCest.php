@@ -47,7 +47,7 @@ class UpdateUserCest
     {
         $I->wantTo('update non existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPUT('/user/3', [
+        $I->sendPUT('/user/0', [
             'first' => 'John',
             'last' => 'Tester',
             'email' => 'test@example.com',

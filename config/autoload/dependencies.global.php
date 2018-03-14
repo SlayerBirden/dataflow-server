@@ -6,7 +6,6 @@ use Zend\Expressive\Application;
 use Zend\Expressive\Container;
 use Zend\Expressive\Helper;
 use Zend\Expressive\Middleware;
-use Zend\Expressive\Handler;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 
 return [
@@ -23,7 +22,6 @@ return [
             Helper\UrlHelperMiddleware::class => Helper\UrlHelperMiddlewareFactory::class,
             Zend\Stratigility\Middleware\ErrorHandler::class => Container\ErrorHandlerFactory::class,
             Middleware\ErrorResponseGenerator::class => Container\ErrorResponseGeneratorFactory::class,
-            Handler\NotFoundHandler::class => Container\NotFoundHandlerFactory::class,
         ],
         'abstract_factories' => [
             ConfigAbstractFactory::class

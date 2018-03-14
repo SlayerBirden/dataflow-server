@@ -41,7 +41,7 @@ class GetConfigCest
 
     public function getNonExistingConfiguration(ApiTester $I)
     {
-        $I->wantTo('get none existing db configuration');
+        $I->wantTo('get non-existing db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('/config/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Factory;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Domain\Controller\AddUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
@@ -11,12 +11,17 @@ use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
 use Zend\Expressive\Application;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
+use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
 
-class RoutesDelegator
+class RoutesDelegator implements DelegatorFactoryInterface
 {
-    public function __invoke(ContainerInterface $container, string $serviceName, callable $callback)
-    {
-        /** @var $app Application */
+    public function __invoke(
+        ContainerInterface $container,
+        $name,
+        callable $callback,
+        array $options = null
+    ): Application {
+        /** @var Application $app */
         $app = $callback();
 
         $app->get('/user/{id:\d+}', [

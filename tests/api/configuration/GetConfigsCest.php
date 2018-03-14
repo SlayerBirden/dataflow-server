@@ -179,9 +179,9 @@ class GetConfigsCest
         ]);
     }
 
-    public function getWrongFilterConfigurations(ApiTester $I)
+    public function getNoResultsFilterConfigurations(ApiTester $I)
     {
-        $I->wantTo('attempt to get configurations with wrong filters');
+        $I->wantTo('attempt to get configurations with not matching filter');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('/configs?f[title]=bla');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
