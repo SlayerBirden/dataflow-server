@@ -6,13 +6,13 @@ namespace SlayerBirden\DataFlowServer\Db\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
-use SlayerBirden\DataFlowServer\Doctrine\Exception\NonExistingEntity;
+use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
@@ -60,11 +60,19 @@ class UpdateConfigAction implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // todo check current user
         $data = $request->getParsedBody();
-        $id = (int)$request->getAttribute('id');
+        $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
+        if (!$dbConfig) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Could not find Configuration.'),
+                'success' => false,
+                'data' => [
+                    'configuration' => null,
+                ]
+            ], 404);
+        }
 
         $this->inputFilter->setData($data);
 
@@ -75,14 +83,11 @@ class UpdateConfigAction implements MiddlewareInterface
 
         if ($this->inputFilter->isValid()) {
             try {
-                $config = $this->getConfig($id, $data);
+                $config = $this->getConfig($dbConfig, $data);
                 $this->entityManager->persist($config);
                 $this->entityManager->flush();
                 $message = new SuccessMessage('Configuration has been updated!');
                 $updated = true;
-            } catch (NonExistingEntity $exception) {
-                $message = new DangerMessage($exception->getMessage());
-                $status = 404;
             } catch (ORMInvalidArgumentException $exception) {
                 $message = new DangerMessage($exception->getMessage());
                 $status = 400;
@@ -113,19 +118,13 @@ class UpdateConfigAction implements MiddlewareInterface
         ], $status);
     }
 
-    private function getConfig(int $id, array $data): DbConfiguration
+    private function getConfig(DbConfiguration $oldConfig, array $data): DbConfiguration
     {
-        /** @var DbConfiguration $config */
-        $config = $this->entityManager->find(DbConfiguration::class, $id);
-        if (!$config) {
-            throw new NonExistingEntity(sprintf('Could not find config by id %d.', $id));
-        }
         if (isset($data['id'])) {
             unset($data['id']);
         }
-        // todo set current user as owner
-        $this->hydrator->hydrate($data, $config);
+        $this->hydrator->hydrate($data, $oldConfig);
 
-        return $config;
+        return $oldConfig;
     }
 }

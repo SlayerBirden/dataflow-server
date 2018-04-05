@@ -53,7 +53,7 @@ abstract class AbstractMessage implements MessageInterface
      */
     public function getId(): string
     {
-        if (!isset( $this->id)) {
+        if (!isset($this->id)) {
             $this->id = uniqid();
         }
         return $this->id;

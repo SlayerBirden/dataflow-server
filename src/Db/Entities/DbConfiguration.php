@@ -4,12 +4,13 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Db\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 /**
  * @ORM\Entity @ORM\Table(name="configuration")
  **/
-class DbConfiguration
+class DbConfiguration implements ClaimedResourceInterface
 {
     /**
      * @ORM\Id

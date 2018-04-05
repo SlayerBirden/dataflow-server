@@ -17,9 +17,6 @@ $configs = [
     \Zend\Expressive\Router\ConfigProvider::class,
     \Zend\I18n\ConfigProvider::class,
     \Zend\InputFilter\ConfigProvider::class,
-    \Zend\Expressive\Flash\ConfigProvider::class,
-    \Zend\Expressive\Session\Ext\ConfigProvider::class,
-    \Zend\Expressive\Session\ConfigProvider::class,
     \Zend\Filter\ConfigProvider::class,
     \Zend\Validator\ConfigProvider::class,
     // Overrides
@@ -28,6 +25,8 @@ $configs = [
     \SlayerBirden\DataFlowServer\Db\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Domain\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Logger\ConfigProvider::class,
+    \SlayerBirden\DataFlowServer\Authorization\ConfigProvider::class,
+    \SlayerBirden\DataFlowServer\Authentication\ConfigProvider::class,
     // Include cache configuration
     new ArrayProvider($cacheConfig),
     // Load application config in a pre-defined order in such a way that local settings

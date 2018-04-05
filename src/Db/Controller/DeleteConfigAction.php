@@ -5,12 +5,12 @@ namespace SlayerBirden\DataFlowServer\Db\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
+use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
@@ -44,17 +44,15 @@ class DeleteConfigAction implements MiddlewareInterface
     /**
      * @inheritdoc
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $id = $request->getAttribute('id');
+        $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $deleted = false;
         $status = 200;
 
         try {
-            $config = $this->entityManager->find(DbConfiguration::class, $id);
-            //todo check owner
-            if ($config) {
-                $this->entityManager->remove($config);
+            if ($dbConfig) {
+                $this->entityManager->remove($dbConfig);
                 $this->entityManager->flush();
                 $msg = new SuccessMessage('Configuration removed.');
                 $deleted = true;
@@ -72,7 +70,7 @@ class DeleteConfigAction implements MiddlewareInterface
             'msg' => $msg,
             'success' => $deleted,
             'data' => [
-                'configuration' => !empty($config) ? $this->extraction->extract($config) : null
+                'configuration' => !empty($dbConfig) ? $this->extraction->extract($dbConfig) : null
             ],
         ], $status);
     }

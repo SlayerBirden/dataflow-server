@@ -10,6 +10,7 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
+use SlayerBirden\DataFlowServer\Db\Middleware\DbConfigResourceMiddleware;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Extractor\RecursiveEntitiesExtractor;
 use Zend\Expressive\Application;
@@ -43,8 +44,6 @@ class ConfigProvider
                     RecursiveEntitiesExtractor::class,
                 ],
                 GetConfigAction::class => [
-                    EntityManagerInterface::class,
-                    LoggerInterface::class,
                     RecursiveEntitiesExtractor::class,
                 ],
                 DeleteConfigAction::class => [
@@ -52,6 +51,10 @@ class ConfigProvider
                     LoggerInterface::class,
                     RecursiveEntitiesExtractor::class,
                 ],
+                DbConfigResourceMiddleware::class => [
+                    EntityManagerInterface::class,
+                    LoggerInterface::class,
+                ]
             ],
             'dependencies' => [
                 'delegators' => [
