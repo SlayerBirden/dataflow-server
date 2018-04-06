@@ -38,6 +38,8 @@ class PasswordConfirmationMiddleware implements MiddlewareInterface
                 'success' => false,
                 'msg' => new DangerMessage('The action requires password confirmation. No password provided.'),
             ], 412);
+        } else {
+            unset($data['password']);
         }
 
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
@@ -58,6 +60,7 @@ class PasswordConfirmationMiddleware implements MiddlewareInterface
             ], 412);
         }
 
-        return $handler->handle($request);
+        // serve down the pipe without password data
+        return $handler->handle($request->withParsedBody($data));
     }
 }
