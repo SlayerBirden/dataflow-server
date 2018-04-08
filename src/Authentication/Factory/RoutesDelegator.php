@@ -4,8 +4,14 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Factory;
 
 use Interop\Container\ContainerInterface;
+use SlayerBirden\DataFlowServer\Authentication\Controller\CreatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GenerateTemporaryTokenAction;
+use SlayerBirden\DataFlowServer\Authentication\Controller\GetTokenAction;
+use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddleware;
+use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
+use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use Zend\Expressive\Application;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
@@ -21,13 +27,44 @@ class RoutesDelegator implements DelegatorFactoryInterface
         $app = $callback();
 
         $app->post(
-            '/tmptoken/{id:\d+}',
+            '/gettmptoken/{id:\d+}',
             [
                 TokenMiddleware::class,
                 BodyParamsMiddleware::class,
                 GenerateTemporaryTokenAction::class,
             ],
-            'tmp_token'
+            'get_tmp_token'
+        );
+
+        $app->post(
+            '/password',
+            [
+                TokenMiddleware::class,
+                BodyParamsMiddleware::class,
+                SetOwnerMiddleware::class,
+                CreatePasswordAction::class,
+            ],
+            'create_password'
+        );
+
+        $app->post(
+            '/gettoken',
+            [
+                BodyParamsMiddleware::class,
+                GetTokenAction::class,
+            ],
+            'get_token'
+        );
+
+        $app->post(
+            '/invalidatetoken/{id:\d+}',
+            [
+                TokenMiddleware::class,
+                TokenResourceMiddleware::class,
+                ValidateOwnerMiddleware::class,
+                InvalidateTokenAction::class,
+            ],
+            'invalidate_token'
         );
 
         return $app;

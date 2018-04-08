@@ -17,6 +17,7 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydrationInterface;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -35,7 +36,7 @@ class UpdateConfigAction implements MiddlewareInterface
      */
     private $logger;
     /**
-     * @var HydratorInterface
+     * @var HydrationInterface
      */
     private $hydrator;
     /**
@@ -45,7 +46,7 @@ class UpdateConfigAction implements MiddlewareInterface
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        HydratorInterface $hydrator,
+        HydrationInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         ExtractionInterface $extraction

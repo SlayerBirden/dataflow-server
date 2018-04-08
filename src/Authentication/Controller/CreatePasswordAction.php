@@ -14,12 +14,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydrationInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class CreatePasswordAction implements MiddlewareInterface
@@ -41,22 +41,21 @@ class CreatePasswordAction implements MiddlewareInterface
      */
     private $extraction;
     /**
-     * @var PasswordManagerInterface
+     * @var HydrationInterface
      */
-    private $passwordManager;
+    private $hydration;
 
     public function __construct(
         EntityManager $entityManager,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
-        ExtractionInterface $extraction,
-        PasswordManagerInterface $passwordManager
+        ExtractionInterface $extraction, HydrationInterface $hydration
     ) {
         $this->entityManager = $entityManager;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
         $this->extraction = $extraction;
-        $this->passwordManager = $passwordManager;
+        $this->hydration = $hydration;
     }
 
     /**
@@ -92,29 +91,13 @@ class CreatePasswordAction implements MiddlewareInterface
 
         if ($this->inputFilter->isValid()) {
             try {
-                $pw = $data['password'] ?? null;
-
-                if ($pw === null) {
-                    $message = new DangerMessage('No password provided.');
-                } else {
-                    $password = new Password();
-                    $password->setHash($this->passwordManager->getHash($pw));
-                    $password->setOwner($user);
-
-                    $now = new \DateTime();
-                    // password due in 1 Year
-                    $due = (new \DateTime())->add(new \DateInterval('P1Y'));
-                    $password->setCreatedAt($now);
-                    $password->setDue($due);
-                    $password->setActive(true);
-
-                    $this->entityManager->persist($password);
-                    $this->entityManager->flush();
-                    $message = new SuccessMessage('Password has been successfully created!');
-                    $created = true;
-                    $status = 200;
-                }
-            } catch (ORMInvalidArgumentException $exception) {
+                $password = $this->hydration->hydrate($data, new Password());
+                $this->entityManager->persist($password);
+                $this->entityManager->flush();
+                $message = new SuccessMessage('Password has been successfully created!');
+                $created = true;
+                $status = 200;
+            } catch (ORMInvalidArgumentException | \InvalidArgumentException $exception) {
                 $message = new DangerMessage($exception->getMessage());
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);

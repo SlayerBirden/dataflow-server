@@ -10,9 +10,9 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
+use SlayerBirden\DataFlowServer\Db\Factory\DbConfigExtractionFactory;
 use SlayerBirden\DataFlowServer\Db\Middleware\DbConfigResourceMiddleware;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
-use SlayerBirden\DataFlowServer\Extractor\RecursiveEntitiesExtractor;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -29,27 +29,27 @@ class ConfigProvider
                     ClassMethods::class,
                     'ConfigInputFilter',
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class
+                    'DbConfigExtraction',
                 ],
                 UpdateConfigAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
                     'ConfigInputFilter',
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    'DbConfigExtraction',
                 ],
                 GetConfigsAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    'DbConfigExtraction',
                 ],
                 GetConfigAction::class => [
-                    RecursiveEntitiesExtractor::class,
+                    'DbConfigExtraction',
                 ],
                 DeleteConfigAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    'DbConfigExtraction',
                 ],
                 DbConfigResourceMiddleware::class => [
                     EntityManagerInterface::class,
@@ -61,6 +61,9 @@ class ConfigProvider
                     Application::class => [
                         Factory\RoutesDelegator::class,
                     ],
+                ],
+                'factories' => [
+                    'DbConfigExtraction' => DbConfigExtractionFactory::class,
                 ],
             ],
             'doctrine' => [

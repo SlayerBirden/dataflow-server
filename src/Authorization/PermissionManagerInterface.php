@@ -7,5 +7,5 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 interface PermissionManagerInterface
 {
-    public function isAllowed(string $resource, string $action, User $user): bool;
+    public function isAllowed(string $resource, User $user): bool;
 }

@@ -120,9 +120,9 @@ class TokenManager implements TokenManagerInterface
     private function getGrants(Token $token, array $resources, User $user): array
     {
         $grants = [];
-        foreach ($resources as $resource => $action) {
-            if (!$this->permissionManager->isAllowed($resource, $action, $user)) {
-                throw new PermissionDeniedException(sprintf('%s %s is not allowed for provided user.', $action,
+        foreach ($resources as $resource) {
+            if (!$this->permissionManager->isAllowed($resource, $user)) {
+                throw new PermissionDeniedException(sprintf('%s is not allowed for provided user.',
                     $resource));
             }
             $grant = new Grant();

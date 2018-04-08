@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Entities;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -140,9 +141,9 @@ class Token implements ClaimedResourceInterface
     }
 
     /**
-     * @return Grant[]
+     * @return Collection|Grant[]
      */
-    public function getGrants(): array
+    public function getGrants(): Collection
     {
         return $this->grants;
     }

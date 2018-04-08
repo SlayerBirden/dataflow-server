@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
@@ -68,6 +69,7 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
         $success = false;
         $status = 400;
         $msg = null;
+        $validation = [];
 
         if ($this->inputFilter->isValid()) {
             try {
@@ -78,18 +80,27 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
                     $success = true;
                     $status = 200;
                 }
+            } catch (PermissionDeniedException $exception) {
+                $msg = new DangerMessage($exception->getMessage());
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
                 $msg = new DangerMessage('There was an error while obtaining tmp token.');
             }
         } else {
-            $messages = $this->inputFilter->getMessages();
-            $msg = new DangerMessage(reset($messages));
+            $msg = new DangerMessage('There were validation errors.');
+            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
+                $messages = $input->getMessages();
+                $validation[] = [
+                    'field' => $key,
+                    'msg' => reset($messages)
+                ];
+            }
         }
 
         return new JsonResponse([
             'data' => [
                 'token' => $token ? $this->extraction->extract($token) : null,
+                'validation' => $validation,
             ],
             'success' => $success,
             'msg' => $msg,

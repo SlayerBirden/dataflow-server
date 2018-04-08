@@ -41,7 +41,7 @@ class TokenMiddleware implements MiddlewareInterface
             ], 401);
         }
         $token = $this->getToken(reset($authorization));
-        if (!$token || $token->isActive() || ($token->getDue() < new \DateTime())) {
+        if (!$token || !$token->isActive() || ($token->getDue() < new \DateTime())) {
             return new JsonResponse([
                 'data' => [],
                 'success' => false,
@@ -71,11 +71,11 @@ class TokenMiddleware implements MiddlewareInterface
 
     private function getToken(string $authorization): ?Token
     {
-        $hash = str_replace('Bearer ', '', $authorization);
+        $token = str_replace('Bearer ', '', $authorization);
         $tokens = $this->entityManager
             ->getRepository(Token::class)
             ->matching(
-                Criteria::create()->where(Criteria::expr()->eq('hash', $hash))
+                Criteria::create()->where(Criteria::expr()->eq('token', $token))
             );
         if ($tokens->count()) {
             return $tokens->first();

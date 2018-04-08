@@ -11,6 +11,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
+use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
@@ -43,37 +44,33 @@ class InvalidateTokenAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $id = $request->getAttribute('id');
+        $token = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
+        if (!$token) {
+            return new JsonResponse([
+                'data' => [],
+                'success' => false,
+                'msg' => new DangerMessage('Could not find token by provided id.'),
+            ], 404);
+        }
         try {
-            /** @var Token $token */
-            $token = $this->entityManager->find(Token::class, $id);
-            if ($token) {
-                $token->setActive(false);
+            $token->setActive(false);
 
-                $this->entityManager->persist($token);
-                $this->entityManager->flush();
-                return new JsonResponse([
-                    'data' => [
-                        'token' => $this->extraction->extract($token),
-                    ],
-                    'success' => true,
-                    'msg' => new SuccessMessage('Token invalidated.'),
-                ], 404);
-            } else {
-                return new JsonResponse([
-                    'data' => [],
-                    'success' => false,
-                    'msg' => new DangerMessage('Could not find token by provided id.'),
-                ], 404);
-            }
+            $this->entityManager->persist($token);
+            $this->entityManager->flush();
+            return new JsonResponse([
+                'data' => [
+                    'token' => $this->extraction->extract($token),
+                ],
+                'success' => true,
+                'msg' => new SuccessMessage('Token invalidated.'),
+            ], 200);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
+            return new JsonResponse([
+                'data' => [],
+                'success' => false,
+                'msg' => new DangerMessage('There was an error while invalidating token.'),
+            ], 400);
         }
-
-        return new JsonResponse([
-            'data' => [],
-            'success' => false,
-            'msg' => new DangerMessage('There was an error while invalidating token.'),
-        ], 400);
     }
 }

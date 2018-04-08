@@ -12,6 +12,10 @@ class ResourceManager implements ResourceManagerInterface
      */
     public function getAllResources(): array
     {
-        // TODO: Implement getAllResources() method.
+        // todo get actual resources
+        return [
+            'create_password',
+            'tmp_token',
+        ];
     }
 }

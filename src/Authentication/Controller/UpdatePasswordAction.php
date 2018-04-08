@@ -13,6 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
+use SlayerBirden\DataFlowServer\Authentication\Hydrator\PasswordHydrator;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -44,19 +45,25 @@ class UpdatePasswordAction implements MiddlewareInterface
      * @var InputFilterInterface
      */
     private $inputFilter;
+    /**
+     * @var PasswordHydrator
+     */
+    private $hydration;
 
     public function __construct(
         EntityManager $entityManager,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         PasswordManagerInterface $passwordManager,
-        ExtractionInterface $extraction
+        ExtractionInterface $extraction,
+        PasswordHydrator $hydration
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->passwordManager = $passwordManager;
         $this->extraction = $extraction;
         $this->inputFilter = $inputFilter;
+        $this->hydration = $hydration;
     }
 
     /**
@@ -101,7 +108,7 @@ class UpdatePasswordAction implements MiddlewareInterface
                     'success' => true,
                     'msg' => new SuccessMessage('Password successfully updated.'),
                 ], 200);
-            } catch (PasswordRestrictionsException $exception) {
+            } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
                 $this->entityManager->rollback();
                 return new JsonResponse([
                     'data' => [],
@@ -173,18 +180,9 @@ class UpdatePasswordAction implements MiddlewareInterface
             }
         }
 
-        $now = new \DateTime();
-        // password due in 1 Year
-        $due = (new \DateTime())->add(new \DateInterval('P1Y'));
-
-        $pw = new Password();
-        $pw->setActive(true);
-        $pw->setOwner($user);
-        $pw->setCreatedAt($now);
-        $pw->setDue($due);
-        $pw->setHash($hash);
-        $this->entityManager->persist($pw);
-
-        return $pw;
+        return $this->hydration->hydrate([
+            'owner' => $user,
+            'password' => $password,
+        ], new Password());
     }
 }

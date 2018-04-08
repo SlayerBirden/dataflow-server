@@ -10,7 +10,6 @@ use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
-use SlayerBirden\DataFlowServer\Extractor\RecursiveEntitiesExtractor;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -26,29 +25,29 @@ class ConfigProvider
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class
+                    ClassMethods::class
                 ],
                 UpdateUserAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    ClassMethods::class,
                 ],
                 GetUserAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    ClassMethods::class,
                 ],
                 GetUsersAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    ClassMethods::class,
                 ],
                 DeleteUserAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    RecursiveEntitiesExtractor::class,
+                    ClassMethods::class,
                 ],
             ],
             'doctrine' => [

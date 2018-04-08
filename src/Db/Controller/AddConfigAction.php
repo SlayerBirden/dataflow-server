@@ -12,12 +12,11 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
-use Zend\Hydrator\HydratorInterface;
+use Zend\Hydrator\HydrationInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class AddConfigAction implements MiddlewareInterface
@@ -27,7 +26,7 @@ class AddConfigAction implements MiddlewareInterface
      */
     private $entityManager;
     /**
-     * @var HydratorInterface
+     * @var HydrationInterface
      */
     private $hydrator;
     /**
@@ -45,7 +44,7 @@ class AddConfigAction implements MiddlewareInterface
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        HydratorInterface $hydrator,
+        HydrationInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         ExtractionInterface $extractor

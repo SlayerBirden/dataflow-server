@@ -12,6 +12,7 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedExcepti
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
+use Zend\Hydrator\ExtractionInterface;
 
 class GetTokenAction implements MiddlewareInterface
 {
@@ -19,10 +20,15 @@ class GetTokenAction implements MiddlewareInterface
      * @var TokenManagerInterface
      */
     private $tokenManager;
+    /**
+     * @var ExtractionInterface
+     */
+    private $extraction;
 
-    public function __construct(TokenManagerInterface $tokenManager)
+    public function __construct(TokenManagerInterface $tokenManager, ExtractionInterface $extraction)
     {
         $this->tokenManager = $tokenManager;
+        $this->extraction = $extraction;
     }
 
     /**
@@ -30,9 +36,10 @@ class GetTokenAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $user = $request->getAttribute('user');
-        $password = $request->getAttribute('password');
-        $resources = $request->getAttribute('resources') ?? [];
+        $data = $request->getParsedBody();
+        $user = $data['user'] ?? null;
+        $password = $data['password'] ?? null;
+        $resources = $data['resources'] ?? [];
 
         $status = 401;
         $success = false;
@@ -40,10 +47,31 @@ class GetTokenAction implements MiddlewareInterface
         $msg = null;
 
         if ($user === null) {
-            $msg = new DangerMessage('Empty user');
+            return new JsonResponse([
+                'data' => [
+                    'token' => $token,
+                ],
+                'success' => $success,
+                'msg' => new DangerMessage('Empty user.'),
+            ], $status);
         }
         if ($password === null) {
-            $msg = new DangerMessage('Empty password');
+            return new JsonResponse([
+                'data' => [
+                    'token' => $token,
+                ],
+                'success' => $success,
+                'msg' => new DangerMessage('Empty password.'),
+            ], $status);
+        }
+        if (empty($resources)) {
+            return new JsonResponse([
+                'data' => [
+                    'token' => $token,
+                ],
+                'success' => $success,
+                'msg' => new DangerMessage('Please specify resources you want to access using the token.'),
+            ], $status);
         }
         if ($user && $password) {
             try {
@@ -60,7 +88,7 @@ class GetTokenAction implements MiddlewareInterface
 
         return new JsonResponse([
             'data' => [
-                'token' => $token,
+                'token' => $this->extraction->extract($token),
             ],
             'success' => $success,
             'msg' => $msg,

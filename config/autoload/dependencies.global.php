@@ -13,7 +13,6 @@ return [
         'invokables' => [
             Helper\ServerUrlHelper::class => Helper\ServerUrlHelper::class,
             \Zend\Hydrator\ClassMethods::class => \Zend\Hydrator\ClassMethods::class,
-            RecursiveEntitiesExtractor::class => RecursiveEntitiesExtractor::class,
         ],
         'factories' => [
             Application::class => Container\ApplicationFactory::class,

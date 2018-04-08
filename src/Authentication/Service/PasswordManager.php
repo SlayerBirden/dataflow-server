@@ -37,7 +37,7 @@ class PasswordManager implements PasswordManagerInterface
                 ->getRepository(Password::class)
                 ->matching(
                     Criteria::create()
-                        ->where(Criteria::expr()->eq('user', $user))
+                        ->where(Criteria::expr()->eq('owner', $user))
                         ->andWhere(Criteria::expr()->eq('active', true))
                 );
             if ($results->count()) {
