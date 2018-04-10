@@ -35,6 +35,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
         ], 'get_config');
 
         $app->get('/configs', [
+            TokenMiddleware::class,
             GetConfigsAction::class
         ], 'get_configs');
 

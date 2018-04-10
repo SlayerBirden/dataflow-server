@@ -5,7 +5,7 @@ namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -20,7 +20,7 @@ use Zend\Hydrator\ExtractionInterface;
 class GetUsersAction implements MiddlewareInterface
 {
     /**
-     * @var EntityManagerInterface
+     * @var EntityManager
      */
     private $entityManager;
     /**
@@ -33,7 +33,7 @@ class GetUsersAction implements MiddlewareInterface
     private $extraction;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        EntityManager $entityManager,
         LoggerInterface $logger,
         ExtractionInterface $extraction
     ) {

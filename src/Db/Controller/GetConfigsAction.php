@@ -5,13 +5,14 @@ namespace SlayerBirden\DataFlowServer\Db\Controller;
 
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
@@ -20,7 +21,7 @@ use Zend\Hydrator\ExtractionInterface;
 class GetConfigsAction implements MiddlewareInterface
 {
     /**
-     * @var EntityManagerInterface
+     * @var EntityManager
      */
     private $entityManager;
     /**
@@ -33,7 +34,7 @@ class GetConfigsAction implements MiddlewareInterface
     private $extraction;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        EntityManager $entityManager,
         LoggerInterface $logger,
         ExtractionInterface $extraction
     ) {
@@ -54,6 +55,21 @@ class GetConfigsAction implements MiddlewareInterface
         $success = false;
         $msg = null;
         $status = 200;
+
+
+        $currentOwner = $request->getAttribute(TokenMiddleware::USER_PARAM);
+
+        if (!$currentOwner) {
+            return new JsonResponse([
+                'data' => [
+                    'configurations' => [],
+                    'count' => 0,
+                ],
+                'msg' => new DangerMessage('Access denied. Only Logged In users can access this resource.'),
+                'success' => false
+            ], 403);
+        }
+        $filters['owner'] = $currentOwner;
 
         try {
             $criteria = $this->buildCriteria($filters, $sorting, $page);
@@ -91,14 +107,17 @@ class GetConfigsAction implements MiddlewareInterface
 
     private function buildCriteria(array $filters = [], array $sorting = [], ?int $page, int $limit = 10): Criteria
     {
-        // todo add filter for current user
         $criteria = Criteria::create();
         if ($page !== null) {
             $criteria->setFirstResult(($page - 1) * $limit)
                 ->setMaxResults($limit);
         }
         foreach ($filters as $key => $value) {
-            $criteria->andWhere(Criteria::expr()->contains($key, $value));
+            if (is_string($value)) {
+                $criteria->andWhere(Criteria::expr()->contains($key, $value));
+            } else {
+                $criteria->andWhere(Criteria::expr()->eq($key, $value));
+            }
         }
         if ($sorting) {
             foreach ($sorting as $key => $dir) {
