@@ -1,10 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace SlayerBirden\DataFlowServer\Authentication\Validation;
+namespace SlayerBirden\DataFlowServer\Authorization\Validation;
 
 use SlayerBirden\DataFlowServer\Authorization\ResourceManagerInterface;
-use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
 use Zend\Validator\AbstractValidator;
 use Zend\Validator\Exception\InvalidArgumentException;
 
@@ -34,7 +33,7 @@ class ResourceValidator extends AbstractValidator
         'resource' => 'resource'
     ];
 
-    public function __construct($options = null, ?ResourceManagerInterface $manager = null)
+    public function __construct($options = null, ResourceManagerInterface $manager)
     {
         parent::__construct($options);
         $this->manager = $manager;
@@ -45,7 +44,7 @@ class ResourceValidator extends AbstractValidator
      */
     public function isValid($value)
     {
-        $all = $this->getAllResources();
+        $all = $this->manager->getAllResources();
 
         if (!is_array($value)) {
             throw new InvalidArgumentException('Resources param needs to be an array.');
@@ -59,14 +58,5 @@ class ResourceValidator extends AbstractValidator
         }
 
         return true;
-    }
-
-    private function getAllResources(): array
-    {
-        if ($this->manager === null) {
-            $this->manager = new ResourceManager();
-        }
-
-        return $this->manager->getAllResources();
     }
 }

@@ -16,11 +16,9 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authentication\Service\TokenManager;
-use SlayerBirden\DataFlowServer\Authentication\Validation\ResourceValidator;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
 use Zend\Expressive\Application;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
-use Zend\ServiceManager\Factory\InvokableFactory;
 
 class ConfigProvider
 {
@@ -90,14 +88,6 @@ class ConfigProvider
                 'aliases' => [
                     TokenManagerInterface::class => TokenManager::class,
                     PasswordManagerInterface::class => PasswordManager::class,
-                ],
-            ],
-            'validators' => [
-                'aliases' => [
-                    'resourcesValidator' => ResourceValidator::class,
-                ],
-                'factories' => [
-                    ResourceValidator::class => InvokableFactory::class,
                 ],
             ],
             'input_filter_specs' => [
