@@ -52,40 +52,9 @@ class InvalidateTokensAction implements MiddlewareInterface
 
         try {
             if ($all) {
-                /** @var Token[] $collection */
-                $collection = $this->entityManager->getRepository(Token::class)->findAll();
-                foreach ($collection as $token) {
-                    $token->setActive(false);
-                    $this->entityManager->persist($token);
-                }
-
-                $this->entityManager->flush();
-                return new JsonResponse([
-                    'data' => [
-                        'count' => count($collection),
-                    ],
-                    'success' => true,
-                    'msg' => new SuccessMessage('All tokens have been deactivated.'),
-                ], 200);
+                return $this->invalidateAll();
             } elseif (!empty($users)) {
-                $collection = $this->entityManager
-                    ->getRepository(Token::class)
-                    ->matching(
-                        Criteria::create()->where(Criteria::expr()->in('user', $this->getUsers($users)))
-                    );
-                foreach ($collection as $token) {
-                    $token->setActive(false);
-                    $this->entityManager->persist($token);
-                }
-                $this->entityManager->flush();
-                return new JsonResponse([
-                    'data' => [
-                        'count' => $collection->count(),
-                        'tokens' => array_map([$this->extraction, 'extract'], $collection->toArray()),
-                    ],
-                    'success' => true,
-                    'msg' => new SuccessMessage('Tokens have been deactivated.'),
-                ], 200);
+                return $this->invalidateByUsers($users);
             } else {
                 return new JsonResponse([
                     'data' => [],
@@ -95,13 +64,64 @@ class InvalidateTokensAction implements MiddlewareInterface
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
+            return new JsonResponse([
+                'data' => [],
+                'success' => false,
+                'msg' => new DangerMessage('There was an error while invalidating the tokens.'),
+            ], 400);
+        }
+    }
+
+    /**
+     * @return ResponseInterface
+     * @throws ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function invalidateAll(): ResponseInterface
+    {
+        /** @var Token[] $collection */
+        $collection = $this->entityManager->getRepository(Token::class)->findAll();
+        foreach ($collection as $token) {
+            $token->setActive(false);
+            $this->entityManager->persist($token);
         }
 
+        $this->entityManager->flush();
         return new JsonResponse([
-            'data' => [],
-            'success' => false,
-            'msg' => new DangerMessage('There was an error while invalidating the tokens.'),
-        ], 400);
+            'data' => [
+                'count' => count($collection),
+            ],
+            'success' => true,
+            'msg' => new SuccessMessage('All tokens have been deactivated.'),
+        ], 200);
+    }
+
+    /**
+     * @param array $users
+     * @return ResponseInterface
+     * @throws ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function invalidateByUsers(array $users): ResponseInterface
+    {
+        $collection = $this->entityManager
+            ->getRepository(Token::class)
+            ->matching(
+                Criteria::create()->where(Criteria::expr()->in('user', $this->getUsers($users)))
+            );
+        foreach ($collection as $token) {
+            $token->setActive(false);
+            $this->entityManager->persist($token);
+        }
+        $this->entityManager->flush();
+        return new JsonResponse([
+            'data' => [
+                'count' => $collection->count(),
+                'tokens' => array_map([$this->extraction, 'extract'], $collection->toArray()),
+            ],
+            'success' => true,
+            'msg' => new SuccessMessage('Tokens have been deactivated.'),
+        ], 200);
     }
 
     private function getUsers(array $users): array

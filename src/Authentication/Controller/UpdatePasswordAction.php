@@ -14,11 +14,10 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
 use SlayerBirden\DataFlowServer\Authentication\Hydrator\PasswordHydrator;
-use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -71,108 +70,71 @@ class UpdatePasswordAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
-
-        if (empty($user)) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('No active user detected.'),
-            ], 403);
-        }
-
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 
         if ($this->inputFilter->isValid()) {
-            $newPassword = $data['new_password'] ?? null;
-
-            if (empty($newPassword)) {
-                return new JsonResponse([
-                    'data' => [],
-                    'success' => false,
-                    'msg' => new DangerMessage('New password is not provided.'),
-                ], 400);
-            }
-
             $this->entityManager->beginTransaction();
             try {
-                $pw = $this->updatePassword($user, $newPassword);
+                $pw = $this->updatePassword($data);
                 $this->entityManager->flush();
                 $this->entityManager->commit();
 
                 return new JsonResponse([
                     'data' => [
                         'password' => $this->extraction->extract($pw),
+                        'validation' => [],
                     ],
                     'success' => true,
                     'msg' => new SuccessMessage('Password successfully updated.'),
                 ], 200);
             } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
                 $this->entityManager->rollback();
-                return new JsonResponse([
-                    'data' => [],
-                    'success' => false,
-                    'msg' => new DangerMessage($exception->getMessage()),
-                ], 400);
+                $msg = new DangerMessage($exception->getMessage());
+                $status = 400;
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
                 $this->entityManager->rollback();
-                return new JsonResponse([
-                    'data' => [],
-                    'success' => false,
-                    'msg' => new DangerMessage('There was an error while updating password.'),
-                ], 400);
+                $msg = new DangerMessage('There was an error while updating password.');
+                $status = 400;
             } catch (\Throwable $exception) {
                 $this->logger->error((string)$exception);
                 $this->entityManager->rollback();
-                return new JsonResponse([
-                    'data' => [],
-                    'success' => false,
-                    'msg' => new DangerMessage('Unknown error.'),
-                ], 500);
+                $msg = new DangerMessage('Unknown app error.');
+                $status = 500;
             }
-        } else {
-            $validation = [];
-            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
-                $messages = $input->getMessages();
-                $validation[] = [
-                    'field' => $key,
-                    'msg' => reset($messages)
-                ];
-            }
-
             return new JsonResponse([
-                'data' => [
-                    'validation' => $validation,
-                ],
+                'data' => [],
                 'success' => false,
-                'msg' => new DangerMessage('There were validation errors.'),
-            ], 400);
+                'msg' => $msg,
+            ], $status);
+        } else {
+            return (new ValidationResponseFactory())('password', $this->inputFilter);
         }
     }
 
     /**
-     * @param User $user
-     * @param string $password
+     * @param array $data
      * @return Password
      * @throws PasswordRestrictionsException
      * @throws ORMException
      * @throws \Exception
      */
-    private function updatePassword(User $user, string $password): Password
+    private function updatePassword(array $data): Password
     {
-        $hash = $this->passwordManager->getHash($password);
+        $hash = $this->passwordManager->getHash($data['password']);
         $userPasswords = $this->entityManager
             ->getRepository(Password::class)
             ->matching(
-                Criteria::create()->where(Criteria::expr()->eq('owner', $user))
+                Criteria::create()->where(Criteria::expr()->eq('owner', $data['owner']))
             );
         # check if mentioned
         /** @var Password $item */
         foreach ($userPasswords as $item) {
             if ($hash === $item->getHash()) {
-                throw new PasswordRestrictionsException('You have already used this password before. Please use a new one.');
+                throw new PasswordRestrictionsException(
+                    'You have already used this password before. Please use a new one.'
+                );
             }
             if ($item->isActive()) {
                 $item->setActive(false);
@@ -180,9 +142,6 @@ class UpdatePasswordAction implements MiddlewareInterface
             }
         }
 
-        return $this->hydration->hydrate([
-            'owner' => $user,
-            'password' => $password,
-        ], new Password());
+        return $this->hydration->hydrate($data, new Password());
     }
 }

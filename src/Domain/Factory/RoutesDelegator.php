@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Domain\Factory;
 
 use Interop\Container\ContainerInterface;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Controller\AddUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
@@ -25,24 +26,29 @@ class RoutesDelegator implements DelegatorFactoryInterface
         $app = $callback();
 
         $app->get('/user/{id:\d+}', [
+            TokenMiddleware::class,
             GetUserAction::class
         ], 'get_user');
 
         $app->get('/users', [
+            TokenMiddleware::class,
             GetUsersAction::class
         ], 'get_users');
 
         $app->post('/user', [
+            TokenMiddleware::class,
             BodyParamsMiddleware::class,
             AddUserAction::class
         ], 'add_user');
 
         $app->put('/user/{id:\d+}', [
+            TokenMiddleware::class,
             BodyParamsMiddleware::class,
             UpdateUserAction::class
         ], 'update_user');
 
         $app->delete('/user/{id:\d+}', [
+            TokenMiddleware::class,
             DeleteUserAction::class
         ], 'delete_user');
 

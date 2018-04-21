@@ -59,6 +59,7 @@ class ConfigProvider
                 GetTokenAction::class => [
                     TokenManager::class,
                     'TokenExtraction',
+                    'GetTokenInputFilter',
                 ],
                 InvalidateTokenAction::class => [
                     EntityManager::class,
@@ -103,7 +104,7 @@ class ConfigProvider
                             [
                                 'name' => 'resourcesValidator',
                             ],
-                        ]
+                        ],
                     ],
                 ],
                 'PasswordInputFilter' => [
@@ -114,9 +115,9 @@ class ConfigProvider
                                 'name' => 'stringLength',
                                 'options' => [
                                     'min' => 10,
-                                ]
+                                ],
                             ],
-                        ]
+                        ],
                     ],
                 ],
                 'UpdatePasswordInputFilter' => [
@@ -127,12 +128,43 @@ class ConfigProvider
                                 'name' => 'stringLength',
                                 'options' => [
                                     'min' => 10,
-                                ]
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'GetTokenInputFilter' => [
+                    'resources' => [
+                        'required' => true,
+                        'filters' => [
+                            [
+                                'name' => 'stringtrim',
+                            ]
+                        ],
+                        'validators' => [
+                            [
+                                'name' => 'resourcesValidator',
+                            ],
+                        ],
+                    ],
+                    'password' => [
+                        'required' => true,
+                        'validators' => [
+                            [
+                                'name' => 'notempty',
+                            ],
+                        ]
+                    ],
+                    'user' => [
+                        'required' => true,
+                        'validators' => [
+                            [
+                                'name' => 'notempty',
                             ],
                         ]
                     ],
                 ],
-            ]
+            ],
         ];
     }
 }

@@ -43,6 +43,7 @@ class Token implements ClaimedResourceInterface
     private $due;
     /**
      * @ORM\ManyToOne(targetEntity="\SlayerBirden\DataFlowServer\Domain\Entities\User")
+     * @ORM\JoinColumn(onDelete="CASCADE")
      * @var User
      */
     private $owner;

@@ -6,6 +6,7 @@ modules:
     - CleanDoctrine2:
         depends: ZendExpressive3
         cleanup: true
+    - \Helper\Api
   config:
     REST:
       url: https://dataflow.test

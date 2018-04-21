@@ -5,16 +5,6 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 class AddConfigCest
 {
-    public function _before(ApiTester $I)
-    {
-        $I->haveInRepository(User::class, [
-            'id' => 1,
-            'first' => 'Tester',
-            'last' => 'Tester',
-            'email' => 'test@example.com',
-        ]);
-    }
-
     public function addConfiguration(ApiTester $I)
     {
         $I->wantTo('create db configuration');

@@ -65,62 +65,35 @@ class SavePermissionsAction implements MiddlewareInterface
         $data = $request->getParsedBody();
         $userId = (int)$request->getAttribute('id');
 
-        $resources = $data['resources'] ?? [];
-        $owner = $data['owner'] ?? null;
-
-        if ($userId === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('No user provided.'),
-                'data' => [
-                    'permissions' => []
-                ],
-                'success' => false,
-            ], 400);
-        }
-
-        if ($owner === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Empty owner (no context).'),
-                'data' => [
-                    'permissions' => []
-                ],
-                'success' => false,
-            ], 400);
-        }
-
-        if (empty($resources)) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('No Resources provided.'),
-                'data' => [
-                    'permissions' => []
-                ],
-                'success' => false,
-            ], 400);
-        }
-
         $this->entityManager->beginTransaction();
         try {
-            $permissions = $this->processResources($this->getUser($userId), $owner, ...$resources);
-            $this->entityManager->flush();
-            $this->entityManager->commit();
+            /** @var User $user */
+            $user = $this->entityManager->find(User::class, $userId);
+            if (! $user) {
+                return new JsonResponse([
+                    'msg' => new DangerMessage('Could not find user by provided ID.'),
+                    'data' => [
+                        'permissions' => [],
+                    ],
+                    'success' => false,
+                ], 400);
+            }
+            $permissions = $this->processResources($user, $data['owner'], ...$data['resources']);
+            if (empty($permissions)) {
+                $msg = new SuccessMessage('No changes detected. The input is identical to the storage.');
+            } else {
+                $this->entityManager->flush();
+                $this->entityManager->commit();
+                $msg = new SuccessMessage('Successfully set permissions to resources.');
+            }
 
             return new JsonResponse([
-                'msg' => new SuccessMessage('Successfully set permissions to resources.'),
+                'msg' => $msg,
                 'data' => [
                     'permissions' => array_map([$this->extraction, 'extract'], $permissions),
                 ],
                 'success' => true,
             ], 200);
-        } catch (\InvalidArgumentException $exception) {
-            $this->entityManager->rollback();
-
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'data' => [
-                    'permissions' => [],
-                ],
-                'success' => false,
-            ], 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $this->entityManager->rollback();
@@ -138,7 +111,7 @@ class SavePermissionsAction implements MiddlewareInterface
     /**
      * @param User $user
      * @param User $owner
-     * @param string[] ...$resources
+     * @param string ...$resources
      * @return Permission[]
      * @throws ORMException
      */
@@ -157,9 +130,24 @@ class SavePermissionsAction implements MiddlewareInterface
         $toAdd = array_diff($resources, $currentResources);
 
         if (empty($toAdd) && empty($toRemove)) {
-            throw new \InvalidArgumentException("No changes detected. The input is identical to the storage.");
+            return [];
         }
 
+        $this->processItemsToRemove($collection, $toRemove, $owner, $result);
+        $this->processItemsToAdd($toAdd, $user, $owner, $result);
+
+        return $result;
+    }
+
+    /**
+     * @param $collection
+     * @param $toRemove
+     * @param $owner
+     * @param $result
+     * @throws ORMException
+     */
+    private function processItemsToRemove($collection, $toRemove, $owner, &$result)
+    {
         /** @var Permission $permission */
         foreach ($collection as $permission) {
             if (in_array($permission->getResource(), $toRemove, true)) {
@@ -172,6 +160,17 @@ class SavePermissionsAction implements MiddlewareInterface
                 $result[] = $permission;
             }
         }
+    }
+
+    /**
+     * @param $toAdd
+     * @param $user
+     * @param $owner
+     * @param $result
+     * @throws ORMException
+     */
+    private function processItemsToAdd($toAdd, $user, $owner, &$result)
+    {
         foreach ($toAdd as $resource) {
             $permission = new Permission();
             $permission->setResource($resource);
@@ -182,27 +181,5 @@ class SavePermissionsAction implements MiddlewareInterface
             $history->setOwner($owner);
             $this->entityManager->persist($history);
         }
-
-        return $result;
-    }
-
-    /**
-     * @param int $userId
-     * @return User
-     * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\TransactionRequiredException
-     * @throws \InvalidArgumentException
-     */
-    private function getUser(int $userId): User
-    {
-        /** @var User $user */
-        $user = $this->entityManager->find(User::class, $userId);
-
-        if (! $user) {
-            throw new \InvalidArgumentException('Could not find user by provided ID.');
-        }
-
-        return $user;
     }
 }

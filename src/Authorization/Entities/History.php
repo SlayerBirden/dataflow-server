@@ -30,7 +30,7 @@ class History implements ClaimedResourceInterface
     /**
      * User with permissions
      * @ORM\ManyToOne(targetEntity="\SlayerBirden\DataFlowServer\Domain\Entities\User")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @var User
      */
     private $user;

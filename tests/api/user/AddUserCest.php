@@ -1,20 +1,9 @@
 <?php
 
 use Codeception\Util\HttpCode;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 class AddUserCest
 {
-    public function _before(ApiTester $I)
-    {
-        $I->haveInRepository(User::class, [
-            'id' => 1,
-            'first' => 'Tester',
-            'last' => 'Tester',
-            'email' => 'old_test@example.com',
-        ]);
-    }
-
     public function addUser(ApiTester $I)
     {
         $I->wantTo('create user');
@@ -87,7 +76,7 @@ class AddUserCest
         $I->sendPOST('/user', [
             'first' => 'Test',
             'last' => 'User',
-            'email' => 'old_test@example.com',
+            'email' => 'test1@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([

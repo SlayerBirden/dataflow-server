@@ -25,7 +25,7 @@ class Grant
     private $resource;
     /**
      * @ORM\ManyToOne(targetEntity="\SlayerBirden\DataFlowServer\Authentication\Entities\Token", inversedBy="grants")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
      * @var Token
      */
     private $token;

@@ -8,6 +8,9 @@ use SlayerBirden\DataFlowServer\Authentication\Controller\CreatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GenerateTemporaryTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GetTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
+use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokensAction;
+use SlayerBirden\DataFlowServer\Authentication\Controller\UpdatePasswordAction;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\PasswordConfirmationMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
@@ -65,6 +68,28 @@ class RoutesDelegator implements DelegatorFactoryInterface
                 InvalidateTokenAction::class,
             ],
             'invalidate_token'
+        );
+
+        $app->post(
+            '/invalidatetokens',
+            [
+                TokenMiddleware::class,
+                BodyParamsMiddleware::class,
+                InvalidateTokensAction::class,
+            ],
+            'invalidate_tokens'
+        );
+
+        $app->post(
+            '/updatepassword',
+            [
+                TokenMiddleware::class,
+                BodyParamsMiddleware::class,
+                PasswordConfirmationMiddleware::class,
+                SetOwnerMiddleware::class,
+                UpdatePasswordAction::class,
+            ],
+            'update_password'
         );
 
         return $app;

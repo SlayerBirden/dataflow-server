@@ -17,6 +17,7 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydrationInterface;
@@ -49,7 +50,8 @@ class CreatePasswordAction implements MiddlewareInterface
         EntityManager $entityManager,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
-        ExtractionInterface $extraction, HydrationInterface $hydration
+        ExtractionInterface $extraction,
+        HydrationInterface $hydration
     ) {
         $this->entityManager = $entityManager;
         $this->inputFilter = $inputFilter;
@@ -63,65 +65,71 @@ class CreatePasswordAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
-
-        if (empty($user)) {
+        try {
+            $this->validateUser($request);
+        } catch (\DomainException $exception) {
             return new JsonResponse([
                 'data' => [],
                 'success' => false,
-                'msg' => new DangerMessage('No active user detected.'),
-            ], 403);
-        }
-
-        if ($this->hasActivePassword($user)) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('You already have active password. Please use "update" routine.'),
-            ], 412);
+                'msg' => new DangerMessage($exception->getMessage()),
+            ], $exception->getCode());
         }
 
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 
-        $message = null;
-        $validation = [];
-        $created = false;
-        $status = 400;
-
         if ($this->inputFilter->isValid()) {
-            try {
-                $password = $this->hydration->hydrate($data, new Password());
-                $this->entityManager->persist($password);
-                $this->entityManager->flush();
-                $message = new SuccessMessage('Password has been successfully created!');
-                $created = true;
-                $status = 200;
-            } catch (ORMInvalidArgumentException | \InvalidArgumentException $exception) {
-                $message = new DangerMessage($exception->getMessage());
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $message = new DangerMessage('There was an error creating password.');
-            }
+            return $this->createPassword($data);
         } else {
-            $message = new DangerMessage('There were validation errors.');
-            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
-                $messages = $input->getMessages();
-                $validation[] = [
-                    'field' => $key,
-                    'msg' => reset($messages)
-                ];
-            }
+            return (new ValidationResponseFactory())('password', $this->inputFilter);
+        }
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @throws \DomainException
+     */
+    private function validateUser(ServerRequestInterface $request): void
+    {
+        $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
+
+        if ($this->hasActivePassword($user)) {
+            throw new \DomainException(
+                'You already have active password. Please use "update" routine.',
+                412
+            );
+        }
+    }
+
+    private function createPassword(array $data): ResponseInterface
+    {
+        try {
+            $password = $this->hydration->hydrate($data, new Password());
+            $this->entityManager->persist($password);
+            $this->entityManager->flush();
+            return new JsonResponse([
+                'msg' => new SuccessMessage('Password has been successfully created!'),
+                'success' => true,
+                'data' => [
+                    'validation' => [],
+                    'password' => $this->extraction->extract($password),
+                ]
+            ], 200);
+        } catch (ORMInvalidArgumentException | \InvalidArgumentException $exception) {
+            $message = new DangerMessage($exception->getMessage());
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            $message = new DangerMessage('There was an error creating password.');
         }
 
         return new JsonResponse([
             'msg' => $message,
-            'success' => $created,
+            'success' => false,
             'data' => [
-                'validation' => $validation,
-                'password' => !empty($password) ? $this->extraction->extract($password) : null,
+                'validation' => [],
+                'password' => null,
             ]
-        ], $status);
+        ], 400);
     }
 
     private function hasActivePassword(User $user): bool

@@ -7,12 +7,12 @@ class GetUsersCest
 {
     public function _before(ApiTester $I)
     {
-        foreach (range(1,11) as $i) {
+        foreach (range(2, 11) as $i) {
             $I->haveInRepository(User::class, [
                 'id' => $i,
                 'first' => 'Tester' . $i,
                 'last' => 'Tester' . $i,
-                'email' => 'test'  . $i . '@example.com',
+                'email' => 'test' . $i . '@example.com',
             ]);
         }
     }
@@ -24,9 +24,9 @@ class GetUsersCest
         $I->sendGET('/users');
         $I->seeResponseCodeIs(HttpCode::OK);
         $usersJson = [];
-        foreach (range(1,11) as $i) {
+        foreach (range(2, 11) as $i) {
             $usersJson[] = [
-                'email' => 'test'  . $i . '@example.com',
+                'email' => 'test' . $i . '@example.com',
             ];
         }
         $I->seeResponseContainsJson([

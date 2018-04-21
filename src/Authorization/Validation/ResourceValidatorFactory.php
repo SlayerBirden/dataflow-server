@@ -16,6 +16,6 @@ class ResourceValidatorFactory
      */
     public function __invoke(ContainerInterface $container): ResourceValidator
     {
-        return new ResourceValidator(null, $container->get(ResourceManagerInterface::class));
+        return new ResourceValidator($container->get(ResourceManagerInterface::class));
     }
 }

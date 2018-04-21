@@ -21,6 +21,7 @@ class PasswordHydrator implements HydrationInterface
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function hydrate(array $data, $object): Password
     {

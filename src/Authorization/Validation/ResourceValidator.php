@@ -33,7 +33,7 @@ class ResourceValidator extends AbstractValidator
         'resource' => 'resource'
     ];
 
-    public function __construct($options = null, ResourceManagerInterface $manager)
+    public function __construct(ResourceManagerInterface $manager, $options = null)
     {
         parent::__construct($options);
         $this->manager = $manager;

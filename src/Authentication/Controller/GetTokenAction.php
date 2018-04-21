@@ -11,8 +11,11 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsExcep
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
+use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
+use Zend\InputFilter\InputFilterInterface;
 
 class GetTokenAction implements MiddlewareInterface
 {
@@ -24,11 +27,19 @@ class GetTokenAction implements MiddlewareInterface
      * @var ExtractionInterface
      */
     private $extraction;
+    /**
+     * @var InputFilterInterface
+     */
+    private $inputFilter;
 
-    public function __construct(TokenManagerInterface $tokenManager, ExtractionInterface $extraction)
-    {
+    public function __construct(
+        TokenManagerInterface $tokenManager,
+        ExtractionInterface $extraction,
+        InputFilterInterface $inputFilter
+    ) {
         $this->tokenManager = $tokenManager;
         $this->extraction = $extraction;
+        $this->inputFilter = $inputFilter;
     }
 
     /**
@@ -37,60 +48,37 @@ class GetTokenAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
-        $user = $data['user'] ?? null;
-        $password = $data['password'] ?? null;
-        $resources = $data['resources'] ?? [];
+        $this->inputFilter->setData($data);
 
-        $status = 401;
-        $success = false;
-        $token = null;
-        $msg = null;
-
-        if ($user === null) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => $token,
-                ],
-                'success' => $success,
-                'msg' => new DangerMessage('Empty user.'),
-            ], $status);
-        }
-        if ($password === null) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => $token,
-                ],
-                'success' => $success,
-                'msg' => new DangerMessage('Empty password.'),
-            ], $status);
-        }
-        if (empty($resources)) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => $token,
-                ],
-                'success' => $success,
-                'msg' => new DangerMessage('Please specify resources you want to access using the token.'),
-            ], $status);
-        }
-        if ($user && $password) {
+        if ($this->inputFilter->isValid()) {
             try {
-                $token = $this->tokenManager->getToken($user, $password, $resources);
-                $status = 200;
-                $success = true;
+                $token = $this->tokenManager->getToken($data['user'], $data['password'], $data['resources']);
+                return new JsonResponse([
+                    'data' => [
+                        'token' => $this->extraction->extract($token),
+                        'validation' => [],
+                    ],
+                    'success' => true,
+                    'msg' => new SuccessMessage('Token successfully creaeted'),
+                ], 200);
             } catch (InvalidCredentialsException $exception) {
-                $msg = new DangerMessage('Invalid credentials provided. Please double check your user and password.');
+                $status = 401;
+                $msg = new DangerMessage(
+                    'Invalid credentials provided. Please double check your user and password.'
+                );
             } catch (PermissionDeniedException $exception) {
                 $status = 403;
                 $msg = new DangerMessage('Provided user does not have permission to access requested resources.');
             }
+        } else {
+            return (new ValidationResponseFactory())('token', $this->inputFilter);
         }
 
         return new JsonResponse([
             'data' => [
-                'token' => $this->extraction->extract($token),
+                'token' => null,
             ],
-            'success' => $success,
+            'success' => false,
             'msg' => $msg,
         ], $status);
     }

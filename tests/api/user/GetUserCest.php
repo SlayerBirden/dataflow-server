@@ -1,20 +1,9 @@
 <?php
 
 use Codeception\Util\HttpCode;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 class GetUserCest
 {
-    public function _before(ApiTester $I)
-    {
-        $I->haveInRepository(User::class, [
-            'id' => 1,
-            'first' => 'Tester',
-            'last' => 'Tester',
-            'email' => 'test@example.com',
-        ]);
-    }
-
     public function getUser(ApiTester $I)
     {
         $I->wantTo('get user');
@@ -25,7 +14,7 @@ class GetUserCest
             'success' => true,
             'data' => [
                 'user' => [
-                    'email' => 'test@example.com',
+                    'email' => 'test1@example.com',
                 ]
             ]
         ]);

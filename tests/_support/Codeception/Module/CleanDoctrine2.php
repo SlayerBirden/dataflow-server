@@ -19,6 +19,10 @@ EOF;
 
     /**
      * @inheritdoc
+     * @param TestInterface $test
+     * @throws \Codeception\Exception\ModuleConfigException
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\ORMException
      */
     public function _before(TestInterface $test)
     {
@@ -41,12 +45,12 @@ EOF;
 
     /**
      * @inheritdoc
+     * @throws \Codeception\Exception\ModuleConfigException
      */
     public function _after(TestInterface $test)
     {
         $this->retrieveEntityManager();
         if ($this->config['cleanup']) {
-
             $metadatas = $this->em->getMetadataFactory()->getAllMetadata();
             (new SchemaTool($this->em))->dropSchema($metadatas);
 

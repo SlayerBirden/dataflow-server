@@ -44,13 +44,6 @@ class InvalidateTokenAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $token = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        if (!$token) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('Could not find token by provided id.'),
-            ], 404);
-        }
         try {
             $token->setActive(false);
 

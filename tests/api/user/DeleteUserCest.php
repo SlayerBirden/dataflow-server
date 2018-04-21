@@ -8,7 +8,7 @@ class DeleteUserCest
     public function _before(ApiTester $I)
     {
         $I->haveInRepository(User::class, [
-            'id' => 1,
+            'id' => 2,
             'first' => 'Tester',
             'last' => 'Tester',
             'email' => 'test@example.com',
@@ -19,7 +19,7 @@ class DeleteUserCest
     {
         $I->wantTo('delete user');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendDELETE('/user/1');
+        $I->sendDELETE('/user/2');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
             'success' => true,
