@@ -13,6 +13,7 @@ use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigExtractionFactory;
 use SlayerBirden\DataFlowServer\Db\Middleware\DbConfigResourceMiddleware;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
+use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -64,6 +65,7 @@ class ConfigProvider
                 ],
                 'factories' => [
                     'DbConfigExtraction' => DbConfigExtractionFactory::class,
+                    'ConfigInputFilter' => ProxyFilterManagerFactory::class,
                 ],
             ],
             'doctrine' => [

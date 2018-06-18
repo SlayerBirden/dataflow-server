@@ -17,6 +17,7 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddlewar
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authentication\Service\TokenManager;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
+use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 
@@ -85,6 +86,10 @@ class ConfigProvider
                 'factories' => [
                     'TokenExtraction' => TokenExtractionFactory::class,
                     'PasswordExtraction' => PasswordExtractionFactory::class,
+                    'TokenInputFilter' => ProxyFilterManagerFactory::class,
+                    'PasswordInputFilter' => ProxyFilterManagerFactory::class,
+                    'UpdatePasswordInputFilter' => ProxyFilterManagerFactory::class,
+                    'GetTokenInputFilter' => ProxyFilterManagerFactory::class,
                 ],
                 'aliases' => [
                     TokenManagerInterface::class => TokenManager::class,

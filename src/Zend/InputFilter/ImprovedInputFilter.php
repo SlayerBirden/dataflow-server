@@ -10,7 +10,8 @@ class ImprovedInputFilter extends InputFilter
 {
     /**
      * Add null values for all the inputs that were not passed.
-     * This is needed to make optional fields still validated even when the value is not directly provided in the request.
+     * This is needed to make optional fields still validated even
+     * when the value is not directly provided in the request.
      *
      * {@inheritdoc}
      */

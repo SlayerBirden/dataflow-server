@@ -10,6 +10,7 @@ use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
+use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -60,7 +61,10 @@ class ConfigProvider
                     Application::class => [
                         Factory\RoutesDelegator::class,
                     ]
-                ]
+                ],
+                'factories' => [
+                    'UserInputFilter' => ProxyFilterManagerFactory::class,
+                ],
             ],
             'input_filter_specs' => [
                 'UserInputFilter' => [

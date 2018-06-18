@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Zend\InputFilter;
 
+use Zend\InputFilter\InputFilter;
+use Zend\ServiceManager\Factory\InvokableFactory;
+
 class ConfigProvider
 {
     /**
@@ -11,12 +14,15 @@ class ConfigProvider
     public function __invoke()
     {
         return [
-            'dependencies' => [
+            'input_filters' => [
                 'aliases' => [
-                    'InputFilterManager' => ImprovedInputFilterPluginManager::class,
+                    'InputFilter' => ImprovedInputFilter::class,
+                    'inputFilter' => ImprovedInputFilter::class,
+                    'inputfilter' => ImprovedInputFilter::class,
+                    InputFilter::class => ImprovedInputFilter::class,
                 ],
                 'factories' => [
-                    ImprovedInputFilterPluginManager::class => ImprovedInputFilterPluginManagerFactory::class,
+                    ImprovedInputFilter::class => InvokableFactory::class,
                 ],
             ],
         ];

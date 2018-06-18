@@ -12,6 +12,7 @@ use SlayerBirden\DataFlowServer\Authorization\Service\PermissionManager;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
 use SlayerBirden\DataFlowServer\Authorization\Validation\ResourceValidator;
 use SlayerBirden\DataFlowServer\Authorization\Validation\ResourceValidatorFactory;
+use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\Expressive\Router\RouteCollector;
 use Zend\Hydrator\ClassMethods;
@@ -58,6 +59,9 @@ class ConfigProvider
                     PermissionManagerInterface::class => PermissionManager::class,
                     ResourceManagerInterface::class => ResourceManager::class,
                     HistoryManagementInterface::class => HistoryManagement::class,
+                ],
+                'factories' => [
+                    'PermissionsInputFilter' => ProxyFilterManagerFactory::class,
                 ],
             ],
             'validators' => [

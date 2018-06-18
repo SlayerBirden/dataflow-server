@@ -62,7 +62,7 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $userId = $request->getAttribute('id');
+        $userId = (int)$request->getAttribute('id');
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 

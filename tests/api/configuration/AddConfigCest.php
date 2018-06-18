@@ -1,7 +1,6 @@
 <?php
 
 use Codeception\Util\HttpCode;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 class AddConfigCest
 {
