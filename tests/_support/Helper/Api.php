@@ -48,7 +48,7 @@ class Api extends \Codeception\Module
             'token' => 'X-X-X',
             'active' => 1,
             'createdAt' => new \DateTime(),
-            'due' => new \DateTime('2120-01-01 00:00:00'),
+            'due' => new \DateTime('2130-01-01 00:00:00'),
         ]);
 
         $this->addPermissions($resources);

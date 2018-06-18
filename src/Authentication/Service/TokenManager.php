@@ -49,6 +49,7 @@ class TokenManager implements TokenManagerInterface
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function getToken(string $user, string $password, array $resources): Token
     {
@@ -122,8 +123,7 @@ class TokenManager implements TokenManagerInterface
         $grants = [];
         foreach ($resources as $resource) {
             if (!$this->permissionManager->isAllowed($resource, $user)) {
-                throw new PermissionDeniedException(sprintf('%s is not allowed for provided user.',
-                    $resource));
+                throw new PermissionDeniedException(sprintf('%s is not allowed for provided user.', $resource));
             }
             $grant = new Grant();
             $grant->setToken($token);

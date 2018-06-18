@@ -139,7 +139,7 @@ class CreatePasswordAction implements MiddlewareInterface
             ->matching(
                 Criteria::create()
                     ->where(Criteria::expr()->eq('owner', $user))
-                    ->andWhere(Criteria::expr()->eq('active', false))
+                    ->andWhere(Criteria::expr()->eq('active', true))
             );
 
         return !$collection->isEmpty();

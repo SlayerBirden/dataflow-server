@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use Codeception\Util\HttpCode;
+use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
+use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 class CreatePasswordCest
@@ -14,6 +16,19 @@ class CreatePasswordCest
             'last' => 'Tester2',
             'email' => 'test2@example.com',
         ]);
+
+        $user = $I->grabEntityFromRepository(User::class, ['id' => 2]);
+        $resources = [
+            'create_password',
+            'get_tmp_token',
+        ];
+        foreach ($resources as $key => $resource) {
+            $I->haveInRepository(Permission::class, [
+                'id' => ++$key,
+                'user' => $user,
+                'resource' => $resource,
+            ]);
+        }
     }
 
     /**
@@ -26,7 +41,7 @@ class CreatePasswordCest
         $this->authForUser($I, 2);
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPOST('/password', [
-            'password' => 'test123',
+            'password' => 'abra cadabra',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
@@ -85,19 +100,32 @@ class CreatePasswordCest
         ]);
     }
 
+    /**
+     * @param ApiTester $I
+     * @throws Exception
+     */
     public function createPasswordUserAlreadyHasPassword(ApiTester $I)
     {
         $I->wantTo('create password for user already having one');
+        $this->authForUser($I, 2);
         $I->haveHttpHeader('Content-Type', 'application/json');
+
+        $user = $I->grabEntityFromRepository(User::class, ['id' => 2]);
+        $I->haveInRepository(Password::class, [
+            'id' => 2,
+            'hash' => 'this is hash',
+            'createdAt' => new \DateTime(),
+            'due' => new \DateTime('+1 day'),
+            'active' => 1,
+            'owner' => $user,
+        ]);
         $I->sendPOST('/password', [
-            'password' => 'test123',
+            'password' => 'abra cadabra',
         ]);
         $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
         $I->seeResponseContainsJson([
             'success' => false,
-            'data' => [
-                'password' => null,
-            ],
+            'data' => [],
         ]);
     }
 
@@ -119,7 +147,11 @@ class CreatePasswordCest
             'success' => false,
             'data' => [
                 'password' => null,
-                'validation' => []
+                'validation' => [
+                    [
+                        'field' => 'password'
+                    ]
+                ],
             ],
         ]);
     }

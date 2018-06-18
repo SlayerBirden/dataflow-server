@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "2e2e14afd01247c03ba5316b832f093b",
+    "content-hash": "8dfc98a94fdcd576df696ee455ef0976",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -945,12 +945,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "796f56b6d31fe6e0dd9b4edbfd5bbbea155aaa14"
+                "reference": "41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/796f56b6d31fe6e0dd9b4edbfd5bbbea155aaa14",
-                "reference": "796f56b6d31fe6e0dd9b4edbfd5bbbea155aaa14",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8",
+                "reference": "41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8",
                 "shasum": ""
             },
             "require": {
@@ -1017,7 +1017,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-18T13:55:01+00:00"
+            "time": "2018-06-18T16:53:46+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -3143,6 +3143,47 @@
             "time": "2018-05-16T17:37:13+00:00"
         },
         {
+            "name": "flow/jsonpath",
+            "version": "0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/FlowCommunications/JSONPath.git",
+                "reference": "f0222818d5c938e4ab668ab2e2c079bd51a27112"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/FlowCommunications/JSONPath/zipball/f0222818d5c938e4ab668ab2e2c079bd51a27112",
+                "reference": "f0222818d5c938e4ab668ab2e2c079bd51a27112",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "peekmo/jsonpath": "dev-master",
+                "phpunit/phpunit": "^4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Flow\\JSONPath": "src/",
+                    "Flow\\JSONPath\\Test": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Stephen Frank",
+                    "email": "stephen@flowsa.com"
+                }
+            ],
+            "description": "JSONPath implementation for parsing, searching and flattening arrays",
+            "time": "2018-03-04T16:39:47+00:00"
+        },
+        {
             "name": "friendsofphp/php-cs-fixer",
             "version": "v2.12.1",
             "source": {
@@ -3239,12 +3280,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzaninotto/Faker.git",
-                "reference": "0e75a618115e7999b29ac12b8112fd259ad3fe7a"
+                "reference": "c0f369a281700a1e92f2fdf1ea8b0609cf8766bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/0e75a618115e7999b29ac12b8112fd259ad3fe7a",
-                "reference": "0e75a618115e7999b29ac12b8112fd259ad3fe7a",
+                "url": "https://api.github.com/repos/fzaninotto/Faker/zipball/c0f369a281700a1e92f2fdf1ea8b0609cf8766bd",
+                "reference": "c0f369a281700a1e92f2fdf1ea8b0609cf8766bd",
                 "shasum": ""
             },
             "require": {
@@ -3281,7 +3322,7 @@
                 "faker",
                 "fixtures"
             ],
-            "time": "2018-06-18T06:25:56+00:00"
+            "time": "2018-06-18T15:52:10+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

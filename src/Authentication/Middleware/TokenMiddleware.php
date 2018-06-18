@@ -66,7 +66,6 @@ class TokenMiddleware implements MiddlewareInterface
             'success' => false,
             'msg' => new DangerMessage('The permission to resource is not granted.'),
         ], 403);
-
     }
 
     private function getToken(string $authorization): ?Token

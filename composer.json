@@ -42,7 +42,8 @@
         "codeception/c3": "^2.4",
         "slayerbirden/df-code-generation": "dev-master",
         "friendsofphp/php-cs-fixer": "^2.11",
-        "squizlabs/php_codesniffer": "^3.2"
+        "squizlabs/php_codesniffer": "^3.2",
+        "flow/jsonpath": "^0.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
