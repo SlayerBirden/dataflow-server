@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "8dfc98a94fdcd576df696ee455ef0976",
+    "content-hash": "47e7d34d95e8cf111c577257e2333197",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -945,12 +945,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8"
+                "reference": "e5900c38147d13f0aa9072aaff7ff0f8dbb253f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8",
-                "reference": "41b8f5ebf4693fe1f3b652c883efc4a96cd99aa8",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e5900c38147d13f0aa9072aaff7ff0f8dbb253f3",
+                "reference": "e5900c38147d13f0aa9072aaff7ff0f8dbb253f3",
                 "shasum": ""
             },
             "require": {
@@ -1017,7 +1017,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2018-06-18T16:53:46+00:00"
+            "time": "2018-06-19T07:22:38+00:00"
         },
         {
             "name": "nikic/fast-route",
@@ -4972,8 +4972,14 @@
             "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "/srv/projects/df-code-generation",
-                "reference": "7e176c3723fe7c5c9ad63e1605f6e245a55717e2"
+                "url": "https://github.com/SlayerBirden/df-code-generator.git",
+                "reference": "d72d8dc45504054ff79889828b17837075160e73"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/d72d8dc45504054ff79889828b17837075160e73",
+                "reference": "d72d8dc45504054ff79889828b17837075160e73",
+                "shasum": ""
             },
             "require": {
                 "doctrine/orm": "^2.6",
@@ -4992,9 +4998,6 @@
                 "zendframework/zend-inputfilter": "^2.8",
                 "zendframework/zend-servicemanager": "^3.3"
             },
-            "bin": [
-                "bin/df-generator"
-            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -5005,6 +5008,7 @@
                     ]
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -5015,7 +5019,7 @@
                 }
             ],
             "description": "Code generation tool for DataFlow server",
-            "time": "2018-03-25T08:19:34+00:00"
+            "time": "2018-03-22T13:13:08+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
