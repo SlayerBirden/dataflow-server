@@ -96,7 +96,7 @@ class UpdatePasswordAction implements MiddlewareInterface
                 $this->logger->error((string)$exception);
                 $this->entityManager->rollback();
                 $msg = new DangerMessage('There was an error while updating password.');
-                $status = 400;
+                $status = 500;
             } catch (\Throwable $exception) {
                 $this->logger->error((string)$exception);
                 $this->entityManager->rollback();

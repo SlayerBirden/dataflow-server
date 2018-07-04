@@ -8,10 +8,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 
 class SetOwnerMiddleware implements MiddlewareInterface
 {
-    const OWNER_PARAM = 'owner';
     /**
      * @inheritdoc
      */
@@ -21,7 +21,7 @@ class SetOwnerMiddleware implements MiddlewareInterface
 
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
         if ($user) {
-            $data[self::OWNER_PARAM] = $user;
+            $data[ClaimedResourceInterface::OWNER_PARAM] = $user;
         }
 
         return $handler->handle($request->withParsedBody($data));

@@ -62,7 +62,7 @@ class InvalidateTokenAction implements MiddlewareInterface
                 'data' => [],
                 'success' => false,
                 'msg' => new DangerMessage('There was an error while invalidating token.'),
-            ], 400);
+            ], 500);
         }
     }
 }

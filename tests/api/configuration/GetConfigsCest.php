@@ -70,7 +70,7 @@ class GetConfigsCest
     {
         $I->wantTo('get all db configurations');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/configs');
+        $I->sendGET('/configs?l=100');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
             'success' => true,

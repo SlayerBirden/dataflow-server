@@ -15,10 +15,14 @@ class ValidationResponseFactory
      *
      * @param string $dataObjectName
      * @param InputFilterInterface $inputFilter
+     * @param mixed $value
      * @return ResponseInterface
      */
-    public function __invoke(string $dataObjectName, InputFilterInterface $inputFilter): ResponseInterface
-    {
+    public function __invoke(
+        string $dataObjectName,
+        InputFilterInterface $inputFilter,
+        $value = null
+    ): ResponseInterface {
         $validation = [];
         foreach ($inputFilter->getInvalidInput() as $key => $input) {
             $messages = $input->getMessages();
@@ -30,7 +34,7 @@ class ValidationResponseFactory
 
         return new JsonResponse([
             'data' => [
-                $dataObjectName => null,
+                $dataObjectName => $value,
                 'validation' => $validation,
             ],
             'success' => false,

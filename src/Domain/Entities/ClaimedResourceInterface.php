@@ -5,5 +5,7 @@ namespace SlayerBirden\DataFlowServer\Domain\Entities;
 
 interface ClaimedResourceInterface
 {
+    const OWNER_PARAM = 'owner';
+
     public function getOwner(): User;
 }

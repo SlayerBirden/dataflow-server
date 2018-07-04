@@ -51,19 +51,14 @@ class DeleteConfigAction implements MiddlewareInterface
         $status = 200;
 
         try {
-            if ($dbConfig) {
-                $this->entityManager->remove($dbConfig);
-                $this->entityManager->flush();
-                $msg = new SuccessMessage('Configuration removed.');
-                $deleted = true;
-            } else {
-                $msg = new DangerMessage('Could not find configuration to delete.');
-                $status = 404;
-            }
+            $this->entityManager->remove($dbConfig);
+            $this->entityManager->flush();
+            $msg = new SuccessMessage('Configuration removed.');
+            $deleted = true;
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $msg = new DangerMessage('There was an error while removing configuration.');
-            $status = 400;
+            $status = 500;
         }
 
         return new JsonResponse([

@@ -5,12 +5,12 @@ namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;

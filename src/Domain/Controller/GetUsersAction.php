@@ -7,13 +7,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 
@@ -48,7 +48,8 @@ class GetUsersAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getQueryParams();
-        $page = isset($data['p']) ? abs($data['p']) : null;
+        $page = isset($data['p']) ? abs($data['p']) : 1;
+        $limit = isset($data['l']) ? abs($data['l']) : 10;
         $filters = $data['f'] ?? [];
         $sorting = $data['s'] ?? [];
         $success = false;
@@ -56,7 +57,7 @@ class GetUsersAction implements MiddlewareInterface
         $status = 200;
 
         try {
-            $criteria = $this->buildCriteria($filters, $sorting, $page);
+            $criteria = $this->buildCriteria($filters, $sorting, $page, $limit);
 
             /** @var Collection $users */
             $users = $this->entityManager
@@ -90,13 +91,11 @@ class GetUsersAction implements MiddlewareInterface
         ], $status);
     }
 
-    private function buildCriteria(array $filters = [], array $sorting = [], ?int $page, int $limit = 10): Criteria
+    private function buildCriteria(array $filters = [], array $sorting = [], int $page = 1, int $limit = 10): Criteria
     {
         $criteria = Criteria::create();
-        if ($page !== null) {
-            $criteria->setFirstResult(($page - 1) * $limit)
-                ->setMaxResults($limit);
-        }
+        $criteria->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
         foreach ($filters as $key => $value) {
             $criteria->andWhere(Criteria::expr()->contains($key, $value));
         }

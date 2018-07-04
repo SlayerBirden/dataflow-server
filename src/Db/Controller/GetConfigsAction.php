@@ -49,7 +49,8 @@ class GetConfigsAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getQueryParams();
-        $page = isset($data['p']) ? abs($data['p']) : null;
+        $page = isset($data['p']) ? abs($data['p']) : 1;
+        $limit = isset($data['l']) ? abs($data['l']) : 10;
         $filters = $data['f'] ?? [];
         $sorting = $data['s'] ?? [];
         $success = false;
@@ -72,7 +73,7 @@ class GetConfigsAction implements MiddlewareInterface
         $filters['owner'] = $currentOwner;
 
         try {
-            $criteria = $this->buildCriteria($filters, $sorting, $page);
+            $criteria = $this->buildCriteria($filters, $sorting, $page, $limit);
 
             /** @var Collection $configs */
             $configs = $this->entityManager
@@ -105,13 +106,15 @@ class GetConfigsAction implements MiddlewareInterface
         ], $status);
     }
 
-    private function buildCriteria(array $filters = [], array $sorting = [], ?int $page, int $limit = 10): Criteria
-    {
+    private function buildCriteria(
+        array $filters = [],
+        array $sorting = [],
+        int $page = 1,
+        int $limit = 10
+    ): Criteria {
         $criteria = Criteria::create();
-        if ($page !== null) {
-            $criteria->setFirstResult(($page - 1) * $limit)
-                ->setMaxResults($limit);
-        }
+        $criteria->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
         foreach ($filters as $key => $value) {
             if (is_string($value)) {
                 $criteria->andWhere(Criteria::expr()->contains($key, $value));

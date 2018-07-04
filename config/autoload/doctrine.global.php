@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 return [
     'dependencies' => [
-        'factories'  => [
+        'factories' => [
             \Doctrine\ORM\EntityManager::class => \SlayerBirden\DataFlowServer\Doctrine\EntityManagerFactory::class,
-            \Doctrine\ORM\Mapping\UnderscoreNamingStrategy::class => \Zend\ServiceManager\Factory\InvokableFactory::class,
+            \Doctrine\ORM\Mapping\UnderscoreNamingStrategy::class =>
+                \Zend\ServiceManager\Factory\InvokableFactory::class,
         ],
         'aliases' => [
             \Doctrine\ORM\EntityManagerInterface::class => \Doctrine\ORM\EntityManager::class,

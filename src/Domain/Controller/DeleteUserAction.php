@@ -5,14 +5,14 @@ namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 
@@ -55,7 +55,7 @@ class DeleteUserAction implements MiddlewareInterface
             if ($user) {
                 $this->entityManager->remove($user);
                 $this->entityManager->flush();
-                $msg = new SuccessMessage('User deleted');
+                $msg = new SuccessMessage('User was deleted');
                 $deleted = true;
             } else {
                 $msg = new SuccessMessage('Could not find user.');

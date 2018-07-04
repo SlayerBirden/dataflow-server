@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydrationInterface;
@@ -65,7 +66,6 @@ class AddConfigAction implements MiddlewareInterface
         $this->inputFilter->setData($data);
 
         $message = null;
-        $validation = [];
         $created = false;
         $status = 200;
 
@@ -82,25 +82,17 @@ class AddConfigAction implements MiddlewareInterface
             } catch (ORMException $exception) {
                 $this->logger->error((string)$exception);
                 $message = new DangerMessage('Error during creation operation.');
-                $status = 400;
+                $status = 500;
             }
         } else {
-            $message = new DangerMessage('There were validation errors.');
-            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
-                $messages = $input->getMessages();
-                $validation[] = [
-                    'field' => $key,
-                    'msg' => reset($messages)
-                ];
-            }
-            $status = 400;
+            return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
 
         return new JsonResponse([
             'msg' => $message,
             'success' => $created,
             'data' => [
-                'validation' => $validation,
+                'validation' => [],
                 'configuration' => !empty($config) ? $this->extractor->extract($config) : null,
             ]
         ], $status);

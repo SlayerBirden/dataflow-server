@@ -7,15 +7,16 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Exception\NonExistingEntity;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydratorInterface;
@@ -95,14 +96,7 @@ class UpdateUserAction implements MiddlewareInterface
                 $status = 400;
             }
         } else {
-            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
-                $messages = $input->getMessages();
-                $validation[] = [
-                    'field' => $key,
-                    'msg' => reset($messages)
-                ];
-            }
-            $status = 400;
+            return (new ValidationResponseFactory())('user', $this->inputFilter);
         }
 
         return new JsonResponse([
@@ -122,9 +116,7 @@ class UpdateUserAction implements MiddlewareInterface
         if (!$user) {
             throw new NonExistingEntity(sprintf('Could not find user by id %d.', $id));
         }
-        if (isset($data['id'])) {
-            unset($data['id']);
-        }
+        unset($data['id']);
         $this->hydrator->hydrate($data, $user);
 
         return $user;

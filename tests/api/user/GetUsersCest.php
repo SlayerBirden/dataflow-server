@@ -21,7 +21,7 @@ class GetUsersCest
     {
         $I->wantTo('get all users');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendGET('/users');
+        $I->sendGET('/users?l=100');
         $I->seeResponseCodeIs(HttpCode::OK);
         $usersJson = [];
         foreach (range(2, 11) as $i) {

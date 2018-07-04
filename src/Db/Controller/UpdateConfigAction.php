@@ -15,10 +15,10 @@ use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydrationInterface;
-use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class UpdateConfigAction implements MiddlewareInterface
@@ -65,20 +65,9 @@ class UpdateConfigAction implements MiddlewareInterface
     {
         $data = $request->getParsedBody();
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        if (!$dbConfig) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Could not find Configuration.'),
-                'success' => false,
-                'data' => [
-                    'configuration' => null,
-                ]
-            ], 404);
-        }
-
         $this->inputFilter->setData($data);
 
         $message = null;
-        $validation = [];
         $updated = false;
         $status = 200;
 
@@ -98,15 +87,7 @@ class UpdateConfigAction implements MiddlewareInterface
                 $status = 400;
             }
         } else {
-            $message = new DangerMessage('There were validation errors.');
-            foreach ($this->inputFilter->getInvalidInput() as $key => $input) {
-                $messages = $input->getMessages();
-                $validation[] = [
-                    'field' => $key,
-                    'msg' => reset($messages)
-                ];
-            }
-            $status = 400;
+            return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
 
         return new JsonResponse([
@@ -114,16 +95,14 @@ class UpdateConfigAction implements MiddlewareInterface
             'success' => $updated,
             'data' => [
                 'configuration' => !empty($config) ? $this->extraction->extract($config) : null,
-                'validation' => $validation,
+                'validation' => [],
             ]
         ], $status);
     }
 
     private function getConfig(DbConfiguration $oldConfig, array $data): DbConfiguration
     {
-        if (isset($data['id'])) {
-            unset($data['id']);
-        }
+        unset($data['id']);
         $this->hydrator->hydrate($data, $oldConfig);
 
         return $oldConfig;
