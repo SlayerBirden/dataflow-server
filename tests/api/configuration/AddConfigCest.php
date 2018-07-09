@@ -1,6 +1,7 @@
 <?php
 
 use Codeception\Util\HttpCode;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ObscuredStrategy;
 
 class AddConfigCest
 {
@@ -66,7 +67,7 @@ class AddConfigCest
                     'title' => 'Test config',
                     'dbname' => 'test',
                     'user' => 'test-user',
-                    'password' => 'test-pwd',
+                    'password' => ObscuredStrategy::OBSCURED_STRING,
                     'port' => '3306',
                     'host' => 'localhost',
                     'driver' => 'pdo_mysql'

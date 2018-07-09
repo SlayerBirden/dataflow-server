@@ -7,13 +7,15 @@ use Zend\Hydrator\Strategy\StrategyInterface;
 
 class ObscuredStrategy implements StrategyInterface
 {
+    const OBSCURED_STRING = '*****';
+
     /**
      * @inheritdoc
      */
     public function extract($value)
     {
         if ($value !== null) {
-            return '*****';
+            return self::OBSCURED_STRING;
         }
 
         return $value;
