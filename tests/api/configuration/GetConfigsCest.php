@@ -186,4 +186,19 @@ class GetConfigsCest
             ]
         ]);
     }
+
+    public function getWrongFilterUsers(ApiTester $I)
+    {
+        $I->wantTo('attempt to get configurations with wrong filters');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendGET('/configs?f[abracadabra]=30');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'success' => false,
+            'data' => [
+                'configurations' => [],
+                'count' => 0,
+            ]
+        ]);
+    }
 }

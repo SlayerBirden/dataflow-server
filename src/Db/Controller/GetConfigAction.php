@@ -8,21 +8,20 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 
 class GetConfigAction implements MiddlewareInterface
 {
     /**
-     * @var ExtractionInterface
+     * @var HydratorInterface
      */
-    private $extraction;
+    private $hydrator;
 
     public function __construct(
-        ExtractionInterface $extraction
+        HydratorInterface $hydrator
     ) {
-        $this->extraction = $extraction;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -32,19 +31,9 @@ class GetConfigAction implements MiddlewareInterface
     {
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
-        if (!$dbConfig) {
-            return new JsonResponse([
-                'data' => [
-                    'configuration' => null,
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('Could not load DB Configuration.'),
-            ], 400);
-        }
-
         return new JsonResponse([
             'data' => [
-                'configuration' => $this->extraction->extract($dbConfig),
+                'configuration' => $this->hydrator->extract($dbConfig),
             ],
             'success' => true,
             'msg' => null,

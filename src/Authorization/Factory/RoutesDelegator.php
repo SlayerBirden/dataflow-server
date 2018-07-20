@@ -33,6 +33,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->put('/permissions/{id:\d+}', [
             TokenMiddleware::class,
+            'UserResourceMiddleware',
             BodyParamsMiddleware::class,
             SetOwnerMiddleware::class,
             SavePermissionsAction::class

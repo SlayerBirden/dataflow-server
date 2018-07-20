@@ -13,12 +13,14 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Authorization\HistoryManagementInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class SavePermissionsAction implements MiddlewareInterface
@@ -40,22 +42,22 @@ class SavePermissionsAction implements MiddlewareInterface
      */
     private $historyManagement;
     /**
-     * @var ExtractionInterface
+     * @var HydratorInterface
      */
-    private $extraction;
+    private $hydrator;
 
     public function __construct(
         EntityManager $entityManager,
         LoggerInterface $logger,
         InputFilterInterface $inputFilter,
         HistoryManagementInterface $historyManagement,
-        ExtractionInterface $extraction
+        HydratorInterface $hydrator
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->inputFilter = $inputFilter;
         $this->historyManagement = $historyManagement;
-        $this->extraction = $extraction;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -64,53 +66,45 @@ class SavePermissionsAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
-        $userId = (int)$request->getAttribute('id');
+        $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
         $this->inputFilter->setData($data);
-        if ($this->inputFilter->isValid()) {
-            $this->entityManager->beginTransaction();
-            try {
-                /** @var User $user */
-                $user = $this->entityManager->find(User::class, $userId);
-                if (!$user) {
-                    return new JsonResponse([
-                        'msg' => new DangerMessage('Could not find user by provided ID.'),
-                        'data' => [
-                            'permissions' => [],
-                        ],
-                        'success' => false,
-                    ], 400);
-                }
-                $permissions = $this->processResources($user, $data['owner'], ...$data['resources']);
-                if (empty($permissions)) {
-                    $msg = new SuccessMessage('No changes detected. The input is identical to the storage.');
-                } else {
-                    $this->entityManager->flush();
-                    $this->entityManager->commit();
-                    $msg = new SuccessMessage('Successfully set permissions to resources.');
-                }
-
-                return new JsonResponse([
-                    'msg' => $msg,
-                    'data' => [
-                        'permissions' => array_map([$this->extraction, 'extract'], $permissions),
-                    ],
-                    'success' => true,
-                ], 200);
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $this->entityManager->rollback();
-
-                return new JsonResponse([
-                    'msg' => new DangerMessage('There was an error while setting the permissions.'),
-                    'data' => [
-                        'permissions' => [],
-                    ],
-                    'success' => false,
-                ], 400);
-            }
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('permissions', $this->inputFilter, []);
+        }
+        $this->entityManager->beginTransaction();
+        try {
+            $permissions = $this->processResources(
+                $user,
+                $data[ClaimedResourceInterface::OWNER_PARAM],
+                ...$data['resources']
+            );
+            if (empty($permissions)) {
+                $msg = new SuccessMessage('No changes detected. The input is identical to the storage.');
+            } else {
+                $this->entityManager->flush();
+                $this->entityManager->commit();
+                $msg = new SuccessMessage('Successfully set permissions to resources.');
+            }
+
+            return new JsonResponse([
+                'msg' => $msg,
+                'data' => [
+                    'permissions' => array_map([$this->hydrator, 'extract'], $permissions),
+                ],
+                'success' => true,
+            ], 200);
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            $this->entityManager->rollback();
+
+            return new JsonResponse([
+                'msg' => new DangerMessage('There was an error while setting the permissions.'),
+                'data' => [
+                    'permissions' => [],
+                ],
+                'success' => false,
+            ], 400);
         }
     }
 
@@ -152,7 +146,7 @@ class SavePermissionsAction implements MiddlewareInterface
      * @param $result
      * @throws ORMException
      */
-    private function processItemsToRemove($collection, $toRemove, $owner, &$result)
+    private function processItemsToRemove($collection, $toRemove, $owner, &$result): void
     {
         /** @var Permission $permission */
         foreach ($collection as $permission) {
@@ -175,7 +169,7 @@ class SavePermissionsAction implements MiddlewareInterface
      * @param $result
      * @throws ORMException
      */
-    private function processItemsToAdd($toAdd, $user, $owner, &$result)
+    private function processItemsToAdd($toAdd, $user, $owner, &$result): void
     {
         foreach ($toAdd as $resource) {
             $permission = new Permission();

@@ -16,7 +16,7 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 
 class GetConfigsAction implements MiddlewareInterface
 {
@@ -29,18 +29,18 @@ class GetConfigsAction implements MiddlewareInterface
      */
     private $logger;
     /**
-     * @var ExtractionInterface
+     * @var HydratorInterface
      */
-    private $extraction;
+    private $hydrator;
 
     public function __construct(
         EntityManager $entityManager,
         LoggerInterface $logger,
-        ExtractionInterface $extraction
+        HydratorInterface $hydrator
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
-        $this->extraction = $extraction;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -53,9 +53,6 @@ class GetConfigsAction implements MiddlewareInterface
         $limit = isset($data['l']) ? abs($data['l']) : 10;
         $filters = $data['f'] ?? [];
         $sorting = $data['s'] ?? [];
-        $success = false;
-        $msg = null;
-        $status = 200;
 
 
         $currentOwner = $request->getAttribute(TokenMiddleware::USER_PARAM);
@@ -82,28 +79,38 @@ class GetConfigsAction implements MiddlewareInterface
             // before collection load to count all records without pagination
             $count = $configs->count();
             if ($count > 0) {
-                $arrayConfigs = array_map(function ($user) {
-                    return $this->extraction->extract($user);
+                $arrayConfigs = array_map(function ($config) {
+                    return $this->hydrator->extract($config);
                 }, $configs->toArray());
-                $success = true;
+                return new JsonResponse([
+                    'data' => [
+                        'configurations' => $arrayConfigs,
+                        'count' => $count,
+                    ],
+                    'success' => true,
+                    'msg' => null,
+                ], 200);
             } else {
-                $msg = new DangerMessage('Could not find configurations using given conditions.');
-                $status = 404;
+                return new JsonResponse([
+                    'data' => [
+                        'configurations' => [],
+                        'count' => 0,
+                    ],
+                    'success' => false,
+                    'msg' => new DangerMessage('Could not find configurations using given conditions.'),
+                ], 404);
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $msg = new DangerMessage('Could not fetch configs.');
-            $status = 400;
+            return new JsonResponse([
+                'data' => [
+                    'configurations' => [],
+                    'count' => 0,
+                ],
+                'success' => false,
+                'msg' => new DangerMessage('There was an error while fetching configurations.'),
+            ], 400);
         }
-
-        return new JsonResponse([
-            'data' => [
-                'configurations' => $arrayConfigs ?? [],
-                'count' => $count ?? 0,
-            ],
-            'success' => $success,
-            'msg' => $msg,
-        ], $status);
     }
 
     private function buildCriteria(

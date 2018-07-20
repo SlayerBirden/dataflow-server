@@ -17,8 +17,7 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
-use Zend\Hydrator\HydrationInterface;
+use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class UpdateConfigAction implements MiddlewareInterface
@@ -28,15 +27,11 @@ class UpdateConfigAction implements MiddlewareInterface
      */
     private $entityManager;
     /**
-     * @var ExtractionInterface
-     */
-    private $extraction;
-    /**
      * @var LoggerInterface
      */
     private $logger;
     /**
-     * @var HydrationInterface
+     * @var HydratorInterface
      */
     private $hydrator;
     /**
@@ -46,16 +41,14 @@ class UpdateConfigAction implements MiddlewareInterface
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        HydrationInterface $hydrator,
+        HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
-        LoggerInterface $logger,
-        ExtractionInterface $extraction
+        LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
-        $this->extraction = $extraction;
     }
 
     /**
@@ -67,44 +60,48 @@ class UpdateConfigAction implements MiddlewareInterface
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $this->inputFilter->setData($data);
 
-        $message = null;
-        $updated = false;
-        $status = 200;
-
-        if ($this->inputFilter->isValid()) {
-            try {
-                $config = $this->getConfig($dbConfig, $data);
-                $this->entityManager->persist($config);
-                $this->entityManager->flush();
-                $message = new SuccessMessage('Configuration has been updated!');
-                $updated = true;
-            } catch (ORMInvalidArgumentException $exception) {
-                $message = new DangerMessage($exception->getMessage());
-                $status = 400;
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $message = new DangerMessage('Error while updating configuration.');
-                $status = 400;
-            }
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
-
-        return new JsonResponse([
-            'msg' => $message,
-            'success' => $updated,
-            'data' => [
-                'configuration' => !empty($config) ? $this->extraction->extract($config) : null,
-                'validation' => [],
-            ]
-        ], $status);
+        try {
+            $config = $this->getConfig($dbConfig, $data);
+            $this->entityManager->persist($config);
+            $this->entityManager->flush();
+            return new JsonResponse([
+                'msg' => new SuccessMessage('Configuration has been updated!'),
+                'success' => true,
+                'data' => [
+                    'configuration' => $this->hydrator->extract($config),
+                    'validation' => [],
+                ]
+            ], 200);
+        } catch (ORMInvalidArgumentException $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage($exception->getMessage()),
+                'success' => false,
+                'data' => [
+                    'configuration' => null,
+                    'validation' => [],
+                ]
+            ], 400);
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            return new JsonResponse([
+                'msg' => new DangerMessage('Error while updating configuration.'),
+                'success' => false,
+                'data' => [
+                    'configuration' => null,
+                    'validation' => [],
+                ]
+            ], 400);
+        }
     }
 
-    private function getConfig(DbConfiguration $oldConfig, array $data): DbConfiguration
+    private function getConfig(DbConfiguration $configuration, array $data): DbConfiguration
     {
         unset($data['id']);
-        $this->hydrator->hydrate($data, $oldConfig);
+        $this->hydrator->hydrate($data, $configuration);
 
-        return $oldConfig;
+        return $configuration;
     }
 }

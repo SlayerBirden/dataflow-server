@@ -3,16 +3,18 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Factory;
 
-use Psr\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ObscuredStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\RegexpObscuredStrategy;
 use Zend\Hydrator\ClassMethods;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
-class DbConfigExtractionFactory
+class DbConfigHydratorFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container): ExtractionInterface
+    /**
+     * @inheritdoc
+     */
+    public function __invoke(\Interop\Container\ContainerInterface $container, $requestedName, array $options = null)
     {
         $extraction = new ClassMethods();
         $extraction->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));

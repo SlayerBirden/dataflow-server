@@ -10,7 +10,6 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
-use SlayerBirden\DataFlowServer\Db\Middleware\DbConfigResourceMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use Zend\Expressive\Application;
@@ -30,7 +29,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->get('/config/{id:\d+}', [
             TokenMiddleware::class,
-            DbConfigResourceMiddleware::class,
+            'DbConfigResourceMiddleware',
             GetConfigAction::class
         ], 'get_config');
 
@@ -48,7 +47,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->put('/config/{id:\d+}', [
             TokenMiddleware::class,
-            DbConfigResourceMiddleware::class,
+            'DbConfigResourceMiddleware',
             ValidateOwnerMiddleware::class,
             BodyParamsMiddleware::class,
             SetOwnerMiddleware::class,
@@ -57,7 +56,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->delete('/config/{id:\d+}', [
             TokenMiddleware::class,
-            DbConfigResourceMiddleware::class,
+            'DbConfigResourceMiddleware',
             ValidateOwnerMiddleware::class,
             DeleteConfigAction::class
         ], 'delete_config');

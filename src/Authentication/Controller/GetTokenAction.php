@@ -50,36 +50,42 @@ class GetTokenAction implements MiddlewareInterface
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 
-        if ($this->inputFilter->isValid()) {
-            try {
-                $token = $this->tokenManager->getToken($data['user'], $data['password'], $data['resources']);
-                return new JsonResponse([
-                    'data' => [
-                        'token' => $this->extraction->extract($token),
-                        'validation' => [],
-                    ],
-                    'success' => true,
-                    'msg' => new SuccessMessage('Token successfully creaeted'),
-                ], 200);
-            } catch (InvalidCredentialsException $exception) {
-                $status = 401;
-                $msg = new DangerMessage(
-                    'Invalid credentials provided. Please double check your user and password.'
-                );
-            } catch (PermissionDeniedException $exception) {
-                $status = 403;
-                $msg = new DangerMessage('Provided user does not have permission to access requested resources.');
-            }
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('token', $this->inputFilter);
         }
 
-        return new JsonResponse([
-            'data' => [
-                'token' => null,
-            ],
-            'success' => false,
-            'msg' => $msg,
-        ], $status);
+        try {
+            $token = $this->tokenManager->getToken($data['user'], $data['password'], $data['resources']);
+            return new JsonResponse([
+                'data' => [
+                    'token' => $this->extraction->extract($token),
+                    'validation' => [],
+                ],
+                'success' => true,
+                'msg' => new SuccessMessage('Token successfully creaeted'),
+            ], 200);
+        } catch (InvalidCredentialsException $exception) {
+            return new JsonResponse([
+                'data' => [
+                    'token' => null,
+                    'validation' => [],
+                ],
+                'success' => false,
+                'msg' => new DangerMessage(
+                    'Invalid credentials provided. Please double check your user and password.'
+                ),
+            ], 401);
+        } catch (PermissionDeniedException $exception) {
+            return new JsonResponse([
+                'data' => [
+                    'token' => null,
+                    'validation' => [],
+                ],
+                'success' => false,
+                'msg' => new DangerMessage(
+                    'Provided user does not have permission to access requested resources.'
+                ),
+            ], 403);
+        }
     }
 }

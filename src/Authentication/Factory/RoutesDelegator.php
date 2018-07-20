@@ -10,9 +10,9 @@ use SlayerBirden\DataFlowServer\Authentication\Controller\GetTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokensAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\UpdatePasswordAction;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\ActivePasswordMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\PasswordConfirmationMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use Zend\Expressive\Application;
@@ -33,6 +33,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
             '/gettmptoken/{id:\d+}',
             [
                 TokenMiddleware::class,
+                'UserResourceMiddleware',
                 BodyParamsMiddleware::class,
                 GenerateTemporaryTokenAction::class,
             ],
@@ -44,6 +45,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
             [
                 TokenMiddleware::class,
                 BodyParamsMiddleware::class,
+                ActivePasswordMiddleware::class,
                 SetOwnerMiddleware::class,
                 CreatePasswordAction::class,
             ],
@@ -63,7 +65,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
             '/invalidatetoken/{id:\d+}',
             [
                 TokenMiddleware::class,
-                TokenResourceMiddleware::class,
+                'TokenResourceMiddleware',
                 ValidateOwnerMiddleware::class,
                 InvalidateTokenAction::class,
             ],
@@ -85,6 +87,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
             [
                 TokenMiddleware::class,
                 BodyParamsMiddleware::class,
+                ValidateOwnerMiddleware::class,
                 PasswordConfirmationMiddleware::class,
                 SetOwnerMiddleware::class,
                 UpdatePasswordAction::class,

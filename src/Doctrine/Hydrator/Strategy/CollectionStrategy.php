@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy;
 
 use Doctrine\Common\Collections\Collection;
-use ReflectionClass;
 use Zend\Hydrator\Exception\InvalidArgumentException;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\Strategy\StrategyInterface;
@@ -76,13 +75,11 @@ class CollectionStrategy implements StrategyInterface
             ));
         }
 
-        $reflection = new ReflectionClass($this->objectClassName);
-
-        return array_map(function ($data) use ($reflection) {
+        return array_map(function ($data) {
             return $this->objectHydrator->hydrate(
                 $data,
-                $reflection->newInstanceWithoutConstructor()
+                new $this->objectClassName
             );
-        }, $value);
+        }, $value->toArray());
     }
 }

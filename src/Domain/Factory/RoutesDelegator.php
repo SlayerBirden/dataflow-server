@@ -27,6 +27,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->get('/user/{id:\d+}', [
             TokenMiddleware::class,
+            'UserResourceMiddleware',
             GetUserAction::class
         ], 'get_user');
 
@@ -43,12 +44,14 @@ class RoutesDelegator implements DelegatorFactoryInterface
 
         $app->put('/user/{id:\d+}', [
             TokenMiddleware::class,
+            'UserResourceMiddleware',
             BodyParamsMiddleware::class,
             UpdateUserAction::class
         ], 'update_user');
 
         $app->delete('/user/{id:\d+}', [
             TokenMiddleware::class,
+            'UserResourceMiddleware',
             DeleteUserAction::class
         ], 'delete_user');
 

@@ -13,12 +13,12 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Exception\NonExistingEntity;
+use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -40,23 +40,17 @@ class UpdateUserAction implements MiddlewareInterface
      * @var LoggerInterface
      */
     private $logger;
-    /**
-     * @var ExtractionInterface
-     */
-    private $extraction;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
-        LoggerInterface $logger,
-        ExtractionInterface $extraction
+        LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
-        $this->extraction = $extraction;
     }
 
     /**
@@ -65,57 +59,66 @@ class UpdateUserAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
-        $id = (int)$request->getAttribute('id');
-
+        $requestUser = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $this->inputFilter->setData($data);
 
-        $message = null;
-        $validation = [];
-        $updated = false;
-        $status = 200;
-
-        if ($this->inputFilter->isValid()) {
-            try {
-                $user = $this->getUser($id, $data);
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
-                $message = new SuccessMessage('User has been updated!');
-                $updated = true;
-            } catch (NonExistingEntity $exception) {
-                $message = new DangerMessage($exception->getMessage());
-                $status = 404;
-            } catch (ORMInvalidArgumentException $exception) {
-                $message = new DangerMessage($exception->getMessage());
-                $status = 400;
-            } catch (UniqueConstraintViolationException $exception) {
-                $message = new DangerMessage('Email address already taken.');
-                $status = 400;
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $message = new DangerMessage('Error saving user.');
-                $status = 400;
-            }
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('user', $this->inputFilter);
         }
-
-        return new JsonResponse([
-            'msg' => $message,
-            'success' => $updated,
-            'data' => [
-                'validation' => $validation,
-                'user' => isset($user) ? $this->extraction->extract($user) : null,
-            ]
-        ], $status);
+        try {
+            $user = $this->getUser($requestUser, $data);
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+            return new JsonResponse([
+                'msg' => new SuccessMessage('User has been updated!'),
+                'success' => true,
+                'data' => [
+                    'validation' => [],
+                    'user' => $this->hydrator->extract($user),
+                ]
+            ], 200);
+        } catch (NonExistingEntity $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage($exception->getMessage()),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 404);
+        } catch (ORMInvalidArgumentException $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage($exception->getMessage()),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 400);
+        } catch (UniqueConstraintViolationException $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Email address already taken.'),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => $this->hydrator->extract($user),
+                ]
+            ], 400);
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            return new JsonResponse([
+                'msg' => new DangerMessage('Error saving user.'),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 400);
+        }
     }
 
-    private function getUser(int $id, array $data): User
+    private function getUser(User $user, array $data): User
     {
-        /** @var User $user */
-        $user = $this->entityManager->find(User::class, $id);
-        if (!$user) {
-            throw new NonExistingEntity(sprintf('Could not find user by id %d.', $id));
-        }
         unset($data['id']);
         $this->hydrator->hydrate($data, $user);
 

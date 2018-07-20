@@ -13,13 +13,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
-use SlayerBirden\DataFlowServer\Authentication\Hydrator\PasswordHydrator;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
 class UpdatePasswordAction implements MiddlewareInterface
@@ -37,32 +36,26 @@ class UpdatePasswordAction implements MiddlewareInterface
      */
     private $passwordManager;
     /**
-     * @var ExtractionInterface
-     */
-    private $extraction;
-    /**
      * @var InputFilterInterface
      */
     private $inputFilter;
     /**
-     * @var PasswordHydrator
+     * @var HydratorInterface
      */
-    private $hydration;
+    private $hydrator;
 
     public function __construct(
         EntityManager $entityManager,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         PasswordManagerInterface $passwordManager,
-        ExtractionInterface $extraction,
-        PasswordHydrator $hydration
+        HydratorInterface $hydrator
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->passwordManager = $passwordManager;
-        $this->extraction = $extraction;
         $this->inputFilter = $inputFilter;
-        $this->hydration = $hydration;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -73,43 +66,44 @@ class UpdatePasswordAction implements MiddlewareInterface
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 
-        if ($this->inputFilter->isValid()) {
-            $this->entityManager->beginTransaction();
-            try {
-                $pw = $this->updatePassword($data);
-                $this->entityManager->flush();
-                $this->entityManager->commit();
-
-                return new JsonResponse([
-                    'data' => [
-                        'password' => $this->extraction->extract($pw),
-                        'validation' => [],
-                    ],
-                    'success' => true,
-                    'msg' => new SuccessMessage('Password successfully updated.'),
-                ], 200);
-            } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
-                $this->entityManager->rollback();
-                $msg = new DangerMessage($exception->getMessage());
-                $status = 400;
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $this->entityManager->rollback();
-                $msg = new DangerMessage('There was an error while updating password.');
-                $status = 500;
-            } catch (\Throwable $exception) {
-                $this->logger->error((string)$exception);
-                $this->entityManager->rollback();
-                $msg = new DangerMessage('Unknown app error.');
-                $status = 500;
-            }
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => $msg,
-            ], $status);
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('password', $this->inputFilter);
+        }
+        $this->entityManager->beginTransaction();
+        try {
+            $pw = $this->updatePassword($data);
+            $this->entityManager->flush();
+            $this->entityManager->commit();
+
+            return new JsonResponse([
+                'data' => [
+                    'password' => $this->hydrator->extract($pw),
+                    'validation' => [],
+                ],
+                'success' => true,
+                'msg' => new SuccessMessage('Password successfully updated.'),
+            ], 200);
+        } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
+            $this->entityManager->rollback();
+            return new JsonResponse([
+                'data' => [
+                    'password' => null,
+                    'validation' => [],
+                ],
+                'success' => false,
+                'msg' => new DangerMessage($exception->getMessage()),
+            ], 400);
+        } catch (\Throwable $exception) {
+            $this->logger->error((string)$exception);
+            $this->entityManager->rollback();
+            return new JsonResponse([
+                'data' => [
+                    'password' => null,
+                    'validation' => [],
+                ],
+                'success' => false,
+                'msg' => new DangerMessage('There was an error while updating password.'),
+            ], 500);
         }
     }
 
@@ -122,7 +116,7 @@ class UpdatePasswordAction implements MiddlewareInterface
      */
     private function updatePassword(array $data): Password
     {
-        $hash = $this->passwordManager->getHash($data['password']);
+        $hash = $this->passwordManager->getHash($data['new_password']);
         $userPasswords = $this->entityManager
             ->getRepository(Password::class)
             ->matching(
@@ -142,6 +136,16 @@ class UpdatePasswordAction implements MiddlewareInterface
             }
         }
 
-        return $this->hydration->hydrate($data, new Password());
+        /** @var Password $password */
+        $data['password'] = $data['new_password'];
+        unset($data['new_password']);
+        $data['created_at'] = (new \DateTime())->format(\DateTime::RFC3339);
+        $data['due'] = (new \DateTime())->add(new \DateInterval('P1Y'))->format(\DateTime::RFC3339);
+        $data['active'] = $data['active'] ?? true;
+
+        $password = $this->hydrator->hydrate($data, new Password());
+        $this->entityManager->persist($password);
+
+        return $password;
     }
 }

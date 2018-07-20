@@ -10,12 +10,11 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
-use SlayerBirden\DataFlowServer\Db\Factory\DbConfigExtractionFactory;
-use SlayerBirden\DataFlowServer\Db\Middleware\DbConfigResourceMiddleware;
+use SlayerBirden\DataFlowServer\Db\Factory\DbConfigHydratorFactory;
+use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
-use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 
@@ -27,35 +26,29 @@ class ConfigProvider
             ConfigAbstractFactory::class => [
                 AddConfigAction::class => [
                     EntityManagerInterface::class,
-                    ClassMethods::class,
+                    'DbConfigHydrator',
                     'ConfigInputFilter',
                     LoggerInterface::class,
-                    'DbConfigExtraction',
                 ],
                 UpdateConfigAction::class => [
                     EntityManagerInterface::class,
-                    ClassMethods::class,
+                    'DbConfigHydrator',
                     'ConfigInputFilter',
                     LoggerInterface::class,
-                    'DbConfigExtraction',
                 ],
                 GetConfigsAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    'DbConfigExtraction',
+                    'DbConfigHydrator',
                 ],
                 GetConfigAction::class => [
-                    'DbConfigExtraction',
+                    'DbConfigHydrator',
                 ],
                 DeleteConfigAction::class => [
                     EntityManagerInterface::class,
                     LoggerInterface::class,
-                    'DbConfigExtraction',
+                    'DbConfigHydrator',
                 ],
-                DbConfigResourceMiddleware::class => [
-                    EntityManagerInterface::class,
-                    LoggerInterface::class,
-                ]
             ],
             'dependencies' => [
                 'delegators' => [
@@ -64,8 +57,9 @@ class ConfigProvider
                     ],
                 ],
                 'factories' => [
-                    'DbConfigExtraction' => DbConfigExtractionFactory::class,
+                    'DbConfigHydrator' => DbConfigHydratorFactory::class,
                     'ConfigInputFilter' => ProxyFilterManagerFactory::class,
+                    'DbConfigResourceMiddleware' => DbConfigResourceMiddlewareFactory::class,
                 ],
             ],
             'doctrine' => [

@@ -17,7 +17,6 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -39,23 +38,17 @@ class AddUserAction implements MiddlewareInterface
      * @var LoggerInterface
      */
     private $logger;
-    /**
-     * @var ExtractionInterface
-     */
-    private $extraction;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
-        LoggerInterface $logger,
-        ExtractionInterface $extraction
+        LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
-        $this->extraction = $extraction;
     }
 
     /**
@@ -66,40 +59,50 @@ class AddUserAction implements MiddlewareInterface
         $data = $request->getParsedBody();
         $this->inputFilter->setData($data);
 
-        $message = null;
-        $created = false;
-        $status = 200;
-
-        if ($this->inputFilter->isValid()) {
-            try {
-                $entity = $this->getEntity($data);
-                $this->entityManager->persist($entity);
-                $this->entityManager->flush();
-                $message = new SuccessMessage('User has been successfully created!');
-                $created = true;
-            } catch (ORMInvalidArgumentException $exception) {
-                $message = new DangerMessage($exception->getMessage());
-                $status = 400;
-            } catch (UniqueConstraintViolationException $exception) {
-                $message = new DangerMessage('Provided email already exists.');
-                $status = 400;
-            } catch (ORMException $exception) {
-                $this->logger->error((string)$exception);
-                $message = new DangerMessage('Error during creation operation.');
-                $status = 400;
-            }
-        } else {
+        if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('user', $this->inputFilter);
         }
-
-        return new JsonResponse([
-            'msg' => $message,
-            'success' => $created,
-            'data' => [
-                'validation' => [],
-                'user' => isset($entity) ? $this->extraction->extract($entity) : null,
-            ]
-        ], $status);
+        try {
+            $entity = $this->getEntity($data);
+            $this->entityManager->persist($entity);
+            $this->entityManager->flush();
+            return new JsonResponse([
+                'msg' => new SuccessMessage('User has been successfully created!'),
+                'success' => true,
+                'data' => [
+                    'validation' => [],
+                    'user' => $this->hydrator->extract($entity),
+                ]
+            ], 200);
+        } catch (ORMInvalidArgumentException $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage($exception->getMessage()),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 400);
+        } catch (UniqueConstraintViolationException $exception) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Provided email already exists.'),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 400);
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            return new JsonResponse([
+                'msg' => new DangerMessage('Error during creation operation.'),
+                'success' => false,
+                'data' => [
+                    'validation' => [],
+                    'user' => null,
+                ]
+            ], 400);
+        }
     }
 
     /**

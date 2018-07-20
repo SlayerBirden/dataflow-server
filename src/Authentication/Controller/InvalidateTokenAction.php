@@ -14,7 +14,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 
 class InvalidateTokenAction implements MiddlewareInterface
 {
@@ -27,15 +27,15 @@ class InvalidateTokenAction implements MiddlewareInterface
      */
     private $logger;
     /**
-     * @var ExtractionInterface
+     * @var HydratorInterface
      */
-    private $extraction;
+    private $hydrator;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, ExtractionInterface $extraction)
+    public function __construct(EntityManager $entityManager, LoggerInterface $logger, HydratorInterface $hydrator)
     {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
-        $this->extraction = $extraction;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -51,7 +51,7 @@ class InvalidateTokenAction implements MiddlewareInterface
             $this->entityManager->flush();
             return new JsonResponse([
                 'data' => [
-                    'token' => $this->extraction->extract($token),
+                    'token' => $this->hydrator->extract($token),
                 ],
                 'success' => true,
                 'msg' => new SuccessMessage('Token invalidated.'),

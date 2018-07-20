@@ -10,6 +10,7 @@ use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
+use SlayerBirden\DataFlowServer\Domain\Factory\UserResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
@@ -26,18 +27,14 @@ class ConfigProvider
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
-                    ClassMethods::class
                 ],
                 UpdateUserAction::class => [
                     EntityManagerInterface::class,
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
-                    ClassMethods::class,
                 ],
                 GetUserAction::class => [
-                    EntityManagerInterface::class,
-                    LoggerInterface::class,
                     ClassMethods::class,
                 ],
                 GetUsersAction::class => [
@@ -64,6 +61,7 @@ class ConfigProvider
                 ],
                 'factories' => [
                     'UserInputFilter' => ProxyFilterManagerFactory::class,
+                    'UserResourceMiddleware' => UserResourceMiddlewareFactory::class,
                 ],
             ],
             'input_filter_specs' => [

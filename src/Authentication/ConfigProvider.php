@@ -9,11 +9,14 @@ use SlayerBirden\DataFlowServer\Authentication\Controller\CreatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GenerateTemporaryTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GetTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
-use SlayerBirden\DataFlowServer\Authentication\Factory\PasswordExtractionFactory;
-use SlayerBirden\DataFlowServer\Authentication\Factory\TokenExtractionFactory;
-use SlayerBirden\DataFlowServer\Authentication\Hydrator\PasswordHydrator;
+use SlayerBirden\DataFlowServer\Authentication\Controller\UpdatePasswordAction;
+use SlayerBirden\DataFlowServer\Authentication\Factory\PasswordHydratorFactory;
+use SlayerBirden\DataFlowServer\Authentication\Factory\TokenHydratorFactory;
+use SlayerBirden\DataFlowServer\Authentication\Factory\TokenResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Authentication\Hydrator\Strategy\HashStrategy;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\ActivePasswordMiddleware;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\PasswordConfirmationMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenResourceMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authentication\Service\TokenManager;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
@@ -32,10 +35,19 @@ class ConfigProvider
                     'TokenInputFilter',
                     TokenManagerInterface::class,
                     LoggerInterface::class,
-                    'TokenExtraction',
+                    'TokenHydrator',
                 ],
                 TokenMiddleware::class => [
                     EntityManager::class,
+                ],
+                ActivePasswordMiddleware::class => [
+                    EntityManager::class,
+                ],
+                HashStrategy::class => [
+                    PasswordManager::class,
+                ],
+                PasswordConfirmationMiddleware::class => [
+                    PasswordManager::class,
                 ],
                 PasswordManager::class => [
                     EntityManager::class,
@@ -47,29 +59,28 @@ class ConfigProvider
                     LoggerInterface::class,
                     PermissionManagerInterface::class,
                 ],
-                PasswordHydrator::class => [
-                    PasswordManagerInterface::class,
-                ],
                 CreatePasswordAction::class => [
                     EntityManager::class,
                     'PasswordInputFilter',
                     LoggerInterface::class,
-                    'PasswordExtraction',
-                    PasswordHydrator::class,
+                    'PasswordHydrator',
+                ],
+                UpdatePasswordAction::class => [
+                    EntityManager::class,
+                    'UpdatePasswordInputFilter',
+                    LoggerInterface::class,
+                    PasswordManager::class,
+                    'PasswordHydrator',
                 ],
                 GetTokenAction::class => [
                     TokenManager::class,
-                    'TokenExtraction',
+                    'TokenHydrator',
                     'GetTokenInputFilter',
                 ],
                 InvalidateTokenAction::class => [
                     EntityManager::class,
                     LoggerInterface::class,
-                    'TokenExtraction',
-                ],
-                TokenResourceMiddleware::class => [
-                    EntityManager::class,
-                    LoggerInterface::class,
+                    'TokenHydrator',
                 ],
             ],
             'doctrine' => [
@@ -84,12 +95,13 @@ class ConfigProvider
                     ],
                 ],
                 'factories' => [
-                    'TokenExtraction' => TokenExtractionFactory::class,
-                    'PasswordExtraction' => PasswordExtractionFactory::class,
+                    'TokenHydrator' => TokenHydratorFactory::class,
+                    'PasswordHydrator' => PasswordHydratorFactory::class,
                     'TokenInputFilter' => ProxyFilterManagerFactory::class,
                     'PasswordInputFilter' => ProxyFilterManagerFactory::class,
                     'UpdatePasswordInputFilter' => ProxyFilterManagerFactory::class,
                     'GetTokenInputFilter' => ProxyFilterManagerFactory::class,
+                    'TokenResourceMiddleware' => TokenResourceMiddlewareFactory::class,
                 ],
                 'aliases' => [
                     TokenManagerInterface::class => TokenManager::class,

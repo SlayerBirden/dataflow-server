@@ -125,7 +125,6 @@ class CreatePasswordCest
         $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
         $I->seeResponseContainsJson([
             'success' => false,
-            'data' => [],
         ]);
     }
 

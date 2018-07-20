@@ -3,17 +3,21 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Factory;
 
-use Psr\Container\ContainerInterface;
+use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\CollectionStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\Strategy\BooleanStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
+use Zend\ServiceManager\Factory\FactoryInterface;
 
-class TokenExtractionFactory
+class TokenHydratorFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container)
+    /**
+     * @inheritdoc
+     */
+    public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         $extraction = new ClassMethods();
         $extraction->addStrategy('created_at', new DateTimeFormatterStrategy());

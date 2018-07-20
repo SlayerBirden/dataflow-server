@@ -14,7 +14,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
-use Zend\Hydrator\ExtractionInterface;
+use Zend\Hydrator\HydratorInterface;
 
 class DeleteConfigAction implements MiddlewareInterface
 {
@@ -27,18 +27,18 @@ class DeleteConfigAction implements MiddlewareInterface
      */
     private $logger;
     /**
-     * @var ExtractionInterface
+     * @var HydratorInterface
      */
-    private $extraction;
+    private $hydrator;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         LoggerInterface $logger,
-        ExtractionInterface $extraction
+        HydratorInterface $hydrator
     ) {
         $this->entityManager = $entityManager;
         $this->logger = $logger;
-        $this->extraction = $extraction;
+        $this->hydrator = $hydrator;
     }
 
     /**
@@ -47,26 +47,26 @@ class DeleteConfigAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        $deleted = false;
-        $status = 200;
 
         try {
             $this->entityManager->remove($dbConfig);
             $this->entityManager->flush();
-            $msg = new SuccessMessage('Configuration removed.');
-            $deleted = true;
+            return new JsonResponse([
+                'msg' => new SuccessMessage('Configuration removed.'),
+                'success' => true,
+                'data' => [
+                    'configuration' => $this->hydrator->extract($dbConfig),
+                ],
+            ], 200);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $msg = new DangerMessage('There was an error while removing configuration.');
-            $status = 500;
+            return new JsonResponse([
+                'msg' => new DangerMessage('There was an error while removing configuration.'),
+                'success' => false,
+                'data' => [
+                    'configuration' => null
+                ],
+            ], 500);
         }
-
-        return new JsonResponse([
-            'msg' => $msg,
-            'success' => $deleted,
-            'data' => [
-                'configuration' => !empty($dbConfig) ? $this->extraction->extract($dbConfig) : null
-            ],
-        ], $status);
     }
 }
