@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+namespace DataFlow\Tests\Unit\Logger;
 
 use Monolog\Handler\NoopHandler;
 use Zend\ServiceManager\Factory\InvokableFactory;

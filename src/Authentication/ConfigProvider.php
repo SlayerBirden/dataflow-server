@@ -9,6 +9,7 @@ use SlayerBirden\DataFlowServer\Authentication\Controller\CreatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GenerateTemporaryTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GetTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
+use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokensAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\UpdatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Factory\PasswordHydratorFactory;
 use SlayerBirden\DataFlowServer\Authentication\Factory\TokenHydratorFactory;
@@ -82,6 +83,11 @@ class ConfigProvider
                     LoggerInterface::class,
                     'TokenHydrator',
                 ],
+                InvalidateTokensAction::class => [
+                    EntityManager::class,
+                    LoggerInterface::class,
+                    'TokenHydrator',
+                ],
             ],
             'doctrine' => [
                 'paths' => [
@@ -112,11 +118,6 @@ class ConfigProvider
                 'TokenInputFilter' => [
                     'resources' => [
                         'required' => true,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
                         'validators' => [
                             [
                                 'name' => 'resourcesValidator',
@@ -153,11 +154,6 @@ class ConfigProvider
                 'GetTokenInputFilter' => [
                     'resources' => [
                         'required' => true,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
                         'validators' => [
                             [
                                 'name' => 'resourcesValidator',
@@ -178,7 +174,7 @@ class ConfigProvider
                             [
                                 'name' => 'notempty',
                             ],
-                        ]
+                        ],
                     ],
                 ],
             ],

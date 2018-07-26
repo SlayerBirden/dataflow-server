@@ -89,7 +89,7 @@ class BaseResourceMiddleware implements ResourceMiddlewareInterface
                     $this->dataObjectName => null,
                 ],
                 'success' => false,
-                'msg' => new DangerMessage('No id provided.'),
+                'msg' => new DangerMessage(sprintf('No %s provided.', $this->idAttributeName)),
             ], 400);
         }
     }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMException;
@@ -55,7 +56,7 @@ class TokenManager implements TokenManagerInterface
     {
         try {
             $user = $this->getByUsername($user);
-            if ($this->passwordManager->isValid($password, $user)) {
+            if ($this->passwordManager->isValidForUser($password, $user)) {
                 $token = new Token();
                 $now = new \DateTime();
                 // default token for 1 month
@@ -114,11 +115,11 @@ class TokenManager implements TokenManagerInterface
      * @param Token $token
      * @param array $resources
      * @param User $user
-     * @return Grant[]
+     * @return ArrayCollection|Grant[]
      * @throws PermissionDeniedException
      * @throws ORMException
      */
-    private function getGrants(Token $token, array $resources, User $user): array
+    private function getGrants(Token $token, array $resources, User $user): ArrayCollection
     {
         $grants = [];
         foreach ($resources as $resource) {
@@ -132,7 +133,7 @@ class TokenManager implements TokenManagerInterface
             $grants[] = $grant;
         }
 
-        return $grants;
+        return new ArrayCollection($grants);
     }
 
     /**

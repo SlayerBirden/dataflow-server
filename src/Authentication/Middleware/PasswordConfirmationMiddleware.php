@@ -43,7 +43,7 @@ class PasswordConfirmationMiddleware implements MiddlewareInterface
         }
 
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
-        if (!$this->passwordManager->isValid((string)$password, $user)) {
+        if (!$this->passwordManager->isValidForUser((string)$password, $user)) {
             return new JsonResponse([
                 'data' => [],
                 'success' => false,

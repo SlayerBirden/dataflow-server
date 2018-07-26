@@ -10,7 +10,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "SlayerBirden\\DataFlowServer\\": "src"
+            "SlayerBirden\\DataFlowServer\\": "src",
+            "DataFlow\\Tests\\Unit\\": "tests/unit"
         }
     },
     "require": {
@@ -31,7 +32,7 @@
     },
     "require-dev": {
         "zendframework/zend-expressive-tooling": "^1.0",
-        "phpunit/phpunit": "^7.0",
+        "phpunit/phpunit": "~7.1.0",
         "codeception/codeception": "^2.4",
         "codeception/c3": "^2.4",
         "slayerbirden/df-code-generation": "dev-master",

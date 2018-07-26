@@ -18,7 +18,7 @@ class ResourceValidator extends AbstractValidator
     /**
      * @var string
      */
-    private $resource;
+    protected $resource;
 
     /**
      * @var array Error message templates

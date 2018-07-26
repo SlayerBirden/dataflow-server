@@ -4,8 +4,6 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
-use Doctrine\ORM\ORMInvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -83,40 +81,19 @@ class CreatePasswordAction implements MiddlewareInterface
      */
     private function createPassword(array $data): ResponseInterface
     {
-        try {
-            $data['created_at'] = (new \DateTime())->format(\DateTime::RFC3339);
-            $data['due'] = (new \DateTime())->add(new \DateInterval('P1Y'))->format(\DateTime::RFC3339);
-            $data['active'] = $data['active'] ?? true;
-            $password = $this->hydrator->hydrate($data, new Password());
-            $this->entityManager->persist($password);
-            $this->entityManager->flush();
-            return new JsonResponse([
-                'msg' => new SuccessMessage('Password has been successfully created!'),
-                'success' => true,
-                'data' => [
-                    'validation' => [],
-                    'password' => $this->hydrator->extract($password),
-                ]
-            ], 200);
-        } catch (ORMInvalidArgumentException | \InvalidArgumentException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'password' => null,
-                ]
-            ], 400);
-        } catch (ORMException $exception) {
-            $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'msg' => new DangerMessage('There was an error creating password. Please check your request.'),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'password' => null,
-                ]
-            ], 400);
-        }
+        $data['created_at'] = (new \DateTime())->format(\DateTime::RFC3339);
+        $data['due'] = (new \DateTime())->add(new \DateInterval('P1Y'))->format(\DateTime::RFC3339);
+        $data['active'] = $data['active'] ?? true;
+        $password = $this->hydrator->hydrate($data, new Password());
+        $this->entityManager->persist($password);
+        $this->entityManager->flush();
+        return new JsonResponse([
+            'msg' => new SuccessMessage('Password has been successfully created!'),
+            'success' => true,
+            'data' => [
+                'validation' => [],
+                'password' => $this->hydrator->extract($password),
+            ]
+        ], 200);
     }
 }

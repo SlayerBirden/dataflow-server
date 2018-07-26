@@ -97,16 +97,6 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
                 'success' => false,
                 'msg' => new DangerMessage($exception->getMessage()),
             ], 400);
-        } catch (ORMException $exception) {
-            $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'data' => [
-                    'token' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('There was an error while obtaining tmp token. Please check your request.'),
-            ], 400);
         } catch (\Exception $exception) {
             $this->logger->error((string)$exception);
             return new JsonResponse([

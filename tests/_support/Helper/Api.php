@@ -17,6 +17,14 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 class Api extends \Codeception\Module
 {
     /**
+     * @var int
+     */
+    private $userId;
+    /**
+     * @var int
+     */
+    private $tokenId;
+    /**
      * @param TestInterface $test
      * @throws \Codeception\Exception\ModuleException
      */
@@ -33,17 +41,15 @@ class Api extends \Codeception\Module
         /** @var CleanDoctrine2 $doctrineI */
         $doctrineI = $this->getModule('CleanDoctrine2');
 
-        $doctrineI->haveInRepository(User::class, [
-            'id' => 1,
+        $this->userId = $doctrineI->haveInRepository(User::class, [
             'first' => 'Tester',
             'last' => 'Tester',
             'email' => 'test1@example.com',
         ]);
 
-        $user = $doctrineI->grabEntityFromRepository(User::class, ['id' => 1]);
+        $user = $doctrineI->grabEntityFromRepository(User::class, ['id' => $this->userId]);
 
-        $doctrineI->haveInRepository(Token::class, [
-            'id' => 1,
+        $this->tokenId = $doctrineI->haveInRepository(Token::class, [
             'owner' => $user,
             'token' => 'X-X-X',
             'active' => 1,
@@ -67,11 +73,10 @@ class Api extends \Codeception\Module
     {
         /** @var CleanDoctrine2 $I */
         $I = $this->getModule('CleanDoctrine2');
-        $user = $I->grabEntityFromRepository(User::class, ['id' => 1]);
+        $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
 
-        foreach ($resources as $key => $resource) {
+        foreach ($resources as $resource) {
             $I->haveInRepository(Permission::class, [
-                'id' => ++$key,
                 'user' => $user,
                 'resource' => $resource,
             ]);
@@ -86,11 +91,10 @@ class Api extends \Codeception\Module
     {
         /** @var CleanDoctrine2 $I */
         $I = $this->getModule('CleanDoctrine2');
-        $token = $I->grabEntityFromRepository(Token::class, ['id' => 1]);
+        $token = $I->grabEntityFromRepository(Token::class, ['id' => $this->tokenId]);
 
-        foreach ($resources as $key => $resource) {
+        foreach ($resources as $resource) {
             $I->haveInRepository(Grant::class, [
-                'id' => ++$key,
                 'token' => $token,
                 'resource' => $resource,
             ]);

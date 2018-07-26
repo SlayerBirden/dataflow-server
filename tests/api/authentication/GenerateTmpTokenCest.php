@@ -2,11 +2,10 @@
 declare(strict_types=1);
 
 use Codeception\Util\HttpCode;
-use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
-class CreatePasswordCest
+class GenerateTmpTokenCest
 {
     /**
      * @var int
@@ -39,19 +38,20 @@ class CreatePasswordCest
      * @param ApiTester $I
      * @throws Exception
      */
-    public function createPasswordSuccess(ApiTester $I)
+    public function createTmpTokenSuccess(ApiTester $I)
     {
-        $I->wantTo('create password');
-        $this->authForUser($I, $this->userId);
+        $I->wantTo('create tmp token');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPOST('/password', [
-            'password' => 'abra cadabra',
+        $I->sendPOST('/gettmptoken/' . (string)$this->userId, [
+            'resources' => [
+                'create_password'
+            ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
             'success' => true,
             'data' => [
-                'password' => [
+                'token' => [
                     'owner' => [
                         'email' => 'test2@example.com',
                     ],
@@ -63,98 +63,82 @@ class CreatePasswordCest
 
     /**
      * @param ApiTester $I
-     * @param int $userId
      * @throws Exception
      */
-    private function authForUser(ApiTester $I, int $userId)
+    public function createTmpTokenForNonExistingUser(ApiTester $I)
     {
+        $I->wantTo('create tmp token for non existing user');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPOST('/gettmptoken/' . $userId, [
+        $I->sendPOST('/gettmptoken/' . (string)($this->userId + 100), [
             'resources' => [
                 'create_password'
             ],
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $tmpToken = $I->grabDataFromResponseByJsonPath('data.token.token')[0];
-
-        $I->amBearerAuthenticated($tmpToken);
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
+        $I->seeResponseContainsJson([
+            'success' => false,
+        ]);
     }
 
     /**
      * @param ApiTester $I
      * @throws Exception
      */
-    public function createPasswordNoPasswordProvided(ApiTester $I)
+    public function createTmpTokenNotPermitted(ApiTester $I)
     {
-        $I->wantTo('create password while not providing one');
-        $this->authForUser($I, $this->userId);
+        $I->wantTo('create tmp token for resource without granted permission');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPOST('/password', [
+        $I->sendPOST('/gettmptoken/' . (string)$this->userId, [
+            'resources' => [
+                'update_password'
+            ],
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'success' => false,
+        ]);
+    }
+
+    /**
+     * @param ApiTester $I
+     * @throws Exception
+     */
+    public function createTmpTokenValidationError(ApiTester $I)
+    {
+        $I->wantTo('create tmp token wrong input');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/gettmptoken/' . (string)$this->userId, [
             'bar' => 'baz',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
             'success' => false,
             'data' => [
-                'password' => null,
                 'validation' => [
-                    'field' => 'password',
+                    [
+                        'field' => 'resources'
+                    ]
                 ]
+            ]
+        ]);
+    }
+
+    /**
+     * @param ApiTester $I
+     * @throws Exception
+     */
+    public function createTmpTokenValidationErrorNonExistingResource(ApiTester $I)
+    {
+        $I->wantTo('create tmp token for non existing resource');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/gettmptoken/' . (string)$this->userId, [
+            'resources' => [
+                'bar'
             ],
-        ]);
-    }
-
-    /**
-     * @param ApiTester $I
-     * @throws Exception
-     */
-    public function createPasswordUserAlreadyHasPassword(ApiTester $I)
-    {
-        $I->wantTo('create password for user already having one');
-        $this->authForUser($I, $this->userId);
-        $I->haveHttpHeader('Content-Type', 'application/json');
-
-        $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
-        $I->haveInRepository(Password::class, [
-            'hash' => 'this is hash',
-            'createdAt' => new \DateTime(),
-            'due' => new \DateTime('+1 day'),
-            'active' => 1,
-            'owner' => $user,
-        ]);
-        $I->sendPOST('/password', [
-            'password' => 'abra cadabra',
-        ]);
-        $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
-    }
-
-    /**
-     * @param ApiTester $I
-     * @throws Exception
-     */
-    public function createPasswordException(ApiTester $I)
-    {
-        $I->wantTo('create password short password');
-        $this->authForUser($I, $this->userId);
-        $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPOST('/password', [
-            'password' => 'test123',
-            'owner' => 'mr twister',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
             'success' => false,
-            'data' => [
-                'password' => null,
-                'validation' => [
-                    [
-                        'field' => 'password'
-                    ]
-                ],
-            ],
         ]);
     }
 }

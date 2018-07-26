@@ -61,7 +61,7 @@ class RoutesDelegator implements DelegatorFactoryInterface
             'get_token'
         );
 
-        $app->post(
+        $app->put(
             '/invalidatetoken/{id:\d+}',
             [
                 TokenMiddleware::class,

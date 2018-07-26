@@ -8,6 +8,7 @@ use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\CollectionStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
 use Zend\Hydrator\ClassMethods;
+use Zend\Hydrator\NamingStrategy\MapNamingStrategy;
 use Zend\Hydrator\Strategy\BooleanStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 use Zend\ServiceManager\Factory\FactoryInterface;
@@ -25,6 +26,10 @@ class TokenHydratorFactory implements FactoryInterface
         $extraction->addStrategy('active', new BooleanStrategy(1, 0));
         $extraction->addStrategy('grants', new CollectionStrategy(new ClassMethods(), Grant::class));
         $extraction->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+
+        $extraction->setNamingStrategy(new MapNamingStrategy([], [
+            'isActive' => 'active',
+        ]));
 
         return $extraction;
     }

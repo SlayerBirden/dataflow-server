@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace DataFlow\Tests\Unit\Doctrine;
+
 use SlayerBirden\DataFlowServer\Doctrine\EntityManagerFactory;
 
 class EntityManagerFactoryTest extends \Codeception\Test\Unit
@@ -85,6 +87,9 @@ class EntityManagerFactoryTest extends \Codeception\Test\Unit
     }
 
 
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function testConfigOptionFromServiceManager()
     {
         $sm = new \Zend\ServiceManager\ServiceManager();
@@ -108,10 +113,15 @@ class EntityManagerFactoryTest extends \Codeception\Test\Unit
 
         $em = $factory($sm);
 
-        $this->assertInstanceOf(\Doctrine\Common\Persistence\Mapping\Driver\MappingDriver::class,
-            $em->getConfiguration()->getMetadataDriverImpl());
+        $this->assertInstanceOf(
+            \Doctrine\Common\Persistence\Mapping\Driver\MappingDriver::class,
+            $em->getConfiguration()->getMetadataDriverImpl()
+        );
     }
 
+    /**
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function testExcludedPaths()
     {
         $sm = new \Zend\ServiceManager\ServiceManager();

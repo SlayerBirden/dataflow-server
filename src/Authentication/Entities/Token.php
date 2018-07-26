@@ -150,9 +150,9 @@ class Token implements ClaimedResourceInterface
     }
 
     /**
-     * @param Grant[] $grants
+     * @param Collection|Grant[] $grants
      */
-    public function setGrants(array $grants): void
+    public function setGrants(Collection $grants): void
     {
         $this->grants = $grants;
     }

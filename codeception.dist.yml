@@ -8,6 +8,7 @@ paths:
 settings:
   shuffle: false
   lint: true
+  report_useless_tests: true
 
 coverage:
   enabled: true

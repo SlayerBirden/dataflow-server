@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -116,16 +117,17 @@ class UpdatePasswordAction implements MiddlewareInterface
      */
     private function updatePassword(array $data): Password
     {
-        $hash = $this->passwordManager->getHash($data['new_password']);
         $userPasswords = $this->entityManager
             ->getRepository(Password::class)
             ->matching(
-                Criteria::create()->where(Criteria::expr()->eq('owner', $data['owner']))
+                Criteria::create()->where(
+                    Criteria::expr()->eq('owner', $data[ClaimedResourceInterface::OWNER_PARAM])
+                )
             );
         # check if mentioned
         /** @var Password $item */
         foreach ($userPasswords as $item) {
-            if ($hash === $item->getHash()) {
+            if (password_verify($data['new_password'], $item->getHash())) {
                 throw new PasswordRestrictionsException(
                     'You have already used this password before. Please use a new one.'
                 );
