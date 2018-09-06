@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Codeception\Module;
+namespace codecept\Helper;
 
 use Codeception\TestInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\SchemaTool;
 use SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry;
 
-class CleanDoctrine2 extends Doctrine2
+class CleanDoctrine2 extends \Codeception\Module\Doctrine2
 {
     protected $dependencyMessage = <<<EOF
 Set a dependent module:
@@ -27,7 +27,6 @@ EOF;
     /**
      * @inheritdoc
      * @param TestInterface $test
-     * @throws \Codeception\Exception\ModuleConfigException
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\ORMException
      */
@@ -52,7 +51,6 @@ EOF;
 
     /**
      * @inheritdoc
-     * @throws \Codeception\Exception\ModuleConfigException
      */
     public function _after(TestInterface $test)
     {
@@ -68,6 +66,9 @@ EOF;
         $this->em->getConnection()->close();
     }
 
+    /**
+     * @throws \Codeception\Exception\ModuleConfigException
+     */
     protected function retrieveEntityManager()
     {
         parent::retrieveEntityManager();

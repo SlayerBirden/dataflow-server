@@ -1,12 +1,11 @@
 <?php
-namespace Helper;
+
+namespace codecept\Helper;
 
 // here you can define custom actions
 // all public methods declared in helper class will be available in $I
 
-use Codeception\Module\CleanDoctrine2;
 use Codeception\Module\REST;
-use Codeception\Module\ZendExpressive3;
 use Codeception\TestInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
@@ -24,6 +23,7 @@ class Api extends \Codeception\Module
      * @var int
      */
     private $tokenId;
+
     /**
      * @param TestInterface $test
      * @throws \Codeception\Exception\ModuleException
@@ -31,7 +31,7 @@ class Api extends \Codeception\Module
     public function _before(TestInterface $test)
     {
         /** @var ZendExpressive3 $ze3I */
-        $ze3I = $this->getModule('ZendExpressive3');
+        $ze3I = $this->getModule('\\' . ZendExpressive3::class);
 
         /** @var ResourceManager $resourceManager */
         $resourceManager = $ze3I->container->get(ResourceManager::class);
@@ -39,7 +39,7 @@ class Api extends \Codeception\Module
         $resources = $resourceManager->getAllResources();
 
         /** @var CleanDoctrine2 $doctrineI */
-        $doctrineI = $this->getModule('CleanDoctrine2');
+        $doctrineI = $this->getModule('\\' . CleanDoctrine2::class);
 
         $this->userId = $doctrineI->haveInRepository(User::class, [
             'first' => 'Tester',
@@ -72,7 +72,7 @@ class Api extends \Codeception\Module
     private function addPermissions(array $resources)
     {
         /** @var CleanDoctrine2 $I */
-        $I = $this->getModule('CleanDoctrine2');
+        $I = $this->getModule('\\' . CleanDoctrine2::class);
         $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
 
         foreach ($resources as $resource) {
@@ -90,7 +90,7 @@ class Api extends \Codeception\Module
     private function addGrants(array $resources)
     {
         /** @var CleanDoctrine2 $I */
-        $I = $this->getModule('CleanDoctrine2');
+        $I = $this->getModule('\\' . CleanDoctrine2::class);
         $token = $I->grabEntityFromRepository(Token::class, ['id' => $this->tokenId]);
 
         foreach ($resources as $resource) {

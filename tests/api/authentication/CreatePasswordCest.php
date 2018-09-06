@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace codecept;
+
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
@@ -106,7 +108,7 @@ class CreatePasswordCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createPasswordUserAlreadyHasPassword(ApiTester $I)
     {
@@ -133,7 +135,7 @@ class CreatePasswordCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createPasswordException(ApiTester $I)
     {

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace codecept;
+
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
@@ -22,8 +24,8 @@ class InvalidateTokensCest
             'owner' => $user,
             'active' => true,
             'token' => 'yyy',
-            'due' => new DateTime('+1 year'),
-            'createdAt' => new DateTime(),
+            'due' => new \DateTime('+1 year'),
+            'createdAt' => new \DateTime(),
         ]);
 
         $token = $I->grabEntityFromRepository(Token::class, ['id' => $tokenId]);

@@ -1,4 +1,4 @@
 actor: UnitTester
 modules:
   enabled:
-    - \Helper\Unit
+    - \codecept\Helper\Unit

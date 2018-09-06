@@ -1,5 +1,7 @@
 <?php
 
+namespace codecept;
+
 use Codeception\Util\HttpCode;
 
 class AddUserCest

@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Codeception\Module;
+namespace codecept\Helper;
 
 use Codeception\Configuration;
 use Codeception\Lib\Connector\ZendExpressive as ZendExpressiveConnector;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
-class ZendExpressive3 extends ZendExpressive
+class ZendExpressive3 extends \Codeception\Module\ZendExpressive
 {
     public function _initialize()
     {

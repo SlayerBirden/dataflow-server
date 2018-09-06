@@ -3,10 +3,10 @@ modules:
   enabled:
     - REST:
         depends: PhpBrowser
-    - CleanDoctrine2:
-        depends: ZendExpressive3
+    - \codecept\Helper\CleanDoctrine2:
+        depends: \codecept\Helper\ZendExpressive3
         cleanup: true
-    - \Helper\Api
+    - \codecept\Helper\Api
     - Asserts
   config:
     REST:

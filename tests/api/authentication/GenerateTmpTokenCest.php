@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace codecept;
+
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;

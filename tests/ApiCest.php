@@ -1,5 +1,7 @@
 <?php
 
+namespace codecept;
+
 class ApiCest
 {
     public function tryApi(ApiTester $I)

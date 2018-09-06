@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use Codeception\Module\CleanDoctrine2;
+namespace codecept;
+
+use codecept\Helper\CleanDoctrine2;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
@@ -41,8 +43,8 @@ class GetTokenCest
         $I->haveInRepository(Password::class, [
             'owner' => $user,
             'hash' => $passwordManager->getHash('test123'),
-            'createdAt' => new DateTime(),
-            'due' => new DateTime('+1 year'),
+            'createdAt' => new \DateTime(),
+            'due' => new \DateTime('+1 year'),
             'active' => true,
         ]);
 

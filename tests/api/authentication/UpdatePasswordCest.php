@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use Codeception\Module\CleanDoctrine2;
+namespace codecept;
+
+use codecept\Helper\CleanDoctrine2;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
@@ -54,8 +56,8 @@ class UpdatePasswordCest
         $I->haveInRepository(Password::class, [
             'owner' => $user,
             'hash' => $this->passwordManager->getHash('test123'),
-            'createdAt' => new DateTime(),
-            'due' => new DateTime('+1 year'),
+            'createdAt' => new \DateTime(),
+            'due' => new \DateTime('+1 year'),
             'active' => true,
         ]);
 
@@ -63,8 +65,8 @@ class UpdatePasswordCest
             'owner' => $user,
             'active' => true,
             'token' => 'yyy',
-            'due' => new DateTime('+1 year'),
-            'createdAt' => new DateTime(),
+            'due' => new \DateTime('+1 year'),
+            'createdAt' => new \DateTime(),
         ]);
 
         $token = $I->grabEntityFromRepository(Token::class, ['id' => $tokenId]);
@@ -158,8 +160,8 @@ class UpdatePasswordCest
         $I->haveInRepository(Password::class, [
             'owner' => $user,
             'hash' => $this->passwordManager->getHash('old cool long password'),
-            'createdAt' => new DateTime('-1 year'),
-            'due' => new DateTime('-1 month'),
+            'createdAt' => new \DateTime('-1 year'),
+            'due' => new \DateTime('-1 month'),
             'active' => false,
         ]);
 
