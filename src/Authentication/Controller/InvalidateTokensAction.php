@@ -12,10 +12,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class InvalidateTokensAction implements MiddlewareInterface
@@ -84,38 +83,21 @@ final class InvalidateTokensAction implements MiddlewareInterface
         $collection = $this->tokenRepository->matching($criteria);
 
         if ($collection->count() === 0) {
-            return new JsonResponse([
-                'data' => [
-                    'count' => 0,
-                    'tokens' => [],
-                ],
-                'success' => false,
-                'msg' => new SuccessMessage('No tokens found to invalidate for given criteria.'),
-            ], 400);
+            $msg = 'No tokens found to invalidate for given criteria.';
+            return (new GeneralErrorResponseFactory())($msg, 'tokens', 400, [], 0);
         }
         $em = $this->managerRegistry->getManagerForClass(Token::class);
         if ($em === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'tokens', 500, [], 0);
         }
         foreach ($collection as $token) {
             $token->setActive(false);
             $em->persist($token);
         }
         $em->flush();
-        return new JsonResponse([
-            'data' => [
-                'count' => $collection->count(),
-                'tokens' => array_map([$this->hydrator, 'extract'], $collection->toArray()),
-            ],
-            'success' => true,
-            'msg' => new SuccessMessage('Tokens have been deactivated.'),
-        ], 200);
+        $msg = 'Tokens have been deactivated.';
+        $extracted = array_map([$this->hydrator, 'extract'], $collection->toArray());
+        return (new GeneralSuccessResponseFactory())($msg, 'tokens', $extracted, 200, $collection->count());
     }
 
     private function getUsers(array $users): array

@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 
 final class GetResourcesAction implements MiddlewareInterface
 {
@@ -27,12 +27,8 @@ final class GetResourcesAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return new JsonResponse([
-            'data' => [
-                'resources' => $this->resourceManager->getAllResources(),
-            ],
-            'success' => true,
-            'msg' => null,
-        ], 200);
+        $resources = $this->resourceManager->getAllResources();
+        $count = count($resources);
+        return (new GeneralSuccessResponseFactory())('Success', 'resources', $resources, 200, $count);
     }
 }

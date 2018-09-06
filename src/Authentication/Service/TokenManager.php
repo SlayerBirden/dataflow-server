@@ -108,6 +108,7 @@ final class TokenManager implements TokenManagerInterface
      * https://stackoverflow.com/a/15875555/927404
      *
      * @return string
+     * @throws \Exception
      */
     private function generateToken(): string
     {
@@ -123,7 +124,7 @@ final class TokenManager implements TokenManagerInterface
      * @param Token $token
      * @param array $resources
      * @param User $user
-     * @return ArrayCollection|Grant[]
+     * @return ArrayCollection
      * @throws PermissionDeniedException
      */
     private function getGrants(Token $token, array $resources, User $user): ArrayCollection

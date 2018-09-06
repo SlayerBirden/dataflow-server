@@ -13,11 +13,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -72,33 +71,13 @@ final class UpdateConfigAction implements MiddlewareInterface
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
             $em->persist($config);
             $em->flush();
-            return new JsonResponse([
-                'msg' => new SuccessMessage('Configuration has been updated!'),
-                'success' => true,
-                'data' => [
-                    'configuration' => $this->hydrator->extract($config),
-                    'validation' => [],
-                ]
-            ], 200);
+            $msg = 'Configuration has been updated!';
+            return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($config));
         } catch (ORMInvalidArgumentException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'success' => false,
-                'data' => [
-                    'configuration' => null,
-                    'validation' => [],
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'configuration', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'msg' => new DangerMessage('Error while updating configuration.'),
-                'success' => false,
-                'data' => [
-                    'configuration' => null,
-                    'validation' => [],
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())('Error while updating configuration.', 'configuration', 400);
         }
     }
 

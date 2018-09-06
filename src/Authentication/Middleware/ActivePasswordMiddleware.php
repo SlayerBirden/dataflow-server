@@ -10,8 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class ActivePasswordMiddleware implements MiddlewareInterface
 {
@@ -33,14 +32,8 @@ final class ActivePasswordMiddleware implements MiddlewareInterface
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
 
         if ($this->hasActivePassword($user)) {
-            return new JsonResponse([
-                'data' => [
-                    'validation' => [],
-                    'password' => null,
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('You already have an active password. Please use "update" routine.'),
-            ], 412);
+            $msg = 'You already have an active password. Please use "update" routine.';
+            return (new GeneralErrorResponseFactory())($msg, 'password', 412);
         }
 
         return $handler->handle($request);

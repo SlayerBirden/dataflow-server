@@ -12,14 +12,12 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Doctrine\Exception\NonExistingEntity;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -74,51 +72,17 @@ final class UpdateUserAction implements MiddlewareInterface
             $em = $this->managerRegistry->getManagerForClass(User::class);
             $em->persist($user);
             $em->flush();
-            return new JsonResponse([
-                'msg' => new SuccessMessage('User has been updated!'),
-                'success' => true,
-                'data' => [
-                    'validation' => [],
-                    'user' => $this->hydrator->extract($user),
-                ]
-            ], 200);
-        } catch (NonExistingEntity $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 404);
+            $msg = 'User has been updated!';
+            return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($user));
         } catch (ORMInvalidArgumentException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
         } catch (UniqueConstraintViolationException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Email address already taken.'),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => $this->hydrator->extract($user),
-                ]
-            ], 400);
+            $msg = 'Email address already taken.';
+            $userData = isset($user) ? $this->hydrator->extract($user) : null;
+            return (new GeneralErrorResponseFactory())($msg, 'user', 400, $userData);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'msg' => new DangerMessage('Error saving user.'),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())('Error saving user.', 'user', 400);
         }
     }
 

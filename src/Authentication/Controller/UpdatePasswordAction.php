@@ -16,11 +16,10 @@ use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -83,22 +82,10 @@ final class UpdatePasswordAction implements MiddlewareInterface
         }
         $em = $this->managerRegistry->getManagerForClass(Password::class);
         if ($em === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'password');
         }
         if (!($em instanceof EntityManagerInterface)) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Can not use current ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Could not use current ObjectManager', 'password');
         }
         $em->beginTransaction();
         try {
@@ -106,35 +93,15 @@ final class UpdatePasswordAction implements MiddlewareInterface
             $em->flush();
             $em->commit();
 
-            return new JsonResponse([
-                'data' => [
-                    'password' => $this->hydrator->extract($pw),
-                    'validation' => [],
-                ],
-                'success' => true,
-                'msg' => new SuccessMessage('Password successfully updated.'),
-            ], 200);
+            $msg = 'Password successfully updated.';
+            return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($pw));
         } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
             $em->rollback();
-            return new JsonResponse([
-                'data' => [
-                    'password' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage($exception->getMessage()),
-            ], 400);
+            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'password', 400);
         } catch (\Exception $exception) {
             $this->logger->error((string)$exception);
             $em->rollback();
-            return new JsonResponse([
-                'data' => [
-                    'password' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('There was an error while updating password.'),
-            ], 500);
+            return (new GeneralErrorResponseFactory())('There was an error while updating password.', 'password', 400);
         }
     }
 

@@ -10,8 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use Zend\Expressive\Router\RouteResult;
 
 final class TokenMiddleware implements MiddlewareInterface
@@ -34,19 +33,11 @@ final class TokenMiddleware implements MiddlewareInterface
     {
         $authorization = $request->getHeader('Authorization');
         if (empty($authorization)) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('Empty Authorization header. Access denied.'),
-            ], 401);
+            return (new GeneralErrorResponseFactory())('Empty Authorization header. Access denied.', null, 401);
         }
         $token = $this->getToken((string)reset($authorization));
         if (!$token || !$token->isActive() || ($token->getDue() < new \DateTime())) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('Token is absent or invalid. Access denied.'),
-            ], 401);
+            return (new GeneralErrorResponseFactory())('Token is absent or invalid. Access denied.', null, 401);
         }
         // check ACL
         $routeResult = $request->getAttribute(RouteResult::class, false);
@@ -61,11 +52,7 @@ final class TokenMiddleware implements MiddlewareInterface
             }
         }
 
-        return new JsonResponse([
-            'data' => [],
-            'success' => false,
-            'msg' => new DangerMessage('The permission to resource is not granted.'),
-        ], 403);
+        return (new GeneralErrorResponseFactory())('The permission to resource is not granted.', null, 403);
     }
 
     private function getToken(string $authorization): ?Token

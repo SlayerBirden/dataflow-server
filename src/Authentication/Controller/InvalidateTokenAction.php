@@ -11,9 +11,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class InvalidateTokenAction implements MiddlewareInterface
@@ -49,22 +48,10 @@ final class InvalidateTokenAction implements MiddlewareInterface
 
         $em = $this->managerRegistry->getManagerForClass(get_class($token));
         if ($em === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'token');
         }
         $em->persist($token);
         $em->flush();
-        return new JsonResponse([
-            'data' => [
-                'token' => $this->hydrator->extract($token),
-            ],
-            'success' => true,
-            'msg' => new SuccessMessage('Token invalidated.'),
-        ], 200);
+        return (new GeneralSuccessResponseFactory())('Token invalidated.', 'token', $this->hydrator->extract($token));
     }
 }

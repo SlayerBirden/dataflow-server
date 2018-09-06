@@ -10,11 +10,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -64,14 +63,7 @@ final class CreatePasswordAction implements MiddlewareInterface
             try {
                 return $this->createPassword($data);
             } catch (\Exception $exception) {
-                return new JsonResponse([
-                    'msg' => new DangerMessage('There was an error while creating password.'),
-                    'success' => true,
-                    'data' => [
-                        'validation' => [],
-                        'password' => null,
-                    ]
-                ], 500);
+                return (new GeneralErrorResponseFactory())('There was an error while creating password.', 'password');
             }
         } else {
             return (new ValidationResponseFactory())('password', $this->inputFilter);
@@ -95,13 +87,7 @@ final class CreatePasswordAction implements MiddlewareInterface
         }
         $em->persist($password);
         $em->flush();
-        return new JsonResponse([
-            'msg' => new SuccessMessage('Password has been successfully created!'),
-            'success' => true,
-            'data' => [
-                'validation' => [],
-                'password' => $this->hydrator->extract($password),
-            ]
-        ], 200);
+        $msg = 'Password has been successfully created!';
+        return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($password));
     }
 }

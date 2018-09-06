@@ -18,11 +18,11 @@ use SlayerBirden\DataFlowServer\Authorization\HistoryManagementInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -86,22 +86,10 @@ final class SavePermissionsAction implements MiddlewareInterface
         }
         $em = $this->managerRegistry->getManagerForClass(Permission::class);
         if ($em === null) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'permissions', 500, [], 0);
         }
         if (!($em instanceof EntityManagerInterface)) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Can not use current ObjectManager'),
-                'success' => false,
-                'data' => [
-                    'token' => null,
-                ]
-            ], 500);
+            return (new GeneralErrorResponseFactory())('Can not use current ObjectManager', 'permissions', 500, [], 0);
         }
         $em->beginTransaction();
         try {
@@ -118,24 +106,15 @@ final class SavePermissionsAction implements MiddlewareInterface
                 $msg = new SuccessMessage('Successfully set permissions to resources.');
             }
 
-            return new JsonResponse([
-                'msg' => $msg,
-                'data' => [
-                    'permissions' => array_map([$this->hydrator, 'extract'], $permissions),
-                ],
-                'success' => true,
-            ], 200);
+            $extractedPermissions = array_map([$this->hydrator, 'extract'], $permissions);
+            $count = count($extractedPermissions);
+            return (new GeneralSuccessResponseFactory())($msg, 'permissions', $extractedPermissions, 200, $count);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $em->rollback();
 
-            return new JsonResponse([
-                'msg' => new DangerMessage('There was an error while setting the permissions.'),
-                'data' => [
-                    'permissions' => [],
-                ],
-                'success' => false,
-            ], 400);
+            $msg = 'There was an error while setting the permissions.';
+            return (new GeneralErrorResponseFactory())($msg, 'permissions', 400, [], 0);
         }
     }
 
@@ -144,7 +123,6 @@ final class SavePermissionsAction implements MiddlewareInterface
      * @param User $owner
      * @param string ...$resources
      * @return Permission[]
-     * @throws ORMException
      */
     private function processResources(User $user, User $owner, string ...$resources): array
     {
@@ -189,7 +167,6 @@ final class SavePermissionsAction implements MiddlewareInterface
                 $history = $this->historyManagement->fromPermission($permission);
                 $history->setOwner($owner);
                 $em->persist($history);
-
             } else {
                 $result[] = $permission;
             }
@@ -201,7 +178,6 @@ final class SavePermissionsAction implements MiddlewareInterface
      * @param $user
      * @param $owner
      * @param $result
-     * @throws ORMException
      */
     private function processItemsToAdd($toAdd, $user, $owner, &$result): void
     {

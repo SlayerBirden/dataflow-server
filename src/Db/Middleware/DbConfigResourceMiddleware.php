@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class DbConfigResourceMiddleware implements ResourceMiddlewareInterface
 {
@@ -55,12 +55,6 @@ final class DbConfigResourceMiddleware implements ResourceMiddlewareInterface
             }
         }
 
-        return new JsonResponse([
-            'data' => [
-                'configuration' => null,
-            ],
-            'success' => false,
-            'msg' => $msg,
-        ], 404);
+        return (new GeneralErrorResponseFactory())($msg, 'configuration', 404);
     }
 }

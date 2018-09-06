@@ -8,6 +8,7 @@ chdir(dirname(__DIR__));
 
 $container = require __DIR__ . "/container.php";
 
-$em = $container->get(\Doctrine\ORM\EntityManagerInterface::class);
+/** @var \Doctrine\Common\Persistence\ManagerRegistry $registry */
+$registry = $container->get(\Doctrine\Common\Persistence\ManagerRegistry::class);
 
-return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($em);
+return \Doctrine\ORM\Tools\Console\ConsoleRunner::createHelperSet($registry->getManager());

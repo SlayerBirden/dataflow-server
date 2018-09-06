@@ -9,8 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class BaseResourceMiddleware implements ResourceMiddlewareInterface
 {
@@ -65,32 +64,17 @@ final class BaseResourceMiddleware implements ResourceMiddlewareInterface
                         $request->withAttribute(self::DATA_RESOURCE, $entity)
                     );
                 } else {
-                    return new JsonResponse([
-                        'data' => [
-                            $this->dataObjectName => null,
-                        ],
-                        'success' => false,
-                        'msg' => new DangerMessage(sprintf('Could not load %s by provided ID.', $this->dataObjectName)),
-                    ], 404);
+                    $msg = sprintf('Could not load %s by provided ID.', $this->dataObjectName);
+                    return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 404);
                 }
             } catch (ORMInvalidArgumentException $exception) {
                 $this->logger->error((string)$exception);
-                return new JsonResponse([
-                    'data' => [
-                        $this->dataObjectName => null,
-                    ],
-                    'success' => false,
-                    'msg' => new DangerMessage(sprintf('Error during loading %s.', $this->dataObjectName)),
-                ], 500);
+                $msg = sprintf('Error during loading %s.', $this->dataObjectName);
+                return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName);
             }
         } else {
-            return new JsonResponse([
-                'data' => [
-                    $this->dataObjectName => null,
-                ],
-                'success' => false,
-                'msg' => new DangerMessage(sprintf('No %s provided.', $this->idAttributeName)),
-            ], 400);
+            $msg = sprintf('No %s provided.', $this->idAttributeName);
+            return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 400);
         }
     }
 }

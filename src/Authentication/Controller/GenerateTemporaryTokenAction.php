@@ -12,11 +12,10 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedExcepti
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -75,33 +74,12 @@ final class GenerateTemporaryTokenAction implements MiddlewareInterface
     {
         try {
             $token = $this->tokenManager->getTmpToken($user, $resources);
-            return new JsonResponse([
-                'data' => [
-                    'token' => $this->hydrator->extract($token),
-                    'validation' => [],
-                ],
-                'success' => true,
-                'msg' => new SuccessMessage('Token created'),
-            ], 200);
+            return (new GeneralSuccessResponseFactory())('Token created', 'token', $this->hydrator->extract($token));
         } catch (PermissionDeniedException $exception) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage($exception->getMessage()),
-            ], 400);
+            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'token', 400);
         } catch (\Exception $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'data' => [
-                    'token' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('There was an error while obtaining tmp token.'),
-            ], 500);
+            return (new GeneralErrorResponseFactory())('There was an error while obtaining tmp token.', 'token', 400);
         }
     }
 }

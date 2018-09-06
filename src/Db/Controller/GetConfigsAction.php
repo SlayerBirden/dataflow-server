@@ -12,8 +12,8 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class GetConfigsAction implements MiddlewareInterface
@@ -54,17 +54,6 @@ final class GetConfigsAction implements MiddlewareInterface
 
 
         $currentOwner = $request->getAttribute(TokenMiddleware::USER_PARAM);
-
-        if (!$currentOwner) {
-            return new JsonResponse([
-                'data' => [
-                    'configurations' => [],
-                    'count' => 0,
-                ],
-                'msg' => new DangerMessage('Access denied. Only Logged In users can access this resource.'),
-                'success' => false
-            ], 403);
-        }
         $filters['owner'] = $currentOwner;
 
         try {
@@ -77,34 +66,15 @@ final class GetConfigsAction implements MiddlewareInterface
                 $arrayConfigs = array_map(function ($config) {
                     return $this->hydrator->extract($config);
                 }, $configs->toArray());
-                return new JsonResponse([
-                    'data' => [
-                        'configurations' => $arrayConfigs,
-                        'count' => $count,
-                    ],
-                    'success' => true,
-                    'msg' => null,
-                ], 200);
+                return (new GeneralSuccessResponseFactory())('Success', 'configurations', $arrayConfigs, 200, $count);
             } else {
-                return new JsonResponse([
-                    'data' => [
-                        'configurations' => [],
-                        'count' => 0,
-                    ],
-                    'success' => false,
-                    'msg' => new DangerMessage('Could not find configurations using given conditions.'),
-                ], 404);
+                $msg = 'Could not find configurations using given conditions.';
+                return (new GeneralErrorResponseFactory())($msg, 'configurations', 404, [], 0);
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'data' => [
-                    'configurations' => [],
-                    'count' => 0,
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('There was an error while fetching configurations.'),
-            ], 400);
+            $msg = 'There was an error while fetching configurations.';
+            return (new GeneralErrorResponseFactory())($msg, 'configurations', 400, [], 0);
         }
     }
 

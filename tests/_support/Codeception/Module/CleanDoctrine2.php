@@ -20,7 +20,7 @@ modules:
 EOF;
 
     /**
-     * @var ManagerRegistry|null
+     * @var ManagerRegistry
      */
     public $registry;
 

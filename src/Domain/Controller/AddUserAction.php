@@ -13,11 +13,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -71,42 +70,15 @@ final class AddUserAction implements MiddlewareInterface
             $em = $this->managerRegistry->getManagerForClass(User::class);
             $em->persist($entity);
             $em->flush();
-            return new JsonResponse([
-                'msg' => new SuccessMessage('User has been successfully created!'),
-                'success' => true,
-                'data' => [
-                    'validation' => [],
-                    'user' => $this->hydrator->extract($entity),
-                ]
-            ], 200);
+            $msg = 'User has been successfully created!';
+            return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($entity));
         } catch (ORMInvalidArgumentException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage($exception->getMessage()),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
         } catch (UniqueConstraintViolationException $exception) {
-            return new JsonResponse([
-                'msg' => new DangerMessage('Provided email already exists.'),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())('Provided email already exists.', 'user', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'msg' => new DangerMessage('Error during creation operation.'),
-                'success' => false,
-                'data' => [
-                    'validation' => [],
-                    'user' => null,
-                ]
-            ], 400);
+            return (new GeneralErrorResponseFactory())('Error during creation operation.', 'user', 400);
         }
     }
 

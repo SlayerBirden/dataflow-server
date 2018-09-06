@@ -26,7 +26,6 @@
         "zendframework/zend-i18n": "~2.0",
         "monolog/monolog": "^2.0-dev",
         "doctrine/orm": "^2.6",
-        "doctrine/dbal": "2.8.x-dev as 2.6.4",
         "slayerbirden/dataflow": "^1.0.0-dev",
         "zendframework/zend-diactoros": "^1.7"
     },

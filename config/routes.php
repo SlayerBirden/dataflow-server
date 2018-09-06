@@ -5,7 +5,7 @@ $container = require __DIR__ . '/container.php';
 /** @var \Zend\Expressive\Application $app */
 $app = $container->get(\Zend\Expressive\Application::class);
 
-$app->get('/', function ($request, $handler) {
+$app->get('/', function () {
     $response = new \Zend\Diactoros\Response\JsonResponse([
         'success' => true,
         'data' => [],

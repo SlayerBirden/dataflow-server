@@ -10,11 +10,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsException;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\InputFilter\InputFilterInterface;
 
@@ -60,36 +59,14 @@ final class GetTokenAction implements MiddlewareInterface
 
         try {
             $token = $this->tokenManager->getToken($data['user'], $data['password'], $data['resources']);
-            return new JsonResponse([
-                'data' => [
-                    'token' => $this->extraction->extract($token),
-                    'validation' => [],
-                ],
-                'success' => true,
-                'msg' => new SuccessMessage('Token successfully creaeted'),
-            ], 200);
+            $msg = 'Token successfully created';
+            return (new GeneralSuccessResponseFactory())($msg, 'token', $this->extraction->extract($token));
         } catch (InvalidCredentialsException $exception) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage(
-                    'Invalid credentials provided. Please double check your user and password.'
-                ),
-            ], 401);
+            $msg = 'Invalid credentials provided. Please double check your user and password.';
+            return (new GeneralErrorResponseFactory())($msg, 'token', 401);
         } catch (PermissionDeniedException $exception) {
-            return new JsonResponse([
-                'data' => [
-                    'token' => null,
-                    'validation' => [],
-                ],
-                'success' => false,
-                'msg' => new DangerMessage(
-                    'Provided user does not have permission to access requested resources.'
-                ),
-            ], 403);
+            $msg = 'Provided user does not have permission to access requested resources.';
+            return (new GeneralErrorResponseFactory())($msg, 'token', 403);
         }
     }
 }

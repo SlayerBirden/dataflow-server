@@ -8,9 +8,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class PasswordConfirmationMiddleware implements MiddlewareInterface
 {
@@ -36,22 +35,15 @@ final class PasswordConfirmationMiddleware implements MiddlewareInterface
         $password = $data['password'] ?? null;
 
         if (empty($password)) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('The action requires password confirmation. No password provided.'),
-            ], 412);
+            $msg = 'The action requires password confirmation. No password provided.';
+            return (new GeneralErrorResponseFactory())($msg, null, 412);
         } else {
             unset($data['password']);
         }
 
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
         if (!$this->passwordManager->isValidForUser((string)$password, $user)) {
-            return new JsonResponse([
-                'data' => [],
-                'success' => false,
-                'msg' => new DangerMessage('Invalid password provided.'),
-            ], 412);
+            return (new GeneralErrorResponseFactory())('Invalid password provided.', null, 412);
         }
 
         // serve down the pipe without password data

@@ -11,8 +11,7 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class ValidateOwnerMiddleware implements MiddlewareInterface
 {
@@ -29,11 +28,7 @@ final class ValidateOwnerMiddleware implements MiddlewareInterface
             $currentOwner = $request->getAttribute(TokenMiddleware::USER_PARAM);
 
             if (!$currentOwner || ($currentOwner->getId() !== $resourceOwner->getId())) {
-                return new JsonResponse([
-                    'data' => [],
-                    'msg' => new DangerMessage('Access denied.'),
-                    'success' => false
-                ], 403);
+                return (new GeneralErrorResponseFactory())('Access denied.', null, 403);
             }
         }
 

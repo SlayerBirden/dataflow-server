@@ -11,8 +11,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class GetUsersAction implements MiddlewareInterface
@@ -62,34 +62,15 @@ final class GetUsersAction implements MiddlewareInterface
                 $arrayUsers = array_map(function ($user) {
                     return $this->hydrator->extract($user);
                 }, $users->toArray());
-                return new JsonResponse([
-                    'data' => [
-                        'users' => $arrayUsers,
-                        'count' => $count,
-                    ],
-                    'success' => true,
-                    'msg' => null,
-                ], 200);
+                return (new GeneralSuccessResponseFactory())('Success', 'users', $arrayUsers, 200, $count);
             } else {
-                return new JsonResponse([
-                    'data' => [
-                        'users' => [],
-                        'count' => 0,
-                    ],
-                    'success' => false,
-                    'msg' => new DangerMessage('Could not find users using given conditions.'),
-                ], 404);
+                $msg = 'Could not find users using given conditions.';
+                return (new GeneralErrorResponseFactory())($msg, 'users', 404, [], 0);
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'data' => [
-                    'users' => [],
-                    'count' => 0,
-                ],
-                'success' => false,
-                'msg' => new DangerMessage('There was an error while fetching users.'),
-            ], 400);
+            $msg = 'There was an error while fetching users.';
+            return (new GeneralErrorResponseFactory())($msg, 'users', 400, [], 0);
         }
     }
 

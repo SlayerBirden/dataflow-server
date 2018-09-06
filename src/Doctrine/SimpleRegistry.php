@@ -164,7 +164,7 @@ final class SimpleRegistry implements ManagerRegistry
      */
     public function getRepository($persistentObject, $persistentManagerName = null): ObjectRepository
     {
-        if ($persistentManagerName) {
+        if ($persistentManagerName !== null) {
             $manager = $this->getManager($persistentManagerName);
         } else {
             $manager = $this->getManagerForClass($persistentObject);

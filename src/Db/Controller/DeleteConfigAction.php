@@ -12,9 +12,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Notification\DangerMessage;
-use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
-use Zend\Diactoros\Response\JsonResponse;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class DeleteConfigAction implements MiddlewareInterface
@@ -53,22 +52,12 @@ final class DeleteConfigAction implements MiddlewareInterface
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
             $em->remove($dbConfig);
             $em->flush();
-            return new JsonResponse([
-                'msg' => new SuccessMessage('Configuration removed.'),
-                'success' => true,
-                'data' => [
-                    'configuration' => $this->hydrator->extract($dbConfig),
-                ],
-            ], 200);
+            $msg = 'Configuration removed.';
+            return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($dbConfig));
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return new JsonResponse([
-                'msg' => new DangerMessage('There was an error while removing configuration.'),
-                'success' => false,
-                'data' => [
-                    'configuration' => null
-                ],
-            ], 500);
+            $msg = 'There was an error while removing configuration.';
+            return (new GeneralErrorResponseFactory())($msg, 'configuration');
         }
     }
 }
