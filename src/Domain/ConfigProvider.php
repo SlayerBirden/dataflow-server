@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Domain\Controller\AddUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
@@ -11,6 +11,7 @@ use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
 use SlayerBirden\DataFlowServer\Domain\Factory\UserResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Domain\Repository\UserRepository;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\Hydrator\ClassMethods;
@@ -22,14 +23,17 @@ class ConfigProvider
     {
         return [
             ConfigAbstractFactory::class => [
+                UserRepository::class => [
+                    ManagerRegistry::class,
+                ],
                 AddUserAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
                 ],
                 UpdateUserAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     ClassMethods::class,
                     'UserInputFilter',
                     LoggerInterface::class,
@@ -38,19 +42,23 @@ class ConfigProvider
                     ClassMethods::class,
                 ],
                 GetUsersAction::class => [
-                    EntityManagerInterface::class,
+                    UserRepository::class,
                     LoggerInterface::class,
                     ClassMethods::class,
                 ],
                 DeleteUserAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     LoggerInterface::class,
                     ClassMethods::class,
                 ],
             ],
             'doctrine' => [
-                'paths' => [
-                    'src/Domain/Entities'
+                'entity_managers' => [
+                    'default' => [
+                        'paths' => [
+                            'src/Domain/Entities',
+                        ],
+                    ],
                 ],
             ],
             'dependencies' => [

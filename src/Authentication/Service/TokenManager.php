@@ -5,7 +5,8 @@ namespace SlayerBirden\DataFlowServer\Authentication\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
@@ -17,16 +18,12 @@ use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
-class TokenManager implements TokenManagerInterface
+final class TokenManager implements TokenManagerInterface
 {
     /**
      * @var PasswordManagerInterface
      */
     private $passwordManager;
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -35,15 +32,25 @@ class TokenManager implements TokenManagerInterface
      * @var PermissionManagerInterface
      */
     private $permissionManager;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
+    /**
+     * @var Selectable
+     */
+    private $userRepository;
 
     public function __construct(
+        ManagerRegistry $managerRegistry,
+        Selectable $userRepository,
         PasswordManagerInterface $passwordManager,
-        EntityManager $entityManager,
         LoggerInterface $logger,
         PermissionManagerInterface $permissionManager
     ) {
+        $this->managerRegistry = $managerRegistry;
+        $this->userRepository = $userRepository;
         $this->passwordManager = $passwordManager;
-        $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->permissionManager = $permissionManager;
     }
@@ -55,6 +62,7 @@ class TokenManager implements TokenManagerInterface
     public function getToken(string $user, string $password, array $resources): Token
     {
         try {
+            $em = $this->managerRegistry->getManagerForClass(Token::class);
             $user = $this->getByUsername($user);
             if ($this->passwordManager->isValidForUser($password, $user)) {
                 $token = new Token();
@@ -69,8 +77,8 @@ class TokenManager implements TokenManagerInterface
                 $token->setGrants($this->getGrants($token, $resources, $user));
                 $token->setToken($this->generateToken());
 
-                $this->entityManager->persist($token);
-                $this->entityManager->flush();
+                $em->persist($token);
+                $em->flush();
 
                 return $token;
             }
@@ -86,7 +94,7 @@ class TokenManager implements TokenManagerInterface
     {
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->eq('email', $user));
-        $users = $this->entityManager->getRepository(User::class)->matching($criteria);
+        $users = $this->userRepository->matching($criteria);
 
         if ($users->count()) {
             return $users->first();
@@ -117,11 +125,11 @@ class TokenManager implements TokenManagerInterface
      * @param User $user
      * @return ArrayCollection|Grant[]
      * @throws PermissionDeniedException
-     * @throws ORMException
      */
     private function getGrants(Token $token, array $resources, User $user): ArrayCollection
     {
         $grants = [];
+        $em = $this->managerRegistry->getManagerForClass(Token::class);
         foreach ($resources as $resource) {
             if (!$this->permissionManager->isAllowed($resource, $user)) {
                 throw new PermissionDeniedException(sprintf('%s is not allowed for provided user.', $resource));
@@ -129,7 +137,7 @@ class TokenManager implements TokenManagerInterface
             $grant = new Grant();
             $grant->setToken($token);
             $grant->setResource($resource);
-            $this->entityManager->persist($grant);
+            $em->persist($grant);
             $grants[] = $grant;
         }
 
@@ -140,8 +148,6 @@ class TokenManager implements TokenManagerInterface
      * @param User $user
      * @param array $resources
      * @return Token
-     * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
     public function getTmpToken(User $user, array $resources): Token
@@ -158,8 +164,9 @@ class TokenManager implements TokenManagerInterface
         $token->setGrants($this->getGrants($token, $resources, $user));
         $token->setToken($this->generateToken());
 
-        $this->entityManager->persist($token);
-        $this->entityManager->flush();
+        $em = $this->managerRegistry->getManagerForClass(Token::class);
+        $em->persist($token);
+        $em->flush();
 
         return $token;
     }

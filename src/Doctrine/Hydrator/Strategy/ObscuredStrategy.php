@@ -5,7 +5,7 @@ namespace SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy;
 
 use Zend\Hydrator\Strategy\StrategyInterface;
 
-class ObscuredStrategy implements StrategyInterface
+final class ObscuredStrategy implements StrategyInterface
 {
     const OBSCURED_STRING = '*****';
 

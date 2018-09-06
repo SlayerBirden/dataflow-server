@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,17 +11,14 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class DeleteUserAction implements MiddlewareInterface
+final class DeleteUserAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -30,13 +27,17 @@ class DeleteUserAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        ManagerRegistry $managerRegistry,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
     }
@@ -49,8 +50,9 @@ class DeleteUserAction implements MiddlewareInterface
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
         try {
-            $this->entityManager->remove($user);
-            $this->entityManager->flush();
+            $em = $this->managerRegistry->getManagerForClass(User::class);
+            $em->remove($user);
+            $em->flush();
             return new JsonResponse([
                 'msg' => new SuccessMessage('User was deleted'),
                 'success' => true,

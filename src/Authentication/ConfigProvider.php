@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Controller\CreatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\GenerateTemporaryTokenAction;
@@ -18,9 +18,13 @@ use SlayerBirden\DataFlowServer\Authentication\Hydrator\Strategy\HashStrategy;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\ActivePasswordMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\PasswordConfirmationMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
+use SlayerBirden\DataFlowServer\Authentication\Repository\GrantRepository;
+use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
+use SlayerBirden\DataFlowServer\Authentication\Repository\TokenRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authentication\Service\TokenManager;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
+use SlayerBirden\DataFlowServer\Domain\Repository\UserRepository;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -31,18 +35,26 @@ class ConfigProvider
     {
         return [
             ConfigAbstractFactory::class => [
+                TokenRepository::class => [
+                    ManagerRegistry::class,
+                ],
+                PasswordRepository::class => [
+                    ManagerRegistry::class,
+                ],
+                GrantRepository::class => [
+                    ManagerRegistry::class,
+                ],
                 GenerateTemporaryTokenAction::class => [
-                    EntityManager::class,
                     'TokenInputFilter',
                     TokenManagerInterface::class,
                     LoggerInterface::class,
                     'TokenHydrator',
                 ],
                 TokenMiddleware::class => [
-                    EntityManager::class,
+                    TokenRepository::class,
                 ],
                 ActivePasswordMiddleware::class => [
-                    EntityManager::class,
+                    PasswordRepository::class,
                 ],
                 HashStrategy::class => [
                     PasswordManager::class,
@@ -51,23 +63,25 @@ class ConfigProvider
                     PasswordManager::class,
                 ],
                 PasswordManager::class => [
-                    EntityManager::class,
+                    PasswordRepository::class,
                     LoggerInterface::class,
                 ],
                 TokenManager::class => [
+                    ManagerRegistry::class,
+                    UserRepository::class,
                     PasswordManagerInterface::class,
-                    EntityManager::class,
                     LoggerInterface::class,
                     PermissionManagerInterface::class,
                 ],
                 CreatePasswordAction::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
                     'PasswordInputFilter',
                     LoggerInterface::class,
                     'PasswordHydrator',
                 ],
                 UpdatePasswordAction::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
+                    PasswordRepository::class,
                     'UpdatePasswordInputFilter',
                     LoggerInterface::class,
                     PasswordManager::class,
@@ -79,19 +93,25 @@ class ConfigProvider
                     'GetTokenInputFilter',
                 ],
                 InvalidateTokenAction::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
                     LoggerInterface::class,
                     'TokenHydrator',
                 ],
                 InvalidateTokensAction::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
+                    TokenRepository::class,
+                    UserRepository::class,
                     LoggerInterface::class,
                     'TokenHydrator',
                 ],
             ],
             'doctrine' => [
-                'paths' => [
-                    'src/Authentication/Entities'
+                'entity_managers' => [
+                    'default' => [
+                        'paths' => [
+                            'src/Authentication/Entities',
+                        ],
+                    ],
                 ],
             ],
             'dependencies' => [

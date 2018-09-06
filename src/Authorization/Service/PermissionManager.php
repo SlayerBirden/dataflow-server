@@ -4,32 +4,29 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authorization\Service;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
-use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
+use Doctrine\Common\Collections\Selectable;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
-class PermissionManager implements PermissionManagerInterface
+final class PermissionManager implements PermissionManagerInterface
 {
     /**
-     * @var EntityManager
+     * @var Selectable
      */
-    private $entityManager;
+    private $permissionRepository;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(Selectable $permissionRepository)
     {
-        $this->entityManager = $entityManager;
+        $this->permissionRepository = $permissionRepository;
     }
 
     public function isAllowed(string $resource, User $user): bool
     {
-        $collection = $this->entityManager
-            ->getRepository(Permission::class)
-            ->matching(
-                Criteria::create()
-                    ->where(Criteria::expr()->eq('user', $user))
-                    ->andWhere(Criteria::expr()->eq('resource', $resource))
-            );
+        $collection = $this->permissionRepository->matching(
+            Criteria::create()
+                ->where(Criteria::expr()->eq('user', $user))
+                ->andWhere(Criteria::expr()->eq('resource', $resource))
+        );
 
         return !$collection->isEmpty();
     }

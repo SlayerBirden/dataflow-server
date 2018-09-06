@@ -3,9 +3,8 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Controller;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,17 +12,12 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class GetConfigsAction implements MiddlewareInterface
+final class GetConfigsAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -32,15 +26,19 @@ class GetConfigsAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var Selectable
+     */
+    private $dbConfigRepository;
 
     public function __construct(
-        EntityManager $entityManager,
+        Selectable $dbConfigRepository,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
+        $this->dbConfigRepository = $dbConfigRepository;
     }
 
     /**
@@ -72,10 +70,7 @@ class GetConfigsAction implements MiddlewareInterface
         try {
             $criteria = $this->buildCriteria($filters, $sorting, $page, $limit);
 
-            /** @var Collection $configs */
-            $configs = $this->entityManager
-                ->getRepository(DbConfiguration::class)
-                ->matching($criteria);
+            $configs = $this->dbConfigRepository->matching($criteria);
             // before collection load to count all records without pagination
             $count = $configs->count();
             if ($count > 0) {
@@ -129,7 +124,7 @@ class GetConfigsAction implements MiddlewareInterface
                 $criteria->andWhere(Criteria::expr()->eq($key, $value));
             }
         }
-        if ($sorting) {
+        if (! empty($sorting)) {
             foreach ($sorting as $key => $dir) {
                 $criteria->orderBy($sorting);
             }

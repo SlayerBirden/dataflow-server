@@ -6,7 +6,7 @@ namespace SlayerBirden\DataFlowServer\Authorization\Validation;
 use Psr\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Authorization\ResourceManagerInterface;
 
-class ResourceValidatorFactory
+final class ResourceValidatorFactory
 {
     /**
      * @param ContainerInterface $container

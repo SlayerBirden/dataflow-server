@@ -6,6 +6,7 @@ use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
+use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
@@ -23,6 +24,10 @@ class UpdatePasswordCest
      * @var \Psr\Log\LoggerInterface
      */
     private $logger;
+    /**
+     * @var PasswordManager
+     */
+    private $passwordManager;
 
     public function _inject(CleanDoctrine2 $cleanDoctrine2)
     {
@@ -41,14 +46,14 @@ class UpdatePasswordCest
         ]);
 
         $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
-        $passwordManager = new PasswordManager(
-            $this->doctrine->em,
+        $this->passwordManager = new PasswordManager(
+            new PasswordRepository($this->doctrine->registry),
             $this->logger
         );
 
         $I->haveInRepository(Password::class, [
             'owner' => $user,
-            'hash' => $passwordManager->getHash('test123'),
+            'hash' => $this->passwordManager->getHash('test123'),
             'createdAt' => new DateTime(),
             'due' => new DateTime('+1 year'),
             'active' => true,
@@ -89,11 +94,7 @@ class UpdatePasswordCest
         // check that new password works
         /** @var User $user */
         $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
-        $passwordManager = new PasswordManager(
-            $this->doctrine->em,
-            $this->logger
-        );
-        $valid = $passwordManager->isValidForUser('there is a clown on a wing', $user);
+        $valid = $this->passwordManager->isValidForUser('there is a clown on a wing', $user);
 
         $I->assertSame(true, $valid);
     }
@@ -154,13 +155,9 @@ class UpdatePasswordCest
         $I->wantTo('update my password using old password which is already in the system');
 
         $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
-        $passwordManager = new PasswordManager(
-            $this->doctrine->em,
-            $this->logger
-        );
         $I->haveInRepository(Password::class, [
             'owner' => $user,
-            'hash' => $passwordManager->getHash('old cool long password'),
+            'hash' => $this->passwordManager->getHash('old cool long password'),
             'createdAt' => new DateTime('-1 year'),
             'due' => new DateTime('-1 month'),
             'active' => false,

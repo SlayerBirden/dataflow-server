@@ -16,7 +16,7 @@ use Zend\Expressive\Application;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\ServiceManager\Factory\DelegatorFactoryInterface;
 
-class RoutesDelegator implements DelegatorFactoryInterface
+final class RoutesDelegator implements DelegatorFactoryInterface
 {
     public function __invoke(
         ContainerInterface $container,

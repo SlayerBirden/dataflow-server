@@ -7,7 +7,7 @@ use SlayerBirden\DataFlowServer\Authorization\ResourceManagerInterface;
 use Zend\Validator\AbstractValidator;
 use Zend\Validator\Exception\InvalidArgumentException;
 
-class ResourceValidator extends AbstractValidator
+final class ResourceValidator extends AbstractValidator
 {
     const INVALID = 'invalidResource';
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Middleware;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -14,17 +14,17 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Expressive\Router\RouteResult;
 
-class TokenMiddleware implements MiddlewareInterface
+final class TokenMiddleware implements MiddlewareInterface
 {
     const USER_PARAM = 'currentUser';
     /**
-     * @var EntityManager
+     * @var Selectable
      */
-    private $entityManager;
+    private $tokenRepository;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(Selectable $tokenRepository)
     {
-        $this->entityManager = $entityManager;
+        $this->tokenRepository = $tokenRepository;
     }
 
     /**
@@ -40,7 +40,7 @@ class TokenMiddleware implements MiddlewareInterface
                 'msg' => new DangerMessage('Empty Authorization header. Access denied.'),
             ], 401);
         }
-        $token = $this->getToken(reset($authorization));
+        $token = $this->getToken((string)reset($authorization));
         if (!$token || !$token->isActive() || ($token->getDue() < new \DateTime())) {
             return new JsonResponse([
                 'data' => [],
@@ -71,11 +71,9 @@ class TokenMiddleware implements MiddlewareInterface
     private function getToken(string $authorization): ?Token
     {
         $token = str_replace('Bearer ', '', $authorization);
-        $tokens = $this->entityManager
-            ->getRepository(Token::class)
-            ->matching(
-                Criteria::create()->where(Criteria::expr()->eq('token', $token))
-            );
+        $tokens = $this->tokenRepository->matching(
+            Criteria::create()->where(Criteria::expr()->eq('token', $token))
+        );
         if ($tokens->count()) {
             return $tokens->first();
         }

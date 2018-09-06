@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Middleware;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -15,20 +15,20 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 
-class DbConfigResourceMiddleware implements ResourceMiddlewareInterface
+final class DbConfigResourceMiddleware implements ResourceMiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(ManagerRegistry $managerRegistry, LoggerInterface $logger)
     {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->logger = $logger;
     }
 
@@ -42,7 +42,8 @@ class DbConfigResourceMiddleware implements ResourceMiddlewareInterface
 
         if ($id !== null) {
             try {
-                $dbConfig = $this->entityManager->find(DbConfiguration::class, $id);
+                $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
+                $dbConfig = $em->find(DbConfiguration::class, $id);
                 if ($dbConfig) {
                     return $handler->handle(
                         $request->withAttribute(self::DATA_RESOURCE, $dbConfig)

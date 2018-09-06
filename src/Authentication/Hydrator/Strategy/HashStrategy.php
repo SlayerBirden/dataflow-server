@@ -7,7 +7,7 @@ use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ObscuredStrategy;
 use Zend\Hydrator\Strategy\StrategyInterface;
 
-class HashStrategy implements StrategyInterface
+final class HashStrategy implements StrategyInterface
 {
     /**
      * @var PasswordManagerInterface

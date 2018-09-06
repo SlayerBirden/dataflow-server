@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Controller\AddConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
@@ -12,6 +12,7 @@ use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigHydratorFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Db\Repository\DbConfigurationRepository;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
@@ -24,20 +25,23 @@ class ConfigProvider
     {
         return [
             ConfigAbstractFactory::class => [
+                DbConfigurationRepository::class => [
+                    ManagerRegistry::class,
+                ],
                 AddConfigAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     'DbConfigHydrator',
                     'ConfigInputFilter',
                     LoggerInterface::class,
                 ],
                 UpdateConfigAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     'DbConfigHydrator',
                     'ConfigInputFilter',
                     LoggerInterface::class,
                 ],
                 GetConfigsAction::class => [
-                    EntityManagerInterface::class,
+                    DbConfigurationRepository::class,
                     LoggerInterface::class,
                     'DbConfigHydrator',
                 ],
@@ -45,7 +49,7 @@ class ConfigProvider
                     'DbConfigHydrator',
                 ],
                 DeleteConfigAction::class => [
-                    EntityManagerInterface::class,
+                    ManagerRegistry::class,
                     LoggerInterface::class,
                     'DbConfigHydrator',
                 ],
@@ -63,8 +67,12 @@ class ConfigProvider
                 ],
             ],
             'doctrine' => [
-                'paths' => [
-                    'src/Db/Entities'
+                'entity_managers' => [
+                    'default' => [
+                        'paths' => [
+                            'src/Db/Entities',
+                        ],
+                    ],
                 ],
             ],
             'validators' => [

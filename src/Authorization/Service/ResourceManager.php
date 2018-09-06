@@ -7,7 +7,7 @@ use SlayerBirden\DataFlowServer\Authorization\ResourceManagerInterface;
 use Zend\Expressive\Router\Route;
 use Zend\Expressive\Router\RouteCollector;
 
-class ResourceManager implements ResourceManagerInterface
+final class ResourceManager implements ResourceManagerInterface
 {
     /**
      * @var RouteCollector

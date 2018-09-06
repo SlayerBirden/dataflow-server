@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace Codeception\Module;
 
 use Codeception\TestInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\SchemaTool;
+use SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry;
 
 class CleanDoctrine2 extends Doctrine2
 {
@@ -16,6 +18,11 @@ modules:
         - CleanDoctrine2:
             depends: ZendExpressive3
 EOF;
+
+    /**
+     * @var ManagerRegistry|null
+     */
+    public $registry;
 
     /**
      * @inheritdoc
@@ -59,5 +66,13 @@ EOF;
 
         $this->clean();
         $this->em->getConnection()->close();
+    }
+
+    protected function retrieveEntityManager()
+    {
+        parent::retrieveEntityManager();
+        $this->registry = new SimpleRegistry([], [
+            SimpleRegistry::DEFAULT_MANAGER_NAME => $this->em,
+        ]);
     }
 }

@@ -49,7 +49,7 @@ class Token implements ClaimedResourceInterface
     private $owner;
     /**
      * @ORM\OneToMany(targetEntity="\SlayerBirden\DataFlowServer\Authentication\Entities\Grant", mappedBy="token")
-     * @var Grant[]
+     * @var Grant[]|Collection
      */
     private $grants;
 

@@ -5,6 +5,7 @@ namespace Codeception\Module;
 
 use Codeception\Configuration;
 use Codeception\Lib\Connector\ZendExpressive as ZendExpressiveConnector;
+use Doctrine\Common\Persistence\ManagerRegistry;
 
 class ZendExpressive3 extends ZendExpressive
 {
@@ -29,5 +30,16 @@ class ZendExpressive3 extends ZendExpressive
         $this->application = $app;
         // remove the init method, since emitter is not part of ze3
         $this->responseCollector = new ZendExpressiveConnector\ResponseCollector;
+    }
+
+    public function _getEntityManager()
+    {
+        if (!$this->container->has(ManagerRegistry::class)) {
+            throw new \PHPUnit\Framework\AssertionFailedError("Service ManagerRegistry is not available in container");
+        }
+        /** @var ManagerRegistry $registry */
+        $registry = $this->container->get(ManagerRegistry::class);
+
+        return $registry->getManager();
     }
 }

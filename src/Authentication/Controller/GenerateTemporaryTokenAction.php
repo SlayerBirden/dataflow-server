@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -13,21 +11,17 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class GenerateTemporaryTokenAction implements MiddlewareInterface
+final class GenerateTemporaryTokenAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var TokenManagerInterface
      */
@@ -46,13 +40,11 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
     private $inputFilter;
 
     public function __construct(
-        EntityManager $entityManager,
         InputFilterInterface $inputFilter,
         TokenManagerInterface $tokenManager,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
         $this->tokenManager = $tokenManager;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
@@ -65,6 +57,9 @@ class GenerateTemporaryTokenAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('token');
+        }
         $this->inputFilter->setData($data);
 
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);

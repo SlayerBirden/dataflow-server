@@ -12,12 +12,13 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedExcepti
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class GetTokenAction implements MiddlewareInterface
+final class GetTokenAction implements MiddlewareInterface
 {
     /**
      * @var TokenManagerInterface
@@ -48,6 +49,9 @@ class GetTokenAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('token');
+        }
         $this->inputFilter->setData($data);
 
         if (!$this->inputFilter->isValid()) {

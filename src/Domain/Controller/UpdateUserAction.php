@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -17,17 +17,14 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class UpdateUserAction implements MiddlewareInterface
+final class UpdateUserAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
     /**
      * @var HydratorInterface
      */
@@ -40,14 +37,18 @@ class UpdateUserAction implements MiddlewareInterface
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        ManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
@@ -59,6 +60,9 @@ class UpdateUserAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('user');
+        }
         $requestUser = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $this->inputFilter->setData($data);
 
@@ -67,8 +71,9 @@ class UpdateUserAction implements MiddlewareInterface
         }
         try {
             $user = $this->getUser($requestUser, $data);
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+            $em = $this->managerRegistry->getManagerForClass(User::class);
+            $em->persist($user);
+            $em->flush();
             return new JsonResponse([
                 'msg' => new SuccessMessage('User has been updated!'),
                 'success' => true,

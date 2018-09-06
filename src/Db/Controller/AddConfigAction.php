@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -14,17 +14,14 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class AddConfigAction implements MiddlewareInterface
+final class AddConfigAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
     /**
      * @var HydratorInterface
      */
@@ -37,14 +34,18 @@ class AddConfigAction implements MiddlewareInterface
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        ManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
@@ -56,6 +57,9 @@ class AddConfigAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('configuration');
+        }
         $this->inputFilter->setData($data);
 
         if (!$this->inputFilter->isValid()) {
@@ -63,8 +67,9 @@ class AddConfigAction implements MiddlewareInterface
         }
         try {
             $config = $this->getConfiguration($data);
-            $this->entityManager->persist($config);
-            $this->entityManager->flush();
+            $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
+            $em->persist($config);
+            $em->flush();
             return new JsonResponse([
                 'msg' => new SuccessMessage('Configuration has been successfully created!'),
                 'success' => true,

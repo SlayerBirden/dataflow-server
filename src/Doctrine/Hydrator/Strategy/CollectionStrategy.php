@@ -8,7 +8,7 @@ use Zend\Hydrator\Exception\InvalidArgumentException;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\Strategy\StrategyInterface;
 
-class CollectionStrategy implements StrategyInterface
+final class CollectionStrategy implements StrategyInterface
 {
     /**
      * @var HydratorInterface

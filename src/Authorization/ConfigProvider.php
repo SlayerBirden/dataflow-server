@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authorization;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Controller\GetResourcesAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\SavePermissionsAction;
+use SlayerBirden\DataFlowServer\Authorization\Repository\PermissionRepository;
 use SlayerBirden\DataFlowServer\Authorization\Service\HistoryManagement;
 use SlayerBirden\DataFlowServer\Authorization\Service\PermissionManager;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
@@ -24,8 +25,11 @@ class ConfigProvider
     {
         return [
             ConfigAbstractFactory::class => [
+                PermissionRepository::class => [
+                    ManagerRegistry::class,
+                ],
                 PermissionManager::class => [
-                    EntityManager::class,
+                    PermissionRepository::class,
                 ],
                 ResourceManager::class => [
                     RouteCollector::class,
@@ -34,10 +38,11 @@ class ConfigProvider
                     ResourceManagerInterface::class,
                 ],
                 HistoryManagement::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
                 ],
                 SavePermissionsAction::class => [
-                    EntityManager::class,
+                    ManagerRegistry::class,
+                    PermissionRepository::class,
                     LoggerInterface::class,
                     'PermissionsInputFilter',
                     HistoryManagementInterface::class,
@@ -45,8 +50,12 @@ class ConfigProvider
                 ],
             ],
             'doctrine' => [
-                'paths' => [
-                    'src/Authorization/Entities'
+                'entity_managers' => [
+                    'default' => [
+                        'paths' => [
+                            'src/Authorization/Entities',
+                        ],
+                    ],
                 ],
             ],
             'dependencies' => [

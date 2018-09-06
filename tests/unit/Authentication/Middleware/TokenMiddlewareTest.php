@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace DataFlow\Tests\Unit\Authentication\Middleware;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -29,17 +29,17 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
     /**
      * @var ObjectProphecy
      */
-    private $em;
+    private $requestHandler;
     /**
      * @var ObjectProphecy
      */
-    private $requestHandler;
+    private $tokenRepository;
 
 
     protected function setUp()
     {
-        $this->em = $this->prophesize(EntityManager::class);
-        $this->tokenMiddleware = new TokenMiddleware($this->em->reveal());
+        $this->tokenRepository = $this->prophesize(Selectable::class);
+        $this->tokenMiddleware = new TokenMiddleware($this->tokenRepository->reveal());
         $this->requestHandler = $this->prophesize(RequestHandlerInterface::class);
     }
 
@@ -55,10 +55,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $token->setGrants(new ArrayCollection([$grant]));
         $token->setOwner(new User());
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(1);
         $collection->first()->willReturn($token);
 
@@ -82,10 +80,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $token->setActive(true);
         $token->setDue(new \DateTime('+1 day'));
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(1);
         $collection->first()->willReturn($token);
 
@@ -121,10 +117,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $token->setActive(true);
         $token->setDue(new \DateTime('+1 day'));
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(0);
 
         /** @var JsonResponse $response */
@@ -147,10 +141,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $token->setActive(false);
         $token->setDue(new \DateTime('+1 day'));
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(1);
         $collection->first()->willReturn($token);
 
@@ -174,10 +166,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $token->setActive(true);
         $token->setDue(new \DateTime('-1 day'));
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(1);
         $collection->first()->willReturn($token);
 
@@ -204,10 +194,8 @@ class TokenMiddlewareTest extends \Codeception\Test\Unit
         $grant->setResource('test2');
         $token->setGrants(new ArrayCollection([$grant]));
 
-        $repo = $this->prophesize(\Doctrine\ORM\EntityRepository::class);
-        $this->em->getRepository(Argument::any())->willReturn($repo->reveal());
         $collection = $this->prophesize(\Doctrine\Common\Collections\Collection::class);
-        $repo->matching(Argument::any())->willReturn($collection->reveal());
+        $this->tokenRepository->matching(Argument::any())->willReturn($collection->reveal());
         $collection->count()->willReturn(1);
         $collection->first()->willReturn($token);
 

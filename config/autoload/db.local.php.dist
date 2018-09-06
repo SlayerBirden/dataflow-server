@@ -2,7 +2,9 @@
 declare(strict_types=1);
 
 return [
-    'db' => [
-        'url' => 'sqlite:///data/db/db.sqlite',
-    ]
+    'connections' => [
+        'default' => [
+            'url' => 'mysql://root:test123@mysql/dataflow-server',
+        ],
+    ],
 ];

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -12,17 +12,14 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class CreatePasswordAction implements MiddlewareInterface
+final class CreatePasswordAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var InputFilterInterface
      */
@@ -35,14 +32,18 @@ class CreatePasswordAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
     public function __construct(
-        EntityManager $entityManager,
+        ManagerRegistry $managerRegistry,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->inputFilter = $inputFilter;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
@@ -54,6 +55,9 @@ class CreatePasswordAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('password');
+        }
         $this->inputFilter->setData($data);
 
         if ($this->inputFilter->isValid()) {
@@ -85,8 +89,12 @@ class CreatePasswordAction implements MiddlewareInterface
         $data['due'] = (new \DateTime())->add(new \DateInterval('P1Y'))->format(\DateTime::RFC3339);
         $data['active'] = $data['active'] ?? true;
         $password = $this->hydrator->hydrate($data, new Password());
-        $this->entityManager->persist($password);
-        $this->entityManager->flush();
+        $em = $this->managerRegistry->getManagerForClass(Password::class);
+        if ($em === null) {
+            throw new \LogicException('Could not retrieve EntityManager.');
+        }
+        $em->persist($password);
+        $em->flush();
         return new JsonResponse([
             'msg' => new SuccessMessage('Password has been successfully created!'),
             'success' => true,

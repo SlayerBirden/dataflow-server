@@ -13,7 +13,7 @@ use Zend\Hydrator\Strategy\BooleanStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class TokenHydratorFactory implements FactoryInterface
+final class TokenHydratorFactory implements FactoryInterface
 {
     /**
      * @inheritdoc

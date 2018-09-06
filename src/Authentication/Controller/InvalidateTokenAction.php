@@ -3,8 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -12,16 +11,13 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class InvalidateTokenAction implements MiddlewareInterface
+final class InvalidateTokenAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -30,17 +26,20 @@ class InvalidateTokenAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, HydratorInterface $hydrator)
+    public function __construct(ManagerRegistry $managerRegistry, LoggerInterface $logger, HydratorInterface $hydrator)
     {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
     }
 
     /**
      * @inheritdoc
-     * @throws ORMException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -48,8 +47,18 @@ class InvalidateTokenAction implements MiddlewareInterface
         $token = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $token->setActive(false);
 
-        $this->entityManager->persist($token);
-        $this->entityManager->flush();
+        $em = $this->managerRegistry->getManagerForClass(get_class($token));
+        if ($em === null) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
+                'success' => false,
+                'data' => [
+                    'token' => null,
+                ]
+            ], 500);
+        }
+        $em->persist($token);
+        $em->flush();
         return new JsonResponse([
             'data' => [
                 'token' => $this->hydrator->extract($token),

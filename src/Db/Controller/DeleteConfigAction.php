@@ -3,25 +3,22 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class DeleteConfigAction implements MiddlewareInterface
+final class DeleteConfigAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -30,13 +27,17 @@ class DeleteConfigAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
+        ManagerRegistry $managerRegistry,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
     }
@@ -49,8 +50,9 @@ class DeleteConfigAction implements MiddlewareInterface
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
         try {
-            $this->entityManager->remove($dbConfig);
-            $this->entityManager->flush();
+            $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
+            $em->remove($dbConfig);
+            $em->flush();
             return new JsonResponse([
                 'msg' => new SuccessMessage('Configuration removed.'),
                 'success' => true,

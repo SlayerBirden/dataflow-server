@@ -3,26 +3,20 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class GetUsersAction implements MiddlewareInterface
+final class GetUsersAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -31,13 +25,17 @@ class GetUsersAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var Selectable
+     */
+    private $userRepository;
 
     public function __construct(
-        EntityManager $entityManager,
+        Selectable $userRepository,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
+        $this->userRepository = $userRepository;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
     }
@@ -56,10 +54,7 @@ class GetUsersAction implements MiddlewareInterface
         try {
             $criteria = $this->buildCriteria($filters, $sorting, $page, $limit);
 
-            /** @var Collection $users */
-            $users = $this->entityManager
-                ->getRepository(User::class)
-                ->matching($criteria);
+            $users = $this->userRepository->matching($criteria);
             // before collection load to count all records without pagination
             $count = $users->count();
 
@@ -110,7 +105,7 @@ class GetUsersAction implements MiddlewareInterface
                 $criteria->andWhere(Criteria::expr()->eq($key, $value));
             }
         }
-        if ($sorting) {
+        if (! empty($sorting)) {
             foreach ($sorting as $key => $dir) {
                 $criteria->orderBy($sorting);
             }

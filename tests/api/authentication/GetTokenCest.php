@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Codeception\Module\CleanDoctrine2;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
+use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -34,7 +35,7 @@ class GetTokenCest
             new \Monolog\Handler\NoopHandler()
         ]);
         $passwordManager = new PasswordManager(
-            $this->doctrine->em,
+            new PasswordRepository($this->doctrine->registry),
             $logger
         );
         $I->haveInRepository(Password::class, [

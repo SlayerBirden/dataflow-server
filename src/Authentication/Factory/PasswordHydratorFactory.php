@@ -12,7 +12,7 @@ use Zend\Hydrator\Strategy\BooleanStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class PasswordHydratorFactory implements FactoryInterface
+final class PasswordHydratorFactory implements FactoryInterface
 {
     /**
      * @inheritdoc

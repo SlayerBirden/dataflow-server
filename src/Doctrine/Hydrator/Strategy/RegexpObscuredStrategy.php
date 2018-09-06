@@ -5,7 +5,7 @@ namespace SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy;
 
 use Zend\Hydrator\Strategy\StrategyInterface;
 
-class RegexpObscuredStrategy implements StrategyInterface
+final class RegexpObscuredStrategy implements StrategyInterface
 {
     /**
      * @var string

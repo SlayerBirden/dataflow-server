@@ -5,7 +5,7 @@ namespace SlayerBirden\DataFlowServer\Db\Validation;
 
 use Zend\Validator\AbstractValidator;
 
-class ConfigValidator extends AbstractValidator
+final class ConfigValidator extends AbstractValidator
 {
     const INVALID_VALUE = 'invalidValue';
 

@@ -9,7 +9,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\RegexpObscuredStrateg
 use Zend\Hydrator\ClassMethods;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class DbConfigHydratorFactory implements FactoryInterface
+final class DbConfigHydratorFactory implements FactoryInterface
 {
     /**
      * @inheritdoc

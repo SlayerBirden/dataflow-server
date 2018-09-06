@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Service;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsException;
@@ -12,32 +12,30 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordExpiredExceptio
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
-class PasswordManager implements PasswordManagerInterface
+final class PasswordManager implements PasswordManagerInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var Selectable
+     */
+    private $passwordRepository;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
+    public function __construct(Selectable $passwordRepository, LoggerInterface $logger)
     {
-        $this->entityManager = $entityManager;
+        $this->passwordRepository = $passwordRepository;
         $this->logger = $logger;
     }
 
     public function isValidForUser(string $password, User $user): bool
     {
-        $results = $this->entityManager
-            ->getRepository(Password::class)
-            ->matching(
-                Criteria::create()
-                    ->where(Criteria::expr()->eq('owner', $user))
-                    ->andWhere(Criteria::expr()->eq('active', true))
-            );
+        $results = $this->passwordRepository->matching(
+            Criteria::create()
+                ->where(Criteria::expr()->eq('owner', $user))
+                ->andWhere(Criteria::expr()->eq('active', true))
+        );
         if ($results->count()) {
             /** @var Password $pw */
             $pw = $results->first();

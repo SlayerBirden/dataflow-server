@@ -11,7 +11,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class GetUserAction implements MiddlewareInterface
+final class GetUserAction implements MiddlewareInterface
 {
     /**
      * @var HydratorInterface

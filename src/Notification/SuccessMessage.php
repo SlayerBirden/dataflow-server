@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Notification;
 
-class SuccessMessage extends AbstractMessage
+final class SuccessMessage extends AbstractMessage
 {
     /**
      * @var string

@@ -9,9 +9,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 
-class PasswordConfirmationMiddleware implements MiddlewareInterface
+final class PasswordConfirmationMiddleware implements MiddlewareInterface
 {
     /**
      * @var PasswordManagerInterface
@@ -29,7 +30,9 @@ class PasswordConfirmationMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
-
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())();
+        }
         $password = $data['password'] ?? null;
 
         if (empty($password)) {

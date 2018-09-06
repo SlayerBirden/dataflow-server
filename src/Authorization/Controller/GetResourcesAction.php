@@ -10,7 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
 use Zend\Diactoros\Response\JsonResponse;
 
-class GetResourcesAction implements MiddlewareInterface
+final class GetResourcesAction implements MiddlewareInterface
 {
     /**
      * @var ResourceManager

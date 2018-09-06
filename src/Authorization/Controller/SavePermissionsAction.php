@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authorization\Controller;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
+use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,17 +20,14 @@ use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
 
-class SavePermissionsAction implements MiddlewareInterface
+final class SavePermissionsAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -45,15 +44,25 @@ class SavePermissionsAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
+    /**
+     * @var Selectable
+     */
+    private $permissionRepository;
 
     public function __construct(
-        EntityManager $entityManager,
+        ManagerRegistry $managerRegistry,
+        Selectable $permissionRepository,
         LoggerInterface $logger,
         InputFilterInterface $inputFilter,
         HistoryManagementInterface $historyManagement,
         HydratorInterface $hydrator
     ) {
-        $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
+        $this->permissionRepository = $permissionRepository;
         $this->logger = $logger;
         $this->inputFilter = $inputFilter;
         $this->historyManagement = $historyManagement;
@@ -66,13 +75,35 @@ class SavePermissionsAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('permissions', []);
+        }
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
         $this->inputFilter->setData($data);
         if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('permissions', $this->inputFilter, []);
         }
-        $this->entityManager->beginTransaction();
+        $em = $this->managerRegistry->getManagerForClass(Permission::class);
+        if ($em === null) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
+                'success' => false,
+                'data' => [
+                    'token' => null,
+                ]
+            ], 500);
+        }
+        if (!($em instanceof EntityManagerInterface)) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Can not use current ObjectManager'),
+                'success' => false,
+                'data' => [
+                    'token' => null,
+                ]
+            ], 500);
+        }
+        $em->beginTransaction();
         try {
             $permissions = $this->processResources(
                 $user,
@@ -82,8 +113,8 @@ class SavePermissionsAction implements MiddlewareInterface
             if (empty($permissions)) {
                 $msg = new SuccessMessage('No changes detected. The input is identical to the storage.');
             } else {
-                $this->entityManager->flush();
-                $this->entityManager->commit();
+                $em->flush();
+                $em->commit();
                 $msg = new SuccessMessage('Successfully set permissions to resources.');
             }
 
@@ -96,7 +127,7 @@ class SavePermissionsAction implements MiddlewareInterface
             ], 200);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            $this->entityManager->rollback();
+            $em->rollback();
 
             return new JsonResponse([
                 'msg' => new DangerMessage('There was an error while setting the permissions.'),
@@ -118,9 +149,9 @@ class SavePermissionsAction implements MiddlewareInterface
     private function processResources(User $user, User $owner, string ...$resources): array
     {
         $result = [];
-        $collection = $this->entityManager
-            ->getRepository(Permission::class)
-            ->matching(Criteria::create()->where(Criteria::expr()->eq('user', $user)));
+        $collection = $this->permissionRepository->matching(
+            Criteria::create()->where(Criteria::expr()->eq('user', $user))
+        );
 
         $currentResources = array_map(function (Permission $permission) {
             return $permission->getResource();
@@ -144,17 +175,20 @@ class SavePermissionsAction implements MiddlewareInterface
      * @param $toRemove
      * @param $owner
      * @param $result
-     * @throws ORMException
      */
     private function processItemsToRemove($collection, $toRemove, $owner, &$result): void
     {
+        $em = $this->managerRegistry->getManagerForClass(Permission::class);
+        if ($em === null) {
+            throw new \LogicException('Could not obtain ObjectManager');
+        }
         /** @var Permission $permission */
         foreach ($collection as $permission) {
             if (in_array($permission->getResource(), $toRemove, true)) {
-                $this->entityManager->remove($permission);
+                $em->remove($permission);
                 $history = $this->historyManagement->fromPermission($permission);
                 $history->setOwner($owner);
-                $this->entityManager->persist($history);
+                $em->persist($history);
 
             } else {
                 $result[] = $permission;
@@ -171,15 +205,19 @@ class SavePermissionsAction implements MiddlewareInterface
      */
     private function processItemsToAdd($toAdd, $user, $owner, &$result): void
     {
+        $em = $this->managerRegistry->getManagerForClass(Permission::class);
+        if ($em === null) {
+            throw new \LogicException('Could not obtain ObjectManager');
+        }
         foreach ($toAdd as $resource) {
             $permission = new Permission();
             $permission->setResource($resource);
             $permission->setUser($user);
             $result[] = $permission;
-            $this->entityManager->persist($permission);
+            $em->persist($permission);
             $history = $this->historyManagement->fromPermission($permission);
             $history->setOwner($owner);
-            $this->entityManager->persist($history);
+            $em->persist($history);
         }
     }
 }

@@ -7,7 +7,7 @@ use Interop\Container\ContainerInterface;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-class ProxyFilterManagerFactory implements FactoryInterface
+final class ProxyFilterManagerFactory implements FactoryInterface
 {
     /**
      * @inheritdoc

@@ -14,7 +14,7 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 
-class ValidateOwnerMiddleware implements MiddlewareInterface
+final class ValidateOwnerMiddleware implements MiddlewareInterface
 {
     /**
      * @inheritdoc

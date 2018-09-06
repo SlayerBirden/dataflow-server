@@ -4,27 +4,45 @@ declare(strict_types=1);
 return [
     'dependencies' => [
         'factories' => [
-            \Doctrine\ORM\EntityManager::class => \SlayerBirden\DataFlowServer\Doctrine\EntityManagerFactory::class,
+            \SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry::class =>
+                \SlayerBirden\DataFlowServer\Doctrine\Factory\ManagerRegistryFactory::class,
             \Doctrine\ORM\Mapping\UnderscoreNamingStrategy::class =>
                 \Zend\ServiceManager\Factory\InvokableFactory::class,
         ],
         'aliases' => [
-            \Doctrine\ORM\EntityManagerInterface::class => \Doctrine\ORM\EntityManager::class,
+            \Doctrine\Common\Persistence\ManagerRegistry::class =>
+                \SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry::class,
         ]
     ],
     'doctrine' => [
-        /* Add global project paths here if any */
+        'entity_managers' => [
+            'default' => [
+                /*
+                 * Add global project paths here if any
+                 * All local paths are defined in modules
+                */
+                /*
+                'paths' => [
+                    'src/...'
+                ],
+                */
+                /*
+                 * dev_mode is supplied into Setup::createAnnotationMetadataConfiguration
+                 */
+                'dev_mode' => false,
+                'naming_strategy' => \Doctrine\ORM\Mapping\UnderscoreNamingStrategy::class,
+                'connection' => 'default',
+                'proxy_dir' => 'data/',
+            ],
+        ],
         /*
-        'paths' => [
-            'src/...'
+         * Explicitly specify which Entities map to which EM
+         * Should be defined in modules
+         */
+        /*
+        'entity_manager_mapping' => [
+            '\\Some\\Class' => 'some_em',
         ],
         */
-        'dev_mode' => false,
-        /**
-         * Can resolve services as argument names if applicable
-         */
-        'configuration' => [
-            'naming_strategy' => \Doctrine\ORM\Mapping\UnderscoreNamingStrategy::class
-        ]
     ]
 ];

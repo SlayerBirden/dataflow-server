@@ -8,7 +8,7 @@ use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\InputFilter\InputFilterInterface;
 
-class ValidationResponseFactory
+final class ValidationResponseFactory
 {
     /**
      * Create Validation response object

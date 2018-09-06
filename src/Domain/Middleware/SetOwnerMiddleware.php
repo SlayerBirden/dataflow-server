@@ -9,8 +9,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 
-class SetOwnerMiddleware implements MiddlewareInterface
+final class SetOwnerMiddleware implements MiddlewareInterface
 {
     /**
      * @inheritdoc
@@ -18,6 +19,9 @@ class SetOwnerMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())();
+        }
 
         $user = $request->getAttribute(TokenMiddleware::USER_PARAM);
         if ($user) {

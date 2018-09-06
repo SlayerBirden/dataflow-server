@@ -4,25 +4,22 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMException;
+use Doctrine\Common\Collections\Selectable;
+use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
-use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use SlayerBirden\DataFlowServer\Notification\SuccessMessage;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use Zend\Diactoros\Response\JsonResponse;
 use Zend\Hydrator\HydratorInterface;
 
-class InvalidateTokensAction implements MiddlewareInterface
+final class InvalidateTokensAction implements MiddlewareInterface
 {
-    /**
-     * @var EntityManager
-     */
-    private $entityManager;
     /**
      * @var LoggerInterface
      */
@@ -31,22 +28,42 @@ class InvalidateTokensAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
+    /**
+     * @var ManagerRegistry
+     */
+    private $managerRegistry;
+    /**
+     * @var Selectable
+     */
+    private $tokenRepository;
+    /**
+     * @var Selectable
+     */
+    private $userRepository;
 
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, HydratorInterface $hydrator)
-    {
-        $this->entityManager = $entityManager;
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        Selectable $tokenRepository,
+        Selectable $userRepository,
+        LoggerInterface $logger,
+        HydratorInterface $hydrator
+    ) {
+        $this->managerRegistry = $managerRegistry;
+        $this->tokenRepository = $tokenRepository;
+        $this->userRepository = $userRepository;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
     }
 
     /**
      * {@inheritdoc}
-     * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getParsedBody();
+        if (!is_array($data)) {
+            return (new DataValidationResponseFactory())('tokens', []);
+        }
 
         $users = $data['users'] ?? [];
         return $this->invalidate($users);
@@ -55,8 +72,6 @@ class InvalidateTokensAction implements MiddlewareInterface
     /**
      * @param array $users
      * @return ResponseInterface
-     * @throws ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function invalidate(array $users = []): ResponseInterface
     {
@@ -66,9 +81,7 @@ class InvalidateTokensAction implements MiddlewareInterface
             $criteria->andWhere(Criteria::expr()->in('owner', $this->getUsers($users)));
         }
 
-        $collection = $this->entityManager
-            ->getRepository(Token::class)
-            ->matching($criteria);
+        $collection = $this->tokenRepository->matching($criteria);
 
         if ($collection->count() === 0) {
             return new JsonResponse([
@@ -80,11 +93,21 @@ class InvalidateTokensAction implements MiddlewareInterface
                 'msg' => new SuccessMessage('No tokens found to invalidate for given criteria.'),
             ], 400);
         }
+        $em = $this->managerRegistry->getManagerForClass(Token::class);
+        if ($em === null) {
+            return new JsonResponse([
+                'msg' => new DangerMessage('Could not retrieve ObjectManager'),
+                'success' => false,
+                'data' => [
+                    'token' => null,
+                ]
+            ], 500);
+        }
         foreach ($collection as $token) {
             $token->setActive(false);
-            $this->entityManager->persist($token);
+            $em->persist($token);
         }
-        $this->entityManager->flush();
+        $em->flush();
         return new JsonResponse([
             'data' => [
                 'count' => $collection->count(),
@@ -97,11 +120,9 @@ class InvalidateTokensAction implements MiddlewareInterface
 
     private function getUsers(array $users): array
     {
-        $collection = $this->entityManager
-            ->getRepository(User::class)
-            ->matching(
-                Criteria::create()->where(Criteria::expr()->in('id', $users))
-            );
+        $collection = $this->userRepository->matching(
+            Criteria::create()->where(Criteria::expr()->in('id', $users))
+        );
         return $collection->toArray();
     }
 }

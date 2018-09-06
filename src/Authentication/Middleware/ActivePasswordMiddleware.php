@@ -4,26 +4,25 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Authentication\Middleware;
 
 use Doctrine\Common\Collections\Criteria;
-use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\Selectable;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
 use Zend\Diactoros\Response\JsonResponse;
 
-class ActivePasswordMiddleware implements MiddlewareInterface
+final class ActivePasswordMiddleware implements MiddlewareInterface
 {
     /**
-     * @var EntityManager
+     * @var Selectable
      */
-    private $entityManager;
+    private $passwordRepository;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(Selectable $passwordRepository)
     {
-        $this->entityManager = $entityManager;
+        $this->passwordRepository = $passwordRepository;
     }
 
     /**
@@ -49,13 +48,11 @@ class ActivePasswordMiddleware implements MiddlewareInterface
 
     private function hasActivePassword(User $user): bool
     {
-        $collection = $this->entityManager
-            ->getRepository(Password::class)
-            ->matching(
-                Criteria::create()
-                    ->where(Criteria::expr()->eq('owner', $user))
-                    ->andWhere(Criteria::expr()->eq('active', true))
-            );
+        $collection = $this->passwordRepository->matching(
+            Criteria::create()
+                ->where(Criteria::expr()->eq('owner', $user))
+                ->andWhere(Criteria::expr()->eq('active', true))
+        );
 
         return !$collection->isEmpty();
     }
