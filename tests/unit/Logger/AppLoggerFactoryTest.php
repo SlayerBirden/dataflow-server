@@ -14,6 +14,9 @@ class AppLoggerFactoryTest extends \Codeception\Test\Unit
      */
     protected $tester;
 
+    /**
+     * @throws \Exception
+     */
     public function testHandlers()
     {
         $serviceManager = new ServiceManager();
@@ -33,6 +36,9 @@ class AppLoggerFactoryTest extends \Codeception\Test\Unit
         $this->assertCount(1, $handlers);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function testServiceHandlers()
     {
         $serviceManager = new ServiceManager();

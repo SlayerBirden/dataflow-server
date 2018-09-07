@@ -6,17 +6,17 @@ namespace SlayerBirden\DataFlowServer\Db\Repository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 
 final class DbConfigurationRepository implements Selectable
 {
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(EntityManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
     }

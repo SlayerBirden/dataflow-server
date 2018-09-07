@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace codecept;
+namespace codecept\authentication;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
@@ -39,7 +40,7 @@ class CreatePasswordCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createPasswordSuccess(ApiTester $I)
     {
@@ -66,7 +67,7 @@ class CreatePasswordCest
     /**
      * @param ApiTester $I
      * @param int $userId
-     * @throws Exception
+     * @throws \Exception
      */
     private function authForUser(ApiTester $I, int $userId)
     {
@@ -84,7 +85,7 @@ class CreatePasswordCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createPasswordNoPasswordProvided(ApiTester $I)
     {
@@ -156,6 +157,25 @@ class CreatePasswordCest
                         'field' => 'password'
                     ]
                 ],
+            ],
+        ]);
+    }
+
+    /**
+     * @param ApiTester $I
+     * @throws \Exception
+     */
+    public function createPasswordNoPost(ApiTester $I)
+    {
+        $I->wantTo('send password creation request without any body');
+        $this->authForUser($I, $this->userId);
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/password');
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson([
+            'success' => false,
+            'data' => [
+                'password' => null,
             ],
         ]);
     }

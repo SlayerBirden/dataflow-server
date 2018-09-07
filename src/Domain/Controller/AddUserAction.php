@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain\Controller;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
@@ -12,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
@@ -35,12 +35,12 @@ final class AddUserAction implements MiddlewareInterface
      */
     private $logger;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger
@@ -79,6 +79,9 @@ final class AddUserAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error during creation operation.', 'user', 400);
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            return (new GeneralErrorResponseFactory())('Internal error', 'user');
         }
     }
 

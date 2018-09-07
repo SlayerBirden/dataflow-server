@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -11,6 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
@@ -26,12 +26,15 @@ final class InvalidateTokenAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry, LoggerInterface $logger, HydratorInterface $hydrator)
-    {
+    public function __construct(
+        EntityManagerRegistry $managerRegistry,
+        LoggerInterface $logger,
+        HydratorInterface $hydrator
+    ) {
         $this->managerRegistry = $managerRegistry;
         $this->logger = $logger;
         $this->hydrator = $hydrator;
@@ -46,12 +49,16 @@ final class InvalidateTokenAction implements MiddlewareInterface
         $token = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $token->setActive(false);
 
-        $em = $this->managerRegistry->getManagerForClass(get_class($token));
-        if ($em === null) {
-            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'token');
+        try {
+            $em = $this->managerRegistry->getManagerForClass(get_class($token));
+            $em->persist($token);
+            $em->flush();
+            $msg = 'Token invalidated.';
+            return (new GeneralSuccessResponseFactory())($msg, 'token', $this->hydrator->extract($token));
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            $msg = 'There was an error during token invalidation';
+            return (new GeneralErrorResponseFactory())($msg, 'token');
         }
-        $em->persist($token);
-        $em->flush();
-        return (new GeneralSuccessResponseFactory())('Token invalidated.', 'token', $this->hydrator->extract($token));
     }
 }

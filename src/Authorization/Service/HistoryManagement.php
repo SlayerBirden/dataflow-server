@@ -3,12 +3,11 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authorization\Service;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\UnitOfWork;
 use SlayerBirden\DataFlowServer\Authorization\Entities\History;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Authorization\HistoryManagementInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 
 final class HistoryManagement implements HistoryManagementInterface
 {
@@ -16,24 +15,23 @@ final class HistoryManagement implements HistoryManagementInterface
     const ACTION_REMOVE = 'removed';
     const ACTION_UNKNOWN = 'unknown';
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(EntityManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
     }
 
+    /**
+     * @param Permission $permission
+     * @return History
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function fromPermission(Permission $permission): History
     {
         $em = $this->managerRegistry->getManagerForClass(Permission::class);
-        if ($em === null) {
-            throw new \LogicException('Could not obtain ObjectManager');
-        }
-        if (!($em instanceof EntityManagerInterface)) {
-            throw new \LogicException('Could not use ObjectManager');
-        }
         $state = $em->getUnitOfWork()->getEntityState($permission);
 
         switch ($state) {

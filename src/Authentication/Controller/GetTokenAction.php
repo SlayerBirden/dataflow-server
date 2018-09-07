@@ -7,6 +7,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsException;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
@@ -31,15 +32,21 @@ final class GetTokenAction implements MiddlewareInterface
      * @var InputFilterInterface
      */
     private $inputFilter;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     public function __construct(
         TokenManagerInterface $tokenManager,
         ExtractionInterface $extraction,
-        InputFilterInterface $inputFilter
+        InputFilterInterface $inputFilter,
+        LoggerInterface $logger
     ) {
         $this->tokenManager = $tokenManager;
         $this->extraction = $extraction;
         $this->inputFilter = $inputFilter;
+        $this->logger = $logger;
     }
 
     /**
@@ -67,6 +74,10 @@ final class GetTokenAction implements MiddlewareInterface
         } catch (PermissionDeniedException $exception) {
             $msg = 'Provided user does not have permission to access requested resources.';
             return (new GeneralErrorResponseFactory())($msg, 'token', 403);
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            $msg = 'There was an error when creating your token';
+            return (new GeneralErrorResponseFactory())($msg, 'token');
         }
     }
 }

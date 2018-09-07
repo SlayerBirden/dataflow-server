@@ -54,6 +54,7 @@ final class ResourceValidator extends AbstractValidator
             if (!in_array($resource, $all, true)) {
                 $this->resource = $resource;
                 $this->error(self::INVALID);
+                return false;
             }
         }
 

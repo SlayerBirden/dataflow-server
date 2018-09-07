@@ -10,7 +10,7 @@ return [
                 \Zend\ServiceManager\Factory\InvokableFactory::class,
         ],
         'aliases' => [
-            \Doctrine\Common\Persistence\ManagerRegistry::class =>
+            \SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry::class =>
                 \SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry::class,
         ]
     ],

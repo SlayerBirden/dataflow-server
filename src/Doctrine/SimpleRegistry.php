@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Doctrine;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 
-final class SimpleRegistry implements ManagerRegistry
+final class SimpleRegistry implements EntityManagerRegistry
 {
     const DEFAULT_CONNECTION_NAME = 'default';
     const DEFAULT_MANAGER_NAME = 'default';

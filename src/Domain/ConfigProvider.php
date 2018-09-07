@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Domain;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Controller\AddUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
@@ -22,107 +22,127 @@ class ConfigProvider
     public function __invoke(): array
     {
         return [
-            ConfigAbstractFactory::class => [
-                UserRepository::class => [
-                    ManagerRegistry::class,
-                ],
-                AddUserAction::class => [
-                    ManagerRegistry::class,
-                    ClassMethods::class,
-                    'UserInputFilter',
-                    LoggerInterface::class,
-                ],
-                UpdateUserAction::class => [
-                    ManagerRegistry::class,
-                    ClassMethods::class,
-                    'UserInputFilter',
-                    LoggerInterface::class,
-                ],
-                GetUserAction::class => [
-                    ClassMethods::class,
-                ],
-                GetUsersAction::class => [
-                    UserRepository::class,
-                    LoggerInterface::class,
-                    ClassMethods::class,
-                ],
-                DeleteUserAction::class => [
-                    ManagerRegistry::class,
-                    LoggerInterface::class,
-                    ClassMethods::class,
-                ],
+            ConfigAbstractFactory::class => $this->getAbstractFactoryConfig(),
+            'doctrine' => $this->getDoctrineConfig(),
+            'dependencies' => $this->getDependenciesConfig(),
+            'input_filter_specs' => [
+                'UserInputFilter' => $this->getUserInputFilterSpec(),
             ],
-            'doctrine' => [
-                'entity_managers' => [
-                    'default' => [
-                        'paths' => [
-                            'src/Domain/Entities',
-                        ],
-                    ],
-                ],
-            ],
-            'dependencies' => [
-                'delegators' => [
-                    Application::class => [
-                        Factory\RoutesDelegator::class,
+        ];
+    }
+
+    private function getUserInputFilterSpec(): array
+    {
+        return [
+            'first' => [
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
                     ]
                 ],
-                'factories' => [
-                    'UserInputFilter' => ProxyFilterManagerFactory::class,
-                    'UserResourceMiddleware' => UserResourceMiddlewareFactory::class,
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'alpha',
+                    ],
+                ]
+            ],
+            'last' => [
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ]
+                ],
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'alpha',
+                    ],
+                ]
+            ],
+            'email' => [
+                'required' => true,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ]
+                ],
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'emailAddress',
+                    ],
                 ],
             ],
-            'input_filter_specs' => [
-                'UserInputFilter' => [
-                    'first' => [
-                        'required' => true,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
-                        'validators' => [
-                            [
-                                'name' => 'notempty',
-                            ],
-                            [
-                                'name' => 'alpha',
-                            ],
-                        ]
-                    ],
-                    'last' => [
-                        'required' => true,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
-                        'validators' => [
-                            [
-                                'name' => 'notempty',
-                            ],
-                            [
-                                'name' => 'alpha',
-                            ],
-                        ]
-                    ],
-                    'email' => [
-                        'required' => true,
-                        'filters' => [
-                            [
-                                'name' => 'stringtrim',
-                            ]
-                        ],
-                        'validators' => [
-                            [
-                                'name' => 'notempty',
-                            ],
-                            [
-                                'name' => 'emailAddress',
-                            ],
-                        ],
+        ];
+    }
+
+    private function getAbstractFactoryConfig(): array
+    {
+        return [
+            UserRepository::class => [
+                EntityManagerRegistry::class,
+            ],
+            AddUserAction::class => [
+                EntityManagerRegistry::class,
+                ClassMethods::class,
+                'UserInputFilter',
+                LoggerInterface::class,
+            ],
+            UpdateUserAction::class => [
+                EntityManagerRegistry::class,
+                ClassMethods::class,
+                'UserInputFilter',
+                LoggerInterface::class,
+            ],
+            GetUserAction::class => [
+                ClassMethods::class,
+            ],
+            GetUsersAction::class => [
+                UserRepository::class,
+                LoggerInterface::class,
+                ClassMethods::class,
+            ],
+            DeleteUserAction::class => [
+                EntityManagerRegistry::class,
+                LoggerInterface::class,
+                ClassMethods::class,
+            ],
+        ];
+    }
+
+    private function getDoctrineConfig(): array
+    {
+        return [
+            'entity_managers' => [
+                'default' => [
+                    'paths' => [
+                        'src/Domain/Entities',
                     ],
                 ],
+            ],
+        ];
+    }
+
+    private function getDependenciesConfig(): array
+    {
+        return [
+            'delegators' => [
+                Application::class => [
+                    Factory\RoutesDelegator::class,
+                ]
+            ],
+            'factories' => [
+                'UserInputFilter' => ProxyFilterManagerFactory::class,
+                'UserResourceMiddleware' => UserResourceMiddlewareFactory::class,
             ],
         ];
     }

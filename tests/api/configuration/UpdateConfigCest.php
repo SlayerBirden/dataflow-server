@@ -1,7 +1,8 @@
 <?php
 
-namespace codecept;
+namespace codecept\configuration;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;

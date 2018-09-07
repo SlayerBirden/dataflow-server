@@ -1,22 +1,26 @@
 tools:
     external_code_coverage:
         timeout: 600
+        runs: 2
     php_code_coverage:
         enabled: true
     php_code_sniffer:
         enabled: true
         config:
             standard: PSR2
-    php_cpd:
+    php_cpd: false
+    php_sim:
         enabled: true
-        excluded_dirs: ["docs", "examples", "tests", "vendor"]
+        filter:
+            paths: ["src"]
     php_cs_fixer:
         enabled: true
         config:
             level: psr2
     php_loc:
         enabled: true
-        excluded_dirs: ["docs", "examples", "tests", "vendor"]
+        filter:
+            paths: ["src"]
     php_mess_detector:
         enabled: true
         config:
@@ -24,7 +28,8 @@ tools:
             design_rules: { eval_expression: false }
     php_pdepend:
         enabled: true
-        excluded_dirs: ["docs", "examples", "tests", "vendor"]
+        filter:
+            paths: ["src"]
     php_analyzer:
         enabled: true
     php_hhvm:

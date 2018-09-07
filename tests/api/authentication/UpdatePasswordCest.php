@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace codecept;
+namespace codecept\authentication;
 
+use codecept\ApiTester;
 use codecept\Helper\CleanDoctrine2;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;

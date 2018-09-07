@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace codecept;
+namespace codecept\authentication;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -38,7 +39,7 @@ class GenerateTmpTokenCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createTmpTokenSuccess(ApiTester $I)
     {
@@ -65,7 +66,7 @@ class GenerateTmpTokenCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createTmpTokenForNonExistingUser(ApiTester $I)
     {
@@ -84,7 +85,7 @@ class GenerateTmpTokenCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createTmpTokenNotPermitted(ApiTester $I)
     {
@@ -103,7 +104,7 @@ class GenerateTmpTokenCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createTmpTokenValidationError(ApiTester $I)
     {
@@ -127,7 +128,7 @@ class GenerateTmpTokenCest
 
     /**
      * @param ApiTester $I
-     * @throws Exception
+     * @throws \Exception
      */
     public function createTmpTokenValidationErrorNonExistingResource(ApiTester $I)
     {

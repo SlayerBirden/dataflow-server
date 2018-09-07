@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
@@ -32,12 +32,12 @@ final class CreatePasswordAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
         HydratorInterface $hydrator
@@ -63,6 +63,7 @@ final class CreatePasswordAction implements MiddlewareInterface
             try {
                 return $this->createPassword($data);
             } catch (\Exception $exception) {
+                $this->logger->error((string)$exception);
                 return (new GeneralErrorResponseFactory())('There was an error while creating password.', 'password');
             }
         } else {
@@ -82,9 +83,6 @@ final class CreatePasswordAction implements MiddlewareInterface
         $data['active'] = $data['active'] ?? true;
         $password = $this->hydrator->hydrate($data, new Password());
         $em = $this->managerRegistry->getManagerForClass(Password::class);
-        if ($em === null) {
-            throw new \LogicException('Could not retrieve EntityManager.');
-        }
         $em->persist($password);
         $em->flush();
         $msg = 'Password has been successfully created!';

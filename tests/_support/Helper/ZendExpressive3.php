@@ -5,7 +5,7 @@ namespace codecept\Helper;
 
 use Codeception\Configuration;
 use Codeception\Lib\Connector\ZendExpressive as ZendExpressiveConnector;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 
 class ZendExpressive3 extends \Codeception\Module\ZendExpressive
 {
@@ -34,11 +34,13 @@ class ZendExpressive3 extends \Codeception\Module\ZendExpressive
 
     public function _getEntityManager()
     {
-        if (!$this->container->has(ManagerRegistry::class)) {
-            throw new \PHPUnit\Framework\AssertionFailedError("Service ManagerRegistry is not available in container");
+        if (!$this->container->has(EntityManagerRegistry::class)) {
+            throw new \PHPUnit\Framework\AssertionFailedError(
+                "Service EntityManagerRegistry is not available in container"
+            );
         }
-        /** @var ManagerRegistry $registry */
-        $registry = $this->container->get(ManagerRegistry::class);
+        /** @var EntityManagerRegistry $registry */
+        $registry = $this->container->get(EntityManagerRegistry::class);
 
         return $registry->getManager();
     }

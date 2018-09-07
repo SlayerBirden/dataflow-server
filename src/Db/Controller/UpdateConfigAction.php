@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Controller;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\ORMInvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -13,6 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
@@ -35,12 +35,12 @@ final class UpdateConfigAction implements MiddlewareInterface
      */
     private $inputFilter;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger
@@ -78,6 +78,9 @@ final class UpdateConfigAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error while updating configuration.', 'configuration', 400);
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            return (new GeneralErrorResponseFactory())('Internal error', 'configuration');
         }
     }
 

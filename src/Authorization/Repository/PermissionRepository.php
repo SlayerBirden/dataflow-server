@@ -6,17 +6,17 @@ namespace SlayerBirden\DataFlowServer\Authorization\Repository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 
 final class PermissionRepository implements Selectable
 {
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
-    public function __construct(ManagerRegistry $managerRegistry)
+    public function __construct(EntityManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
     }

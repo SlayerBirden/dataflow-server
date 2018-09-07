@@ -7,8 +7,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\ORMException;
-use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsException;
@@ -24,10 +22,6 @@ final class TokenManager implements TokenManagerInterface
      * @var PasswordManagerInterface
      */
     private $passwordManager;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
     /**
      * @var PermissionManagerInterface
      */
@@ -45,13 +39,11 @@ final class TokenManager implements TokenManagerInterface
         ManagerRegistry $managerRegistry,
         Selectable $userRepository,
         PasswordManagerInterface $passwordManager,
-        LoggerInterface $logger,
         PermissionManagerInterface $permissionManager
     ) {
         $this->managerRegistry = $managerRegistry;
         $this->userRepository = $userRepository;
         $this->passwordManager = $passwordManager;
-        $this->logger = $logger;
         $this->permissionManager = $permissionManager;
     }
 
@@ -61,30 +53,25 @@ final class TokenManager implements TokenManagerInterface
      */
     public function getToken(string $user, string $password, array $resources): Token
     {
-        try {
-            $em = $this->managerRegistry->getManagerForClass(Token::class);
-            $user = $this->getByUsername($user);
-            if ($this->passwordManager->isValidForUser($password, $user)) {
-                $token = new Token();
-                $now = new \DateTime();
-                // default token for 1 month
-                $due = (new \DateTime())->add(new \DateInterval('P1M'));
+        $em = $this->managerRegistry->getManagerForClass(Token::class);
+        $user = $this->getByUsername($user);
+        if ($this->passwordManager->isValidForUser($password, $user)) {
+            $token = new Token();
+            $now = new \DateTime();
+            // default token for 1 month
+            $due = (new \DateTime())->add(new \DateInterval('P1M'));
 
-                $token->setActive(true);
-                $token->setCreatedAt($now);
-                $token->setOwner($user);
-                $token->setDue($due);
-                $token->setGrants($this->getGrants($token, $resources, $user));
-                $token->setToken($this->generateToken());
+            $token->setActive(true);
+            $token->setCreatedAt($now);
+            $token->setOwner($user);
+            $token->setDue($due);
+            $token->setGrants($this->getGrants($token, $resources, $user));
+            $token->setToken($this->generateToken());
 
-                $em->persist($token);
-                $em->flush();
+            $em->persist($token);
+            $em->flush();
 
-                return $token;
-            }
-        } catch (ORMException $exception) {
-            $this->logger->error((string)$exception);
-            throw new InvalidCredentialsException('Unknown ORM error.', $exception);
+            return $token;
         }
 
         throw new InvalidCredentialsException('Could not validate credentials.');

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Controller;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,6 +11,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
@@ -27,12 +27,12 @@ final class DeleteConfigAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         LoggerInterface $logger,
         HydratorInterface $hydrator
     ) {
@@ -54,7 +54,7 @@ final class DeleteConfigAction implements MiddlewareInterface
             $em->flush();
             $msg = 'Configuration removed.';
             return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($dbConfig));
-        } catch (ORMException $exception) {
+        } catch (ORMException | \Exception $exception) {
             $this->logger->error((string)$exception);
             $msg = 'There was an error while removing configuration.';
             return (new GeneralErrorResponseFactory())($msg, 'configuration');

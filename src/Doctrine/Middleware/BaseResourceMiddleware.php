@@ -70,7 +70,10 @@ final class BaseResourceMiddleware implements ResourceMiddlewareInterface
             } catch (ORMInvalidArgumentException $exception) {
                 $this->logger->error((string)$exception);
                 $msg = sprintf('Error during loading %s.', $this->dataObjectName);
-                return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName);
+                return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 400);
+            } catch (\Exception $exception) {
+                $this->logger->error((string)$exception);
+                return (new GeneralErrorResponseFactory())('Internal error', $this->dataObjectName);
             }
         } else {
             $msg = sprintf('No %s provided.', $this->idAttributeName);

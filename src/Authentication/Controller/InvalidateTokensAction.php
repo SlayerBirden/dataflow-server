@@ -5,13 +5,13 @@ namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
@@ -28,7 +28,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
     /**
@@ -41,7 +41,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
     private $userRepository;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         Selectable $tokenRepository,
         Selectable $userRepository,
         LoggerInterface $logger,
@@ -65,7 +65,12 @@ final class InvalidateTokensAction implements MiddlewareInterface
         }
 
         $users = $data['users'] ?? [];
-        return $this->invalidate($users);
+        try {
+            return $this->invalidate($users);
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            return (new GeneralErrorResponseFactory())('Internal error', 'token');
+        }
     }
 
     /**
@@ -87,9 +92,6 @@ final class InvalidateTokensAction implements MiddlewareInterface
             return (new GeneralErrorResponseFactory())($msg, 'tokens', 400, [], 0);
         }
         $em = $this->managerRegistry->getManagerForClass(Token::class);
-        if ($em === null) {
-            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'tokens', 500, [], 0);
-        }
         foreach ($collection as $token) {
             $token->setActive(false);
             $em->persist($token);

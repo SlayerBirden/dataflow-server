@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace codecept\Helper;
 
 use Codeception\TestInterface;
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\SchemaTool;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Doctrine\SimpleRegistry;
 
 class CleanDoctrine2 extends \Codeception\Module\Doctrine2
@@ -20,7 +20,7 @@ modules:
 EOF;
 
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     public $registry;
 

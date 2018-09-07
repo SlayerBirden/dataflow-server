@@ -1,7 +1,8 @@
 <?php
 
-namespace codecept;
+namespace codecept\configuration;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ObscuredStrategy;
 

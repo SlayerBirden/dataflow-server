@@ -1,7 +1,8 @@
 <?php
 
-namespace codecept;
+namespace codecept\user;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 
 class AddUserCest

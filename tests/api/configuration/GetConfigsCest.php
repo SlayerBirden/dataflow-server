@@ -1,7 +1,8 @@
 <?php
 
-namespace codecept;
+namespace codecept\configuration;
 
+use codecept\ApiTester;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -21,51 +22,13 @@ class GetConfigsCest
             'title' => 'mysql config',
             'url' => 'mysql://test-user:test-pwd@mysql/test',
         ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 1 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 2 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 3 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 4 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 5 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 6 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 7 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 8 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
-        $I->haveInRepository(DbConfiguration::class, [
-            'owner' => $user,
-            'title' => 'project 9 config',
-            'url' => 'sqlite:///data/db/db.sqlite',
-        ]);
+        for ($i = 1; $i < 10; $i++) {
+            $I->haveInRepository(DbConfiguration::class, [
+                'owner' => $user,
+                'title' => sprintf('project %d config', $i),
+                'url' => 'sqlite:///data/db/db.sqlite',
+            ]);
+        }
     }
 
     public function getAllConfigurations(ApiTester $I)
@@ -74,44 +37,25 @@ class GetConfigsCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('/configs?l=100');
         $I->seeResponseCodeIs(HttpCode::OK);
+        $configs = [
+            [
+                'title' => 'sqlite config',
+            ],
+            [
+                'title' => 'mysql config',
+            ],
+        ];
+        $otherConfigs = [];
+        for ($i = 1; $i < 10; $i++) {
+            $otherConfigs[] = [
+                'title' => sprintf('project %d config', $i),
+            ];
+        }
+        $configs = array_merge($configs, $otherConfigs);
         $I->seeResponseContainsJson([
             'success' => true,
             'data' => [
-                'configurations' => [
-                    [
-                        'title' => 'sqlite config',
-                    ],
-                    [
-                        'title' => 'mysql config',
-                    ],
-                    [
-                        'title' => 'project 1 config',
-                    ],
-                    [
-                        'title' => 'project 2 config',
-                    ],
-                    [
-                        'title' => 'project 3 config',
-                    ],
-                    [
-                        'title' => 'project 4 config',
-                    ],
-                    [
-                        'title' => 'project 5 config',
-                    ],
-                    [
-                        'title' => 'project 6 config',
-                    ],
-                    [
-                        'title' => 'project 7 config',
-                    ],
-                    [
-                        'title' => 'project 8 config',
-                    ],
-                    [
-                        'title' => 'project 9 config',
-                    ],
-                ],
+                'configurations' => $configs,
                 'count' => 11,
             ]
         ]);

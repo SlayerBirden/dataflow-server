@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace codecept;
+namespace codecept\authentication;
 
+use codecept\ApiTester;
 use codecept\Helper\CleanDoctrine2;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
@@ -49,7 +50,7 @@ class GetTokenCest
         ]);
 
         $resources = [
-            'do_something_awesome',
+            'create_password',
         ];
         foreach ($resources as $key => $resource) {
             $I->haveInRepository(Permission::class, [
@@ -71,7 +72,7 @@ class GetTokenCest
             'user' => 'test2@example.com',
             'password' => 'test123',
             'resources' => [
-                'do_something_awesome',
+                'create_password',
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
@@ -97,7 +98,7 @@ class GetTokenCest
             'user' => 'test2@example.com',
             'password' => 'abracadabra111',
             'resources' => [
-                'do_something_awesome',
+                'create_password',
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::UNAUTHORIZED);
@@ -118,7 +119,7 @@ class GetTokenCest
             'user' => 'test2@example.com',
             'password' => 'test123',
             'resources' => [
-                'do_something_less_awesome',
+                'get_tmp_token',
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
@@ -138,7 +139,7 @@ class GetTokenCest
         $I->sendPOST('/gettoken', [
             'user' => 'test2@example.com',
             'resources' => [
-                'do_something_awesome',
+                'create_password',
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
@@ -153,5 +154,22 @@ class GetTokenCest
                 ]
             ],
         ]);
+    }
+
+    public function createTokenEmptyResources(ApiTester $I)
+    {
+        $I->wantTo('attempt to get token with empty resources');
+
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPOST('/gettoken', [
+            'user' => 'test2@example.com',
+            'password' => 'test123',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseContainsJson(['validation' => [
+            [
+                'field' => 'resources',
+            ],
+        ]]);
     }
 }

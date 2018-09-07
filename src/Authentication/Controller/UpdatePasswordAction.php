@@ -5,8 +5,7 @@ namespace SlayerBirden\DataFlowServer\Authentication\Controller;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
-use Doctrine\Common\Persistence\ManagerRegistry;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\ORMException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -15,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PasswordRestrictionsException;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
@@ -42,7 +42,7 @@ final class UpdatePasswordAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var ManagerRegistry
+     * @var EntityManagerRegistry
      */
     private $managerRegistry;
     /**
@@ -51,7 +51,7 @@ final class UpdatePasswordAction implements MiddlewareInterface
     private $passwordRepository;
 
     public function __construct(
-        ManagerRegistry $managerRegistry,
+        EntityManagerRegistry $managerRegistry,
         Selectable $passwordRepository,
         InputFilterInterface $inputFilter,
         LoggerInterface $logger,
@@ -80,15 +80,10 @@ final class UpdatePasswordAction implements MiddlewareInterface
         if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('password', $this->inputFilter);
         }
-        $em = $this->managerRegistry->getManagerForClass(Password::class);
-        if ($em === null) {
-            return (new GeneralErrorResponseFactory())('Could not retrieve ObjectManager', 'password');
-        }
-        if (!($em instanceof EntityManagerInterface)) {
-            return (new GeneralErrorResponseFactory())('Could not use current ObjectManager', 'password');
-        }
-        $em->beginTransaction();
         try {
+            $em = $this->managerRegistry->getManagerForClass(Password::class);
+            $em->beginTransaction();
+
             $pw = $this->updatePassword($data);
             $em->flush();
             $em->commit();
@@ -96,12 +91,22 @@ final class UpdatePasswordAction implements MiddlewareInterface
             $msg = 'Password successfully updated.';
             return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($pw));
         } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
-            $em->rollback();
+            if (isset($em) && $em->getConnection()->isTransactionActive()) {
+                $em->rollback();
+            }
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'password', 400);
+        } catch (ORMException $exception) {
+            $this->logger->error((string)$exception);
+            if (isset($em) && $em->getConnection()->isTransactionActive()) {
+                $em->rollback();
+            }
+            return (new GeneralErrorResponseFactory())('There was an error while updating password.', 'password', 400);
         } catch (\Exception $exception) {
             $this->logger->error((string)$exception);
-            $em->rollback();
-            return (new GeneralErrorResponseFactory())('There was an error while updating password.', 'password', 400);
+            if (isset($em) && $em->getConnection()->isTransactionActive()) {
+                $em->rollback();
+            }
+            return (new GeneralErrorResponseFactory())('Internal error', 'password', 500);
         }
     }
 

@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Factory;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Interop\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\BaseResourceMiddleware;
+use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
 final class DbConfigResourceMiddlewareFactory implements FactoryInterface
@@ -18,7 +18,7 @@ final class DbConfigResourceMiddlewareFactory implements FactoryInterface
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
         return new BaseResourceMiddleware(
-            $container->get(ManagerRegistry::class),
+            $container->get(EntityManagerRegistry::class),
             $container->get(LoggerInterface::class),
             DbConfiguration::class,
             'configuration'

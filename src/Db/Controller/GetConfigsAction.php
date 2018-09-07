@@ -75,6 +75,9 @@ final class GetConfigsAction implements MiddlewareInterface
             $this->logger->error((string)$exception);
             $msg = 'There was an error while fetching configurations.';
             return (new GeneralErrorResponseFactory())($msg, 'configurations', 400, [], 0);
+        } catch (\Exception $exception) {
+            $this->logger->error((string)$exception);
+            return (new GeneralErrorResponseFactory())('Internal error', 'configurations', 500, [], 0);
         }
     }
 
