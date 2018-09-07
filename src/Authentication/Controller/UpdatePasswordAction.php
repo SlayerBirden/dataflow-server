@@ -68,6 +68,8 @@ final class UpdatePasswordAction implements MiddlewareInterface
 
     /**
      * @inheritdoc
+     * @throws ORMException
+     * @throws \Exception
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -80,10 +82,9 @@ final class UpdatePasswordAction implements MiddlewareInterface
         if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('password', $this->inputFilter);
         }
+        $em = $this->managerRegistry->getManagerForClass(Password::class);
+        $em->beginTransaction();
         try {
-            $em = $this->managerRegistry->getManagerForClass(Password::class);
-            $em->beginTransaction();
-
             $pw = $this->updatePassword($data);
             $em->flush();
             $em->commit();
@@ -91,22 +92,12 @@ final class UpdatePasswordAction implements MiddlewareInterface
             $msg = 'Password successfully updated.';
             return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($pw));
         } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
-            if (isset($em) && $em->getConnection()->isTransactionActive()) {
-                $em->rollback();
-            }
+            $em->rollback();
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'password', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            if (isset($em) && $em->getConnection()->isTransactionActive()) {
-                $em->rollback();
-            }
+            $em->rollback();
             return (new GeneralErrorResponseFactory())('There was an error while updating password.', 'password', 400);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            if (isset($em) && $em->getConnection()->isTransactionActive()) {
-                $em->rollback();
-            }
-            return (new GeneralErrorResponseFactory())('Internal error', 'password', 500);
         }
     }
 

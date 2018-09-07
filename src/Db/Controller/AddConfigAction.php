@@ -76,9 +76,6 @@ final class AddConfigAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error during creation operation.', 'configuration', 400);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Internal error', 'configuration');
         }
     }
 

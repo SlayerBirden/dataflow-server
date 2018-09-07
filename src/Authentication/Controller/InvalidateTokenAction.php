@@ -11,7 +11,6 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
@@ -42,6 +41,7 @@ final class InvalidateTokenAction implements MiddlewareInterface
 
     /**
      * @inheritdoc
+     * @throws \Doctrine\ORM\ORMException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -49,16 +49,10 @@ final class InvalidateTokenAction implements MiddlewareInterface
         $token = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $token->setActive(false);
 
-        try {
-            $em = $this->managerRegistry->getManagerForClass(get_class($token));
-            $em->persist($token);
-            $em->flush();
-            $msg = 'Token invalidated.';
-            return (new GeneralSuccessResponseFactory())($msg, 'token', $this->hydrator->extract($token));
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            $msg = 'There was an error during token invalidation';
-            return (new GeneralErrorResponseFactory())($msg, 'token');
-        }
+        $em = $this->managerRegistry->getManagerForClass(get_class($token));
+        $em->persist($token);
+        $em->flush();
+        $msg = 'Token invalidated.';
+        return (new GeneralSuccessResponseFactory())($msg, 'token', $this->hydrator->extract($token));
     }
 }

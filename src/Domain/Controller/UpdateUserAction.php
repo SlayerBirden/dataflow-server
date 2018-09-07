@@ -83,9 +83,6 @@ final class UpdateUserAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error saving user.', 'user', 400);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Internal error.', 'user');
         }
     }
 

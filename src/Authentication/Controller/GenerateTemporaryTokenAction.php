@@ -77,9 +77,6 @@ final class GenerateTemporaryTokenAction implements MiddlewareInterface
             return (new GeneralSuccessResponseFactory())('Token created', 'token', $this->hydrator->extract($token));
         } catch (PermissionDeniedException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'token', 400);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('There was an error while obtaining tmp token.', 'token', 400);
         }
     }
 }

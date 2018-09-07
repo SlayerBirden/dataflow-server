@@ -56,6 +56,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
 
     /**
      * {@inheritdoc}
+     * @throws \Doctrine\ORM\ORMException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -65,17 +66,13 @@ final class InvalidateTokensAction implements MiddlewareInterface
         }
 
         $users = $data['users'] ?? [];
-        try {
-            return $this->invalidate($users);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Internal error', 'token');
-        }
+        return $this->invalidate($users);
     }
 
     /**
      * @param array $users
      * @return ResponseInterface
+     * @throws \Doctrine\ORM\ORMException
      */
     private function invalidate(array $users = []): ResponseInterface
     {

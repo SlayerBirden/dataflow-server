@@ -12,7 +12,6 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
-use SlayerBirden\DataFlowServer\Authorization\Exception\NoChangesException;
 use SlayerBirden\DataFlowServer\Authorization\HistoryManagementInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
@@ -70,6 +69,7 @@ final class SavePermissionsAction implements MiddlewareInterface
 
     /**
      * @inheritdoc
+     * @throws ORMException
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -83,9 +83,9 @@ final class SavePermissionsAction implements MiddlewareInterface
         if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('permissions', $this->inputFilter, []);
         }
+        $em = $this->managerRegistry->getManagerForClass(Permission::class);
+        $em->beginTransaction();
         try {
-            $em = $this->managerRegistry->getManagerForClass(Permission::class);
-            $em->beginTransaction();
             $permissions = $this->processResources(
                 $user,
                 $data[ClaimedResourceInterface::OWNER_PARAM],
@@ -99,17 +99,9 @@ final class SavePermissionsAction implements MiddlewareInterface
             return (new GeneralSuccessResponseFactory())($msg, 'permissions', $extractedPermissions, 200, $count);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            if (isset($em) && $em->getConnection()->isTransactionActive()) {
-                $em->rollback();
-            }
+            $em->rollback();
             $msg = 'There was an error while setting the permissions.';
             return (new GeneralErrorResponseFactory())($msg, 'permissions', 400, [], 0);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            if (isset($em) && $em->getConnection()->isTransactionActive()) {
-                $em->rollback();
-            }
-            return (new GeneralErrorResponseFactory())('Internal error', 'permissions', 500, [], 0);
         }
     }
 

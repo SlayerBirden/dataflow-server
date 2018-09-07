@@ -74,10 +74,6 @@ final class GetTokenAction implements MiddlewareInterface
         } catch (PermissionDeniedException $exception) {
             $msg = 'Provided user does not have permission to access requested resources.';
             return (new GeneralErrorResponseFactory())($msg, 'token', 403);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            $msg = 'There was an error when creating your token';
-            return (new GeneralErrorResponseFactory())($msg, 'token');
         }
     }
 }

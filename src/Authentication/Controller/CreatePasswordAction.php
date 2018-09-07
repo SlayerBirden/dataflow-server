@@ -11,7 +11,6 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\HydratorInterface;
@@ -50,6 +49,7 @@ final class CreatePasswordAction implements MiddlewareInterface
 
     /**
      * @inheritdoc
+     * @throws \Exception
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -60,12 +60,7 @@ final class CreatePasswordAction implements MiddlewareInterface
         $this->inputFilter->setData($data);
 
         if ($this->inputFilter->isValid()) {
-            try {
-                return $this->createPassword($data);
-            } catch (\Exception $exception) {
-                $this->logger->error((string)$exception);
-                return (new GeneralErrorResponseFactory())('There was an error while creating password.', 'password');
-            }
+            return $this->createPassword($data);
         } else {
             return (new ValidationResponseFactory())('password', $this->inputFilter);
         }

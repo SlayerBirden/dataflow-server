@@ -71,9 +71,6 @@ final class GetUsersAction implements MiddlewareInterface
             $this->logger->error((string)$exception);
             $msg = 'There was an error while fetching users.';
             return (new GeneralErrorResponseFactory())($msg, 'users', 400, [], 0);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Internal error', 'users', 500, [], 0);
         }
     }
 
