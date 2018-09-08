@@ -5,6 +5,7 @@ namespace SlayerBirden\DataFlowServer\Authorization\Factory;
 
 use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
+use SlayerBirden\DataFlowServer\Authorization\Controller\GetPermissionHistoryAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\GetResourcesAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\SavePermissionsAction;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
@@ -38,6 +39,11 @@ final class RoutesDelegator implements DelegatorFactoryInterface
             SetOwnerMiddleware::class,
             SavePermissionsAction::class
         ], 'save_permissions');
+
+        $app->get('/history', [
+            TokenMiddleware::class,
+            GetPermissionHistoryAction::class
+        ], 'get_permission_history');
 
         return $app;
     }

@@ -149,9 +149,9 @@ class History implements ClaimedResourceInterface
     }
 
     /**
-     * @return Permission
+     * @return Permission|null
      */
-    public function getPermission(): Permission
+    public function getPermission(): ?Permission
     {
         return $this->permission;
     }

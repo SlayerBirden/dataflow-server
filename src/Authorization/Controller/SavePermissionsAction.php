@@ -13,6 +13,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Authorization\HistoryManagementInterface;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
@@ -94,7 +95,7 @@ final class SavePermissionsAction implements MiddlewareInterface
             $em->flush();
             $em->commit();
             $msg = 'Successfully set permissions to resources.';
-            $extractedPermissions = array_map([$this->hydrator, 'extract'], $permissions);
+            $extractedPermissions = (new ListExtractor())($this->hydrator, $permissions);
             $count = count($extractedPermissions);
             return (new GeneralSuccessResponseFactory())($msg, 'permissions', $extractedPermissions, 200, $count);
         } catch (ORMException $exception) {

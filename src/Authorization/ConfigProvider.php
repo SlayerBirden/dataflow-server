@@ -3,10 +3,15 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authorization;
 
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Authorization\Controller\GetPermissionHistoryAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\GetResourcesAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\SavePermissionsAction;
+use SlayerBirden\DataFlowServer\Authorization\Entities\History;
+use SlayerBirden\DataFlowServer\Authorization\Factory\HistoryHydratorFactory;
 use SlayerBirden\DataFlowServer\Authorization\Factory\PermissionHydratorFactory;
+use SlayerBirden\DataFlowServer\Authorization\Repository\PermissionHistoryRepository;
 use SlayerBirden\DataFlowServer\Authorization\Repository\PermissionRepository;
 use SlayerBirden\DataFlowServer\Authorization\Service\HistoryManagement;
 use SlayerBirden\DataFlowServer\Authorization\Service\PermissionManager;
@@ -81,6 +86,13 @@ class ConfigProvider
                 HistoryManagementInterface::class,
                 'PermissionHydrator',
             ],
+            PermissionHistoryRepository::class => [
+                EntityManagerRegistry::class,
+            ],
+            GetPermissionHistoryAction::class => [
+                PermissionHistoryRepository::class,
+                'PermissionHistoryHydrator',
+            ],
         ];
     }
 
@@ -113,6 +125,7 @@ class ConfigProvider
             'factories' => [
                 'PermissionsInputFilter' => ProxyFilterManagerFactory::class,
                 'PermissionHydrator' => PermissionHydratorFactory::class,
+                'PermissionHistoryHydrator' => HistoryHydratorFactory::class,
             ],
         ];
     }

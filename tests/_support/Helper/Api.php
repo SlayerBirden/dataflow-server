@@ -65,6 +65,11 @@ class Api extends \Codeception\Module
         $I->amBearerAuthenticated('X-X-X');
     }
 
+    public function getCurrentUserId(): int
+    {
+        return $this->userId;
+    }
+
     /**
      * @param array $resources
      * @throws \Codeception\Exception\ModuleException

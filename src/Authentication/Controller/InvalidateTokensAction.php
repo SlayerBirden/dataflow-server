@@ -11,6 +11,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
@@ -95,7 +96,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
         }
         $em->flush();
         $msg = 'Tokens have been deactivated.';
-        $extracted = array_map([$this->hydrator, 'extract'], $collection->toArray());
+        $extracted = (new ListExtractor())($this->hydrator, $collection->toArray());
         return (new GeneralSuccessResponseFactory())($msg, 'tokens', $extracted, 200, $collection->count());
     }
 
