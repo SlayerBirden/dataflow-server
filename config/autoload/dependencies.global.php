@@ -25,5 +25,10 @@ return [
         'abstract_factories' => [
             ConfigAbstractFactory::class
         ],
+        'delegators' => [
+            Application::class => [
+                Container\ApplicationConfigInjectionDelegator::class,
+            ],
+        ],
     ],
 ];

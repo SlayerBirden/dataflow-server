@@ -65,7 +65,7 @@ final class AddConfigAction implements MiddlewareInterface
             return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
         try {
-            $config = $this->getConfiguration($data);
+            $config = $this->getEntity($data);
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
             $em->persist($config);
             $em->flush();
@@ -79,11 +79,7 @@ final class AddConfigAction implements MiddlewareInterface
         }
     }
 
-    /**
-     * @param array $data
-     * @return DbConfiguration
-     */
-    private function getConfiguration(array $data): DbConfiguration
+    private function getEntity(array $data): DbConfiguration
     {
         $config = new DbConfiguration();
         $this->hydrator->hydrate($data, $config);

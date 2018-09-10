@@ -82,10 +82,6 @@ final class AddUserAction implements MiddlewareInterface
         }
     }
 
-    /**
-     * @param array $data
-     * @return User
-     */
     private function getEntity(array $data): User
     {
         $entity = new User();

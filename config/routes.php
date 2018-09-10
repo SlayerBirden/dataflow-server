@@ -13,4 +13,4 @@ $app->get('/', function () {
     ]);
 
     return $response;
-});
+}, 'root');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Db;
 
 use Psr\Log\LoggerInterface;
+use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Db\Controller\AddConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
@@ -14,8 +15,10 @@ use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Repository\DbConfigurationRepository;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
+use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
+use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
-use Zend\Expressive\Application;
+use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 
@@ -30,7 +33,8 @@ class ConfigProvider
             'validators' => $this->getValidatorsConfig(),
             'input_filter_specs' => [
                 'ConfigInputFilter' => $this->getConfigInputFilterSpec(),
-            ]
+            ],
+            'routes' => $this->getRoutesConfig(),
         ];
     }
 
@@ -181,11 +185,6 @@ class ConfigProvider
     public function getDependenciesConfig(): array
     {
         return [
-            'delegators' => [
-                Application::class => [
-                    Factory\RoutesDelegator::class,
-                ],
-            ],
             'factories' => [
                 'DbConfigHydrator' => DbConfigHydratorFactory::class,
                 'ConfigInputFilter' => ProxyFilterManagerFactory::class,
@@ -215,6 +214,66 @@ class ConfigProvider
             ],
             'factories' => [
                 ConfigValidator::class => InvokableFactory::class,
+            ],
+        ];
+    }
+
+    public function getRoutesConfig(): array
+    {
+        return [
+            [
+                'path' => '/config/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'DbConfigResourceMiddleware',
+                    GetConfigAction::class,
+                ],
+                'name' => 'get_config',
+                'allowed_methods' => ['GET'],
+            ],
+            [
+                'path' => '/configs',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    GetConfigsAction::class,
+                ],
+                'name' => 'get_configs',
+                'allowed_methods' => ['GET'],
+            ],
+            [
+                'path' => '/config',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    SetOwnerMiddleware::class,
+                    AddConfigAction::class,
+                ],
+                'name' => 'add_config',
+                'allowed_methods' => ['POST'],
+            ],
+            [
+                'path' => '/config/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'DbConfigResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    SetOwnerMiddleware::class,
+                    UpdateConfigAction::class,
+                ],
+                'name' => 'update_config',
+                'allowed_methods' => ['PUT'],
+            ],
+            [
+                'path' => '/config/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'DbConfigResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    DeleteConfigAction::class,
+                ],
+                'name' => 'delete_config',
+                'allowed_methods' => ['DELETE'],
             ],
         ];
     }
