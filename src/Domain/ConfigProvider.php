@@ -37,7 +37,6 @@ class ConfigProvider
     {
         return [
             'first' => [
-                'required' => true,
                 'filters' => [
                     [
                         'name' => 'stringtrim',
@@ -53,7 +52,6 @@ class ConfigProvider
                 ]
             ],
             'last' => [
-                'required' => true,
                 'filters' => [
                     [
                         'name' => 'stringtrim',
@@ -69,7 +67,6 @@ class ConfigProvider
                 ]
             ],
             'email' => [
-                'required' => true,
                 'filters' => [
                     [
                         'name' => 'stringtrim',

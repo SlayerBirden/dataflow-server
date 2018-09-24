@@ -22,7 +22,7 @@ use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
 use Zend\ServiceManager\Factory\InvokableFactory;
 
-class ConfigProvider
+final class ConfigProvider
 {
     public function __invoke(): array
     {
