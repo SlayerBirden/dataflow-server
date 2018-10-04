@@ -11,19 +11,18 @@ use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokenAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\InvalidateTokensAction;
 use SlayerBirden\DataFlowServer\Authentication\Controller\UpdatePasswordAction;
 use SlayerBirden\DataFlowServer\Authentication\Factory\PasswordHydratorFactory;
+use SlayerBirden\DataFlowServer\Authentication\Factory\PasswordRepositoryFactory;
 use SlayerBirden\DataFlowServer\Authentication\Factory\TokenHydratorFactory;
+use SlayerBirden\DataFlowServer\Authentication\Factory\TokenRepositoryFactory;
 use SlayerBirden\DataFlowServer\Authentication\Factory\TokenResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Authentication\Hydrator\Strategy\HashStrategy;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\ActivePasswordMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\PasswordConfirmationMiddleware;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
-use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
-use SlayerBirden\DataFlowServer\Authentication\Repository\TokenRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authentication\Service\TokenManager;
 use SlayerBirden\DataFlowServer\Authorization\PermissionManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Domain\Repository\UserRepository;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Application;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -127,12 +126,6 @@ class ConfigProvider
     private function getAbstractFactoryConfig(): array
     {
         return [
-            TokenRepository::class => [
-                EntityManagerRegistry::class,
-            ],
-            PasswordRepository::class => [
-                EntityManagerRegistry::class,
-            ],
             GenerateTemporaryTokenAction::class => [
                 'TokenInputFilter',
                 TokenManagerInterface::class,
@@ -140,10 +133,10 @@ class ConfigProvider
                 'TokenHydrator',
             ],
             TokenMiddleware::class => [
-                TokenRepository::class,
+                'TokenRepository',
             ],
             ActivePasswordMiddleware::class => [
-                PasswordRepository::class,
+                'PasswordRepository',
             ],
             HashStrategy::class => [
                 PasswordManager::class,
@@ -152,12 +145,12 @@ class ConfigProvider
                 PasswordManager::class,
             ],
             PasswordManager::class => [
-                PasswordRepository::class,
+                'PasswordRepository',
                 LoggerInterface::class,
             ],
             TokenManager::class => [
                 EntityManagerRegistry::class,
-                UserRepository::class,
+                'UserRepository',
                 PasswordManagerInterface::class,
                 PermissionManagerInterface::class,
             ],
@@ -169,7 +162,7 @@ class ConfigProvider
             ],
             UpdatePasswordAction::class => [
                 EntityManagerRegistry::class,
-                PasswordRepository::class,
+                'PasswordRepository',
                 'UpdatePasswordInputFilter',
                 LoggerInterface::class,
                 PasswordManager::class,
@@ -188,8 +181,8 @@ class ConfigProvider
             ],
             InvalidateTokensAction::class => [
                 EntityManagerRegistry::class,
-                TokenRepository::class,
-                UserRepository::class,
+                'TokenRepository',
+                'UserRepository',
                 LoggerInterface::class,
                 'TokenHydrator',
             ],
@@ -225,6 +218,8 @@ class ConfigProvider
                 'UpdatePasswordInputFilter' => ProxyFilterManagerFactory::class,
                 'GetTokenInputFilter' => ProxyFilterManagerFactory::class,
                 'TokenResourceMiddleware' => TokenResourceMiddlewareFactory::class,
+                'TokenRepository' => TokenRepositoryFactory::class,
+                'PasswordRepository' => PasswordRepositoryFactory::class,
             ],
             'aliases' => [
                 TokenManagerInterface::class => TokenManager::class,

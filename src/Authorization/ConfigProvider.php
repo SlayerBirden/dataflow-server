@@ -3,16 +3,14 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Authorization;
 
-use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Controller\GetPermissionHistoryAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\GetResourcesAction;
 use SlayerBirden\DataFlowServer\Authorization\Controller\SavePermissionsAction;
-use SlayerBirden\DataFlowServer\Authorization\Entities\History;
 use SlayerBirden\DataFlowServer\Authorization\Factory\HistoryHydratorFactory;
+use SlayerBirden\DataFlowServer\Authorization\Factory\PermissionHistoryRepositoryFactory;
 use SlayerBirden\DataFlowServer\Authorization\Factory\PermissionHydratorFactory;
-use SlayerBirden\DataFlowServer\Authorization\Repository\PermissionHistoryRepository;
-use SlayerBirden\DataFlowServer\Authorization\Repository\PermissionRepository;
+use SlayerBirden\DataFlowServer\Authorization\Factory\PermissionRepositoryFactory;
 use SlayerBirden\DataFlowServer\Authorization\Service\HistoryManagement;
 use SlayerBirden\DataFlowServer\Authorization\Service\PermissionManager;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
@@ -63,11 +61,8 @@ class ConfigProvider
     private function getAbstractFactoryConfig(): array
     {
         return [
-            PermissionRepository::class => [
-                EntityManagerRegistry::class,
-            ],
             PermissionManager::class => [
-                PermissionRepository::class,
+                'PermissionRepository',
             ],
             ResourceManager::class => [
                 RouteCollector::class,
@@ -80,17 +75,14 @@ class ConfigProvider
             ],
             SavePermissionsAction::class => [
                 EntityManagerRegistry::class,
-                PermissionRepository::class,
+                'PermissionRepository',
                 LoggerInterface::class,
                 'PermissionsInputFilter',
                 HistoryManagementInterface::class,
                 'PermissionHydrator',
             ],
-            PermissionHistoryRepository::class => [
-                EntityManagerRegistry::class,
-            ],
             GetPermissionHistoryAction::class => [
-                PermissionHistoryRepository::class,
+                'PermissionHistoryRepository',
                 'PermissionHistoryHydrator',
             ],
         ];
@@ -126,6 +118,8 @@ class ConfigProvider
                 'PermissionsInputFilter' => ProxyFilterManagerFactory::class,
                 'PermissionHydrator' => PermissionHydratorFactory::class,
                 'PermissionHistoryHydrator' => HistoryHydratorFactory::class,
+                'PermissionRepository' => PermissionRepositoryFactory::class,
+                'PermissionHistoryRepository' => PermissionHistoryRepositoryFactory::class,
             ],
         ];
     }

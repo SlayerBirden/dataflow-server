@@ -5,11 +5,11 @@ namespace codecept\authentication;
 
 use codecept\ApiTester;
 use codecept\Helper\CleanDoctrine2;
+use codecept\Helper\ZendExpressive3;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
-use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
@@ -31,13 +31,18 @@ class UpdatePasswordCest
      * @var PasswordManager
      */
     private $passwordManager;
+    /**
+     * @var ZendExpressive3
+     */
+    private $expressive;
 
-    public function _inject(CleanDoctrine2 $cleanDoctrine2)
+    public function _inject(CleanDoctrine2 $cleanDoctrine2, ZendExpressive3 $expressive)
     {
         $this->doctrine = $cleanDoctrine2;
         $this->logger = new \Monolog\Logger('log', [
             new \Monolog\Handler\NoopHandler()
         ]);
+        $this->expressive = $expressive;
     }
 
     public function _before(ApiTester $I)
@@ -50,7 +55,7 @@ class UpdatePasswordCest
 
         $user = $I->grabEntityFromRepository(User::class, ['id' => $this->userId]);
         $this->passwordManager = new PasswordManager(
-            new PasswordRepository($this->doctrine->registry),
+            $this->expressive->container->get('PasswordRepository'),
             $this->logger
         );
 

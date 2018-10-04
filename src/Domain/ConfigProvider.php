@@ -11,8 +11,8 @@ use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
+use SlayerBirden\DataFlowServer\Domain\Factory\UserRepositoryFactory;
 use SlayerBirden\DataFlowServer\Domain\Factory\UserResourceMiddlewareFactory;
-use SlayerBirden\DataFlowServer\Domain\Repository\UserRepository;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\Hydrator\ClassMethods;
@@ -87,9 +87,6 @@ class ConfigProvider
     private function getAbstractFactoryConfig(): array
     {
         return [
-            UserRepository::class => [
-                EntityManagerRegistry::class,
-            ],
             AddUserAction::class => [
                 EntityManagerRegistry::class,
                 ClassMethods::class,
@@ -106,7 +103,7 @@ class ConfigProvider
                 ClassMethods::class,
             ],
             GetUsersAction::class => [
-                UserRepository::class,
+                'UserRepository',
                 LoggerInterface::class,
                 ClassMethods::class,
             ],
@@ -137,6 +134,7 @@ class ConfigProvider
             'factories' => [
                 'UserInputFilter' => ProxyFilterManagerFactory::class,
                 'UserResourceMiddleware' => UserResourceMiddlewareFactory::class,
+                'UserRepository' => UserRepositoryFactory::class,
             ],
         ];
     }

@@ -5,9 +5,9 @@ namespace codecept\authentication;
 
 use codecept\ApiTester;
 use codecept\Helper\CleanDoctrine2;
+use codecept\Helper\ZendExpressive3;
 use Codeception\Util\HttpCode;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
-use SlayerBirden\DataFlowServer\Authentication\Repository\PasswordRepository;
 use SlayerBirden\DataFlowServer\Authentication\Service\PasswordManager;
 use SlayerBirden\DataFlowServer\Authorization\Entities\Permission;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
@@ -18,10 +18,15 @@ class GetTokenCest
      * @var CleanDoctrine2
      */
     private $doctrine;
+    /**
+     * @var ZendExpressive3
+     */
+    private $expressive;
 
-    public function _inject(CleanDoctrine2 $cleanDoctrine2)
+    public function _inject(CleanDoctrine2 $cleanDoctrine2, ZendExpressive3 $expressive)
     {
         $this->doctrine = $cleanDoctrine2;
+        $this->expressive = $expressive;
     }
 
     public function _before(ApiTester $I)
@@ -38,7 +43,7 @@ class GetTokenCest
             new \Monolog\Handler\NoopHandler()
         ]);
         $passwordManager = new PasswordManager(
-            new PasswordRepository($this->doctrine->registry),
+            $this->expressive->container->get('PasswordRepository'),
             $logger
         );
         $I->haveInRepository(Password::class, [

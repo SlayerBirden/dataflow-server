@@ -12,7 +12,7 @@ use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigHydratorFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
-use SlayerBirden\DataFlowServer\Db\Repository\DbConfigurationRepository;
+use SlayerBirden\DataFlowServer\Db\Factory\DbConfigurationRepositoryFactory;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
@@ -45,13 +45,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'notempty',
                     ],
-                ]
+                ],
             ],
             'dbname' => [
                 'required' => false,
@@ -59,13 +59,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'user' => [
                 'required' => false,
@@ -73,13 +73,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'password' => [
                 'required' => false,
@@ -87,13 +87,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'host' => [
                 'required' => false,
@@ -101,13 +101,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'driver' => [
                 'required' => false,
@@ -115,13 +115,13 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'port' => [
                 'required' => false,
@@ -129,20 +129,20 @@ final class ConfigProvider
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
                 'validators' => [
                     [
                         'name' => 'configValidator',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'url' => [
                 'required' => false,
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ]
+                    ],
                 ],
             ],
         ];
@@ -151,9 +151,6 @@ final class ConfigProvider
     private function getAbstractFactoryConfig(): array
     {
         return [
-            DbConfigurationRepository::class => [
-                EntityManagerRegistry::class,
-            ],
             AddConfigAction::class => [
                 EntityManagerRegistry::class,
                 'DbConfigHydrator',
@@ -167,7 +164,7 @@ final class ConfigProvider
                 LoggerInterface::class,
             ],
             GetConfigsAction::class => [
-                DbConfigurationRepository::class,
+                'DbConfigurationRepository',
                 LoggerInterface::class,
                 'DbConfigHydrator',
             ],
@@ -189,6 +186,7 @@ final class ConfigProvider
                 'DbConfigHydrator' => DbConfigHydratorFactory::class,
                 'ConfigInputFilter' => ProxyFilterManagerFactory::class,
                 'DbConfigResourceMiddleware' => DbConfigResourceMiddlewareFactory::class,
+                'DbConfigurationRepository' => DbConfigurationRepositoryFactory::class,
             ],
         ];
     }
