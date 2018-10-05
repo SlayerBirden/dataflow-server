@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Zend\Hydrator\Exception\InvalidArgumentException;
 use Zend\Hydrator\HydratorInterface;
@@ -25,12 +26,12 @@ final class CollectionStrategy implements StrategyInterface
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(HydratorInterface $objectHydrator, $objectClassName)
+    public function __construct(HydratorInterface $objectHydrator, string $objectClassName)
     {
-        if (! is_string($objectClassName) || ! class_exists($objectClassName)) {
+        if (! class_exists($objectClassName)) {
             throw new InvalidArgumentException(sprintf(
-                'Object class name needs to the name of an existing class, got "%s" instead.',
-                is_object($objectClassName) ? get_class($objectClassName) : gettype($objectClassName)
+                'Object class name does not exist: "%s".',
+                $objectClassName
             ));
         }
 
@@ -66,20 +67,23 @@ final class CollectionStrategy implements StrategyInterface
     /**
      * @inheritdoc
      */
-    public function hydrate($value)
+    public function hydrate($value): Collection
     {
-        if (! ($value instanceof Collection)) {
+        if (! is_iterable($value)) {
             throw new InvalidArgumentException(sprintf(
-                'Value needs to be a Doctrine Collection, got %s instead.',
+                'Value needs to be an Iterable, got %s instead.',
                 is_object($value) ? get_class($value) : gettype($value)
             ));
         }
 
-        return array_map(function ($data) {
-            return $this->objectHydrator->hydrate(
-                $data,
+        $collection = new ArrayCollection();
+        foreach ($value as $item) {
+            $collection->add($this->objectHydrator->hydrate(
+                $item,
                 new $this->objectClassName
-            );
-        }, $value->toArray());
+            ));
+        }
+
+        return $collection;
     }
 }

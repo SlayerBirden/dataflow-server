@@ -27,7 +27,8 @@
         "monolog/monolog": "^2.0-dev",
         "doctrine/orm": "^2.6",
         "slayerbirden/dataflow": "^1.0.0-dev",
-        "zendframework/zend-diactoros": "^1.7"
+        "zendframework/zend-diactoros": "^1.7",
+        "ocramius/generated-hydrator": "^2.0"
     },
     "require-dev": {
         "zendframework/zend-expressive-tooling": "^1.0",

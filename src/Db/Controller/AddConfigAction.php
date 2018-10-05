@@ -12,7 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -55,10 +55,7 @@ final class AddConfigAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('configuration');
-        }
+        $data = Parser::getRequestBody($request);
         $this->inputFilter->setData($data);
 
         if (!$this->inputFilter->isValid()) {

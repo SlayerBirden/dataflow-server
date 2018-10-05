@@ -18,7 +18,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -74,10 +74,7 @@ final class SavePermissionsAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('permissions', []);
-        }
+        $data = Parser::getRequestBody($request);
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
 
         $this->inputFilter->setData($data);

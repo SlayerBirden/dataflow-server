@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 
 final class PasswordConfirmationMiddleware implements MiddlewareInterface
@@ -28,10 +28,7 @@ final class PasswordConfirmationMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())();
-        }
+        $data = Parser::getRequestBody($request);
         $password = $data['password'] ?? null;
 
         if (empty($password)) {

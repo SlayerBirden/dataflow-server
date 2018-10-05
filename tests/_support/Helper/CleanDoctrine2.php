@@ -29,6 +29,7 @@ EOF;
      * @param TestInterface $test
      * @throws \Doctrine\DBAL\DBALException
      * @throws \Doctrine\ORM\ORMException
+     * @throws \Codeception\Exception\ModuleConfigException
      */
     public function _before(TestInterface $test)
     {
@@ -51,6 +52,7 @@ EOF;
 
     /**
      * @inheritdoc
+     * @throws \Codeception\Exception\ModuleConfigException
      */
     public function _after(TestInterface $test)
     {

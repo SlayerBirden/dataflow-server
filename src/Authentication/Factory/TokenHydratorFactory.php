@@ -20,17 +20,17 @@ final class TokenHydratorFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $extraction = new ClassMethods();
-        $extraction->addStrategy('created_at', new DateTimeFormatterStrategy());
-        $extraction->addStrategy('due', new DateTimeFormatterStrategy());
-        $extraction->addStrategy('active', new BooleanStrategy(1, 0));
-        $extraction->addStrategy('grants', new CollectionStrategy(new ClassMethods(), Grant::class));
-        $extraction->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+        $hydrator = new ClassMethods();
+        $hydrator->addStrategy('created_at', new DateTimeFormatterStrategy());
+        $hydrator->addStrategy('due', new DateTimeFormatterStrategy());
+        $hydrator->addStrategy('active', new BooleanStrategy(1, 0));
+        $hydrator->addStrategy('grants', new CollectionStrategy(new ClassMethods(), Grant::class));
+        $hydrator->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
 
-        $extraction->setNamingStrategy(new MapNamingStrategy([], [
+        $hydrator->setNamingStrategy(new MapNamingStrategy([], [
             'isActive' => 'active',
         ]));
 
-        return $extraction;
+        return $hydrator;
     }
 }

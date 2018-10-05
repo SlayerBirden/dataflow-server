@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -56,10 +56,7 @@ final class UpdateConfigAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('configuration');
-        }
+        $data = Parser::getRequestBody($request);
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $this->inputFilter->setData($data);
 
@@ -78,9 +75,6 @@ final class UpdateConfigAction implements MiddlewareInterface
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error while updating configuration.', 'configuration', 400);
-        } catch (\Exception $exception) {
-            $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Internal error', 'configuration');
         }
     }
 

@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use Zend\Hydrator\HydratorInterface;
@@ -61,10 +61,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('tokens', []);
-        }
+        $data = Parser::getRequestBody($request);
 
         $users = $data['users'] ?? [];
         return $this->invalidate($users);

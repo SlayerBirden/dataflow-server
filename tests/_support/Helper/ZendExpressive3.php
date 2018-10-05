@@ -32,6 +32,10 @@ class ZendExpressive3 extends \Codeception\Module\ZendExpressive
         $this->responseCollector = new ZendExpressiveConnector\ResponseCollector;
     }
 
+    /**
+     * @return \Doctrine\ORM\EntityManagerInterface|mixed
+     * @throws \Doctrine\ORM\ORMException
+     */
     public function _getEntityManager()
     {
         if (!$this->container->has(EntityManagerRegistry::class)) {

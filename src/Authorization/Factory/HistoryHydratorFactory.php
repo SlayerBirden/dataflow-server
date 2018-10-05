@@ -19,7 +19,9 @@ final class HistoryHydratorFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $permissionStrat = new NestedEntityStrategy((new PermissionHydratorFactory())($container, $requestedName));
+        $permissionStrat = new NestedEntityStrategy(
+            (new PermissionHydratorFactory())($container, 'PermissionHydrator')
+        );
 
         $hydrator = new ClassMethods();
         $hydrator->addStrategy('user', new NestedEntityStrategy(new ClassMethods()));

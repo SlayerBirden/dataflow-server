@@ -19,14 +19,14 @@ final class PasswordHydratorFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $extraction = new ClassMethods();
-        $extraction->addStrategy('created_at', new DateTimeFormatterStrategy());
-        $extraction->addStrategy('due', new DateTimeFormatterStrategy());
-        $extraction->addStrategy('active', new BooleanStrategy(1, 0));
-        $extraction->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
-        $extraction->addStrategy('hash', $container->get(HashStrategy::class));
+        $hydrator = new ClassMethods();
+        $hydrator->addStrategy('created_at', new DateTimeFormatterStrategy());
+        $hydrator->addStrategy('due', new DateTimeFormatterStrategy());
+        $hydrator->addStrategy('active', new BooleanStrategy(1, 0));
+        $hydrator->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+        $hydrator->addStrategy('hash', $container->get(HashStrategy::class));
 
-        $extraction->setNamingStrategy(new MapNamingStrategy([
+        $hydrator->setNamingStrategy(new MapNamingStrategy([
             'created_at' => 'createdAt',
             'password' => 'hash',
         ], [
@@ -34,6 +34,6 @@ final class PasswordHydratorFactory implements FactoryInterface
             'createdAt' => 'created_at',
         ]));
 
-        return $extraction;
+        return $hydrator;
     }
 }

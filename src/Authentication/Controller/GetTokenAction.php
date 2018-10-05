@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsException;
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -54,10 +54,7 @@ final class GetTokenAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('token');
-        }
+        $data = Parser::getRequestBody($request);
         $this->inputFilter->setData($data);
 
         if (!$this->inputFilter->isValid()) {

@@ -12,7 +12,7 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedExcepti
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\DataValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
@@ -55,10 +55,7 @@ final class GenerateTemporaryTokenAction implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $data = $request->getParsedBody();
-        if (!is_array($data)) {
-            return (new DataValidationResponseFactory())('token');
-        }
+        $data = Parser::getRequestBody($request);
         $this->inputFilter->setData($data);
 
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);

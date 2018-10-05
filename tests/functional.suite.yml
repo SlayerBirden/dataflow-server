@@ -1,0 +1,8 @@
+actor: FunctionalTester
+modules:
+    enabled:
+        - \codecept\Helper\Functional
+        - \codecept\Helper\CleanDoctrine2:
+            depends: \codecept\Helper\ZendExpressive3
+            cleanup: true
+        - Asserts
