@@ -15,6 +15,7 @@ use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigurationRepositoryFactory;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
+use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerFilterMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
@@ -224,6 +225,7 @@ final class ConfigProvider
                 'middleware' => [
                     TokenMiddleware::class,
                     'DbConfigResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
                     GetConfigAction::class,
                 ],
                 'name' => 'get_config',
@@ -233,6 +235,7 @@ final class ConfigProvider
                 'path' => '/configs',
                 'middleware' => [
                     TokenMiddleware::class,
+                    SetOwnerFilterMiddleware::class,
                     GetConfigsAction::class,
                 ],
                 'name' => 'get_configs',

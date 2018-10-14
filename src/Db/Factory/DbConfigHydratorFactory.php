@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Db\Factory;
 
+use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ObscuredStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\RegexpObscuredStrategy;
@@ -16,7 +17,7 @@ final class DbConfigHydratorFactory implements FactoryInterface
      * @inheritdoc
      */
     public function __invoke(
-        \Interop\Container\ContainerInterface $container,
+        ContainerInterface $container,
         $requestedName,
         array $options = null
     ): HydratorInterface {

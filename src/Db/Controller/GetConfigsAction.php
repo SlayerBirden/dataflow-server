@@ -10,7 +10,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Doctrine\Collection\CriteriaBuilder;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
@@ -48,8 +47,6 @@ final class GetConfigsAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = $request->getQueryParams();
-        $currentOwner = $request->getAttribute(TokenMiddleware::USER_PARAM);
-        $data[CriteriaBuilder::FILTERS]['owner'] = $currentOwner;
 
         try {
             $configs = $this->dbConfigRepository->matching((new CriteriaBuilder())($data));
