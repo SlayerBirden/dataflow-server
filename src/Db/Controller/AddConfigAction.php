@@ -62,7 +62,8 @@ final class AddConfigAction implements MiddlewareInterface
             return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
         try {
-            $config = $this->getEntity($data);
+            $config = new DbConfiguration();
+            $this->hydrator->hydrate($data, $config);
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
             $em->persist($config);
             $em->flush();
@@ -74,13 +75,5 @@ final class AddConfigAction implements MiddlewareInterface
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error during creation operation.', 'configuration', 400);
         }
-    }
-
-    private function getEntity(array $data): DbConfiguration
-    {
-        $config = new DbConfiguration();
-        $this->hydrator->hydrate($data, $config);
-
-        return $config;
     }
 }

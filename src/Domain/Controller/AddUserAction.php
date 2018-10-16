@@ -63,7 +63,8 @@ final class AddUserAction implements MiddlewareInterface
             return (new ValidationResponseFactory())('user', $this->inputFilter);
         }
         try {
-            $entity = $this->getEntity($data);
+            $entity = new User();
+            $this->hydrator->hydrate($data, $entity);
             $em = $this->managerRegistry->getManagerForClass(User::class);
             $em->persist($entity);
             $em->flush();
@@ -77,13 +78,5 @@ final class AddUserAction implements MiddlewareInterface
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error during creation operation.', 'user', 400);
         }
-    }
-
-    private function getEntity(array $data): User
-    {
-        $entity = new User();
-        $this->hydrator->hydrate($data, $entity);
-
-        return $entity;
     }
 }

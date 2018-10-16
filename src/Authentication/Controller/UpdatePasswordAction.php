@@ -128,7 +128,6 @@ final class UpdatePasswordAction implements MiddlewareInterface
 
         /** @var Password $password */
         $data['password'] = $data['new_password'];
-        unset($data['new_password']);
         $data['created_at'] = (new \DateTime())->format(\DateTime::RFC3339);
         $data['due'] = (new \DateTime())->add(new \DateInterval('P1Y'))->format(\DateTime::RFC3339);
         $data['active'] = $data['active'] ?? true;

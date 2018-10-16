@@ -64,25 +64,17 @@ final class UpdateConfigAction implements MiddlewareInterface
             return (new ValidationResponseFactory())('configuration', $this->inputFilter);
         }
         try {
-            $config = $this->getConfig($dbConfig, $data);
+            $this->hydrator->hydrate($data, $dbConfig);
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
-            $em->persist($config);
+            $em->persist($dbConfig);
             $em->flush();
             $msg = 'Configuration has been updated!';
-            return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($config));
+            return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($dbConfig));
         } catch (ORMInvalidArgumentException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'configuration', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error while updating configuration.', 'configuration', 400);
         }
-    }
-
-    private function getConfig(DbConfiguration $configuration, array $data): DbConfiguration
-    {
-        unset($data['id']);
-        $this->hydrator->hydrate($data, $configuration);
-
-        return $configuration;
     }
 }

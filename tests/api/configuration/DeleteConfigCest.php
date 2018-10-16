@@ -13,7 +13,6 @@ class DeleteConfigCest
     {
         $user = $I->grabEntityFromRepository(User::class, ['id' => 1]);
         $I->haveInRepository(DbConfiguration::class, [
-            'id' => 1,
             'owner' => $user,
             'title' => 'Test config',
             'url' => 'sqlite:///data/db/db.sqlite',
@@ -47,6 +46,29 @@ class DeleteConfigCest
             'data' => [
                 'configuration' => null
             ]
+        ]);
+    }
+
+    public function deleteSomeoneElsesConfiguration(ApiTester $I)
+    {
+        $userId = $I->haveInRepository(User::class, [
+            'first' => 'Tester2',
+            'last' => 'Tester2',
+            'email' => 'test2@example.com',
+        ]);
+        $user = $I->grabEntityFromRepository(User::class, ['id' => $userId]);
+        $I->haveInRepository(DbConfiguration::class, [
+            'owner' => $user,
+            'title' => 'Test config 2',
+            'url' => 'sqlite:///data/db/db2.sqlite',
+        ]);
+
+        $I->wantTo('delete someone elses db configuration');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendDELETE('/config/2');
+        $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
+        $I->seeResponseContainsJson([
+            'success' => false,
         ]);
     }
 }

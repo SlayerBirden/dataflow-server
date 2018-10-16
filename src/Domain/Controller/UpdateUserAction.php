@@ -58,14 +58,14 @@ final class UpdateUserAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = Parser::getRequestBody($request);
-        $requestUser = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
+        $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
         $this->inputFilter->setData($data);
 
         if (!$this->inputFilter->isValid()) {
             return (new ValidationResponseFactory())('user', $this->inputFilter);
         }
         try {
-            $user = $this->getUser($requestUser, $data);
+            $this->hydrator->hydrate($data, $user);
             $em = $this->managerRegistry->getManagerForClass(User::class);
             $em->persist($user);
             $em->flush();
@@ -81,13 +81,5 @@ final class UpdateUserAction implements MiddlewareInterface
             $this->logger->error((string)$exception);
             return (new GeneralErrorResponseFactory())('Error saving user.', 'user', 400);
         }
-    }
-
-    private function getUser(User $user, array $data): User
-    {
-        unset($data['id']);
-        $this->hydrator->hydrate($data, $user);
-
-        return $user;
     }
 }
