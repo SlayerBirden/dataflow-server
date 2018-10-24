@@ -17,8 +17,8 @@ use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
-use Zend\InputFilter\InputFilterInterface;
 
 final class AddUserAction implements MiddlewareInterface
 {
@@ -26,10 +26,6 @@ final class AddUserAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
-    /**
-     * @var InputFilterInterface
-     */
-    private $inputFilter;
     /**
      * @var LoggerInterface
      */
@@ -42,12 +38,10 @@ final class AddUserAction implements MiddlewareInterface
     public function __construct(
         EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
-        InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
         $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
-        $this->inputFilter = $inputFilter;
         $this->logger = $logger;
     }
 
@@ -57,11 +51,6 @@ final class AddUserAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = Parser::getRequestBody($request);
-        $this->inputFilter->setData($data);
-
-        if (!$this->inputFilter->isValid()) {
-            return (new ValidationResponseFactory())('user', $this->inputFilter);
-        }
         try {
             $entity = new User();
             $this->hydrator->hydrate($data, $entity);
@@ -70,7 +59,7 @@ final class AddUserAction implements MiddlewareInterface
             $em->flush();
             $msg = 'User has been successfully created!';
             return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($entity));
-        } catch (ORMInvalidArgumentException $exception) {
+        } catch (ORMInvalidArgumentException | ValidationException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
         } catch (UniqueConstraintViolationException $exception) {
             return (new GeneralErrorResponseFactory())('Provided email already exists.', 'user', 400);

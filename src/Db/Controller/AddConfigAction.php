@@ -15,9 +15,8 @@ use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
-use Zend\InputFilter\InputFilterInterface;
 
 final class AddConfigAction implements MiddlewareInterface
 {
@@ -25,10 +24,6 @@ final class AddConfigAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
-    /**
-     * @var InputFilterInterface
-     */
-    private $inputFilter;
     /**
      * @var LoggerInterface
      */
@@ -41,12 +36,10 @@ final class AddConfigAction implements MiddlewareInterface
     public function __construct(
         EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
-        InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
         $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
-        $this->inputFilter = $inputFilter;
         $this->logger = $logger;
     }
 
@@ -56,11 +49,7 @@ final class AddConfigAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $data = Parser::getRequestBody($request);
-        $this->inputFilter->setData($data);
 
-        if (!$this->inputFilter->isValid()) {
-            return (new ValidationResponseFactory())('configuration', $this->inputFilter);
-        }
         try {
             $config = new DbConfiguration();
             $this->hydrator->hydrate($data, $config);
@@ -69,7 +58,7 @@ final class AddConfigAction implements MiddlewareInterface
             $em->flush();
             $msg = 'Configuration has been successfully created!';
             return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($config));
-        } catch (ORMInvalidArgumentException $exception) {
+        } catch (ORMInvalidArgumentException | ValidationException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'configuration', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);

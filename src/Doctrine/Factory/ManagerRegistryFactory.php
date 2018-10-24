@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Doctrine\Factory;
 
+use Doctrine\Common\EventManager;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\Configuration;
@@ -17,6 +18,11 @@ use Zend\ServiceManager\Factory\FactoryInterface;
 final class ManagerRegistryFactory implements FactoryInterface
 {
     /**
+     * @var EventManager
+     */
+    private $eventManager;
+
+    /**
      * @inheritdoc
      * @throws \Doctrine\ORM\ORMException
      */
@@ -24,7 +30,7 @@ final class ManagerRegistryFactory implements FactoryInterface
     {
         $config = $container->has('config') ? $container->get('config') : [];
 
-        $connections = $this->getConnections($config);
+        $connections = $this->getConnections($container, $config);
 
         if (!isset($config['doctrine'])) {
             throw new MissingDoctrineConfigException(
@@ -68,7 +74,11 @@ final class ManagerRegistryFactory implements FactoryInterface
             }
 
             // obtaining the entity manager
-            $managers[$key] = EntityManager::create($connections[$connectionName], $doctrineConfiguration);
+            $managers[$key] = EntityManager::create(
+                $connections[$connectionName],
+                $doctrineConfiguration,
+                $this->getEventManager($container, $doctrineAutoloadConfig)
+            );
         }
 
         return new SimpleRegistry($connections, $managers, $emMapping);
@@ -87,11 +97,29 @@ final class ManagerRegistryFactory implements FactoryInterface
         }
     }
 
-    /**
-     * @param array $config
-     * @return array
-     */
-    private function getConnections(array $config): array
+    private function getEventManager(ContainerInterface $container, array $doctrineConfig): EventManager
+    {
+        if ($this->eventManager === null) {
+            $this->eventManager = new EventManager();
+
+            $subscribers = $doctrineConfig['subscribers'] ?? [];
+            $listeners = $doctrineConfig['listeners'] ?? [];
+
+            foreach ($subscribers as $subscriber) {
+                $this->eventManager->addEventSubscriber($container->get($subscriber));
+            }
+            foreach ($listeners as $listener) {
+                $this->eventManager->addEventListener(
+                    $listener['events'] ?? [],
+                    $container->get($listener['class'] ?? '')
+                );
+            }
+        }
+
+        return $this->eventManager;
+    }
+
+    private function getConnections(ContainerInterface $container, array $config): array
     {
         if (!isset($config['connections'])) {
             throw new MissingDoctrineConfigException(
@@ -99,8 +127,12 @@ final class ManagerRegistryFactory implements FactoryInterface
             );
         }
 
-        return array_map(function (array $connection) {
-            return DriverManager::getConnection($connection);
+        return array_map(function (array $connection) use ($container, $config) {
+            return DriverManager::getConnection(
+                $connection,
+                null,
+                $this->getEventManager($container, $config['doctrine'] ?? [])
+            );
         }, $config['connections']);
     }
 }

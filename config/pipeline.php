@@ -23,4 +23,4 @@ $app->pipe(ImplicitOptionsMiddleware::class);
 $app->pipe(UrlHelperMiddleware::class);
 
 $app->pipe(DispatchMiddleware::class);
-$app->pipe(NotFoundHandler::class);
+$app->pipe(\SlayerBirden\DataFlowServer\NotFound\JsonNotFoundHandler::class);

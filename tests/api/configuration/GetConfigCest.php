@@ -49,4 +49,12 @@ class GetConfigCest
             ]
         ]);
     }
+
+    public function getConfigurationWithInvalidId(ApiTester $I)
+    {
+        $I->wantTo('get db configuration using invalid id');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendGET('/config/bar');
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
+    }
 }

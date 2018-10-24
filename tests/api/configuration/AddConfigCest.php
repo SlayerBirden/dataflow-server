@@ -40,19 +40,12 @@ class AddConfigCest
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
             'success' => false,
-            'data' => [
-                'validation' => [
-                    [
-                        'field' => 'user',
-                    ]
-                ]
-            ]
         ]);
     }
 
     public function addCompleteNonUrlConfig(ApiTester $I)
     {
-        $I->wantTo('create incomplete db configuration');
+        $I->wantTo('create complete non url db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendPOST('/config', [
             'title' => 'Test config',

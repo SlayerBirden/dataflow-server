@@ -19,8 +19,6 @@ $configs = [
     \Zend\InputFilter\ConfigProvider::class,
     \Zend\Filter\ConfigProvider::class,
     \Zend\Validator\ConfigProvider::class,
-    // Overrides
-    \SlayerBirden\DataFlowServer\Zend\InputFilter\ConfigProvider::class,
     // App config
     \SlayerBirden\DataFlowServer\Db\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Domain\ConfigProvider::class,

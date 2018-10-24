@@ -16,9 +16,8 @@ use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
-use Zend\InputFilter\InputFilterInterface;
 
 final class UpdateConfigAction implements MiddlewareInterface
 {
@@ -31,10 +30,6 @@ final class UpdateConfigAction implements MiddlewareInterface
      */
     private $hydrator;
     /**
-     * @var InputFilterInterface
-     */
-    private $inputFilter;
-    /**
      * @var EntityManagerRegistry
      */
     private $managerRegistry;
@@ -42,12 +37,10 @@ final class UpdateConfigAction implements MiddlewareInterface
     public function __construct(
         EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
-        InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
         $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
-        $this->inputFilter = $inputFilter;
         $this->logger = $logger;
     }
 
@@ -58,11 +51,6 @@ final class UpdateConfigAction implements MiddlewareInterface
     {
         $data = Parser::getRequestBody($request);
         $dbConfig = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        $this->inputFilter->setData($data);
-
-        if (!$this->inputFilter->isValid()) {
-            return (new ValidationResponseFactory())('configuration', $this->inputFilter);
-        }
         try {
             $this->hydrator->hydrate($data, $dbConfig);
             $em = $this->managerRegistry->getManagerForClass(DbConfiguration::class);
@@ -70,7 +58,7 @@ final class UpdateConfigAction implements MiddlewareInterface
             $em->flush();
             $msg = 'Configuration has been updated!';
             return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($dbConfig));
-        } catch (ORMInvalidArgumentException $exception) {
+        } catch (ORMInvalidArgumentException | ValidationException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'configuration', 400);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);

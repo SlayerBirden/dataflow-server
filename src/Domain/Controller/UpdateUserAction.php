@@ -17,9 +17,8 @@ use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
-use Zend\InputFilter\InputFilterInterface;
 
 final class UpdateUserAction implements MiddlewareInterface
 {
@@ -27,10 +26,6 @@ final class UpdateUserAction implements MiddlewareInterface
      * @var HydratorInterface
      */
     private $hydrator;
-    /**
-     * @var InputFilterInterface
-     */
-    private $inputFilter;
     /**
      * @var LoggerInterface
      */
@@ -43,12 +38,10 @@ final class UpdateUserAction implements MiddlewareInterface
     public function __construct(
         EntityManagerRegistry $managerRegistry,
         HydratorInterface $hydrator,
-        InputFilterInterface $inputFilter,
         LoggerInterface $logger
     ) {
         $this->managerRegistry = $managerRegistry;
         $this->hydrator = $hydrator;
-        $this->inputFilter = $inputFilter;
         $this->logger = $logger;
     }
 
@@ -59,11 +52,6 @@ final class UpdateUserAction implements MiddlewareInterface
     {
         $data = Parser::getRequestBody($request);
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        $this->inputFilter->setData($data);
-
-        if (!$this->inputFilter->isValid()) {
-            return (new ValidationResponseFactory())('user', $this->inputFilter);
-        }
         try {
             $this->hydrator->hydrate($data, $user);
             $em = $this->managerRegistry->getManagerForClass(User::class);
@@ -71,7 +59,7 @@ final class UpdateUserAction implements MiddlewareInterface
             $em->flush();
             $msg = 'User has been updated!';
             return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($user));
-        } catch (ORMInvalidArgumentException $exception) {
+        } catch (ORMInvalidArgumentException | ValidationException $exception) {
             return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
         } catch (UniqueConstraintViolationException $exception) {
             $msg = 'Email address already taken.';

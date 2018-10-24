@@ -28,7 +28,8 @@
         "doctrine/orm": "^2.6",
         "slayerbirden/dataflow": "^1.0.0-dev",
         "zendframework/zend-diactoros": "^1.7",
-        "ocramius/generated-hydrator": "^2.0"
+        "ocramius/generated-hydrator": "^2.0",
+        "ext-json": "*"
     },
     "require-dev": {
         "zendframework/zend-expressive-tooling": "^1.0",

@@ -6,7 +6,8 @@ modules:
     - \codecept\Helper\CleanDoctrine2:
         depends: \codecept\Helper\ZendExpressive3
         cleanup: true
-    - \codecept\Helper\Api
+    - \codecept\Helper\Api:
+        depends: PhpBrowser
     - Asserts
   config:
     REST:

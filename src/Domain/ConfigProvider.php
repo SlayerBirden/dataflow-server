@@ -11,6 +11,7 @@ use SlayerBirden\DataFlowServer\Domain\Controller\DeleteUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUserAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\GetUsersAction;
 use SlayerBirden\DataFlowServer\Domain\Controller\UpdateUserAction;
+use SlayerBirden\DataFlowServer\Domain\Factory\InputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Domain\Factory\UserRepositoryFactory;
 use SlayerBirden\DataFlowServer\Domain\Factory\UserResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
@@ -90,13 +91,11 @@ class ConfigProvider
             AddUserAction::class => [
                 EntityManagerRegistry::class,
                 ClassMethods::class,
-                'UserInputFilter',
                 LoggerInterface::class,
             ],
             UpdateUserAction::class => [
                 EntityManagerRegistry::class,
                 ClassMethods::class,
-                'UserInputFilter',
                 LoggerInterface::class,
             ],
             GetUserAction::class => [
@@ -135,6 +134,7 @@ class ConfigProvider
                 'UserInputFilter' => ProxyFilterManagerFactory::class,
                 'UserResourceMiddleware' => UserResourceMiddlewareFactory::class,
                 'UserRepository' => UserRepositoryFactory::class,
+                'UserInputFilterMiddleware' => InputFilterMiddlewareFactory::class
             ],
         ];
     }
@@ -166,6 +166,7 @@ class ConfigProvider
                 'middleware' => [
                     TokenMiddleware::class,
                     BodyParamsMiddleware::class,
+                    'UserInputFilterMiddleware',
                     AddUserAction::class,
                 ],
                 'name' => 'add_user',
@@ -177,6 +178,7 @@ class ConfigProvider
                     TokenMiddleware::class,
                     'UserResourceMiddleware',
                     BodyParamsMiddleware::class,
+                    'UserInputFilterMiddleware',
                     UpdateUserAction::class,
                 ],
                 'name' => 'update_user',

@@ -64,14 +64,12 @@ class UpdateConfigCest
         $I->sendPUT('/config/1', [
             'title' => 'Test config',
         ]);
-        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
+        $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => false,
+            'success' => true,
             'data' => [
-                'validation' => [
-                    [
-                        'field' => 'user',
-                    ]
+                'configuration' => [
+                    'title' => 'Test config',
                 ]
             ]
         ]);

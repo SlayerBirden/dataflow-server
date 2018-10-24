@@ -8,7 +8,8 @@ use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 
 /**
- * @ORM\Entity @ORM\Table(name="configuration")
+ * @ORM\Entity
+ * @ORM\Table(name="configuration")
  **/
 class DbConfiguration implements ClaimedResourceInterface
 {
@@ -117,7 +118,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $dbname
      */
-    public function setDbname(string $dbname): void
+    public function setDbname(?string $dbname): void
     {
         $this->dbname = $dbname;
     }
@@ -133,7 +134,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $user
      */
-    public function setUser(string $user): void
+    public function setUser(?string $user): void
     {
         $this->user = $user;
     }
@@ -149,7 +150,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $password
      */
-    public function setPassword(string $password): void
+    public function setPassword(?string $password): void
     {
         $this->password = $password;
     }
@@ -165,7 +166,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $host
      */
-    public function setHost(string $host): void
+    public function setHost(?string $host): void
     {
         $this->host = $host;
     }
@@ -181,7 +182,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $driver
      */
-    public function setDriver(string $driver): void
+    public function setDriver(?string $driver): void
     {
         $this->driver = $driver;
     }
@@ -197,7 +198,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param int $port
      */
-    public function setPort(int $port): void
+    public function setPort(?int $port): void
     {
         $this->port = $port;
     }
@@ -213,7 +214,7 @@ class DbConfiguration implements ClaimedResourceInterface
     /**
      * @param string $url
      */
-    public function setUrl(string $url): void
+    public function setUrl(?string $url): void
     {
         $this->url = $url;
     }

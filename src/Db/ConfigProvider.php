@@ -10,9 +10,11 @@ use SlayerBirden\DataFlowServer\Db\Controller\DeleteConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigAction;
 use SlayerBirden\DataFlowServer\Db\Controller\GetConfigsAction;
 use SlayerBirden\DataFlowServer\Db\Controller\UpdateConfigAction;
+use SlayerBirden\DataFlowServer\Db\Doctrine\Subscriber\Validation;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigHydratorFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigurationRepositoryFactory;
+use SlayerBirden\DataFlowServer\Db\Factory\InputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerFilterMiddleware;
@@ -43,6 +45,8 @@ final class ConfigProvider
     {
         return [
             'title' => [
+                'required' => false,
+                'continue_if_empty' => true,
                 'filters' => [
                     [
                         'name' => 'stringtrim',
@@ -64,7 +68,7 @@ final class ConfigProvider
                 ],
                 'validators' => [
                     [
-                        'name' => 'configValidator',
+                        'name' => 'notempty',
                     ],
                 ],
             ],
@@ -78,21 +82,15 @@ final class ConfigProvider
                 ],
                 'validators' => [
                     [
-                        'name' => 'configValidator',
+                        'name' => 'notempty',
                     ],
                 ],
             ],
             'password' => [
                 'required' => false,
-                'continue_if_empty' => true,
                 'filters' => [
                     [
                         'name' => 'stringtrim',
-                    ],
-                ],
-                'validators' => [
-                    [
-                        'name' => 'configValidator',
                     ],
                 ],
             ],
@@ -106,7 +104,7 @@ final class ConfigProvider
                 ],
                 'validators' => [
                     [
-                        'name' => 'configValidator',
+                        'name' => 'notempty',
                     ],
                 ],
             ],
@@ -120,7 +118,20 @@ final class ConfigProvider
                 ],
                 'validators' => [
                     [
-                        'name' => 'configValidator',
+                        'name' => 'inArray',
+                        'options' => [
+                            'haystack' => [
+                                'mysql',
+                                'pdo_mysql',
+                                'pdo_sqlite',
+                                'drizzle_pdo_mysql',
+                                'pdo_pgsql'
+                            ],
+                            "strict" => \Zend\Validator\InArray::COMPARE_STRICT,
+                            "messages" => [
+                                \Zend\Validator\InArray::NOT_IN_ARRAY => 'Please use valid DBAL driver',
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -134,7 +145,7 @@ final class ConfigProvider
                 ],
                 'validators' => [
                     [
-                        'name' => 'configValidator',
+                        'name' => 'digits',
                     ],
                 ],
             ],
@@ -155,13 +166,11 @@ final class ConfigProvider
             AddConfigAction::class => [
                 EntityManagerRegistry::class,
                 'DbConfigHydrator',
-                'ConfigInputFilter',
                 LoggerInterface::class,
             ],
             UpdateConfigAction::class => [
                 EntityManagerRegistry::class,
                 'DbConfigHydrator',
-                'ConfigInputFilter',
                 LoggerInterface::class,
             ],
             GetConfigsAction::class => [
@@ -188,6 +197,8 @@ final class ConfigProvider
                 'ConfigInputFilter' => ProxyFilterManagerFactory::class,
                 'DbConfigResourceMiddleware' => DbConfigResourceMiddlewareFactory::class,
                 'DbConfigurationRepository' => DbConfigurationRepositoryFactory::class,
+                Validation::class => InvokableFactory::class,
+                'ConfigInputFilterMiddleware' => InputFilterMiddlewareFactory::class,
             ],
         ];
     }
@@ -201,6 +212,9 @@ final class ConfigProvider
                         'src/Db/Entities',
                     ],
                 ],
+            ],
+            'subscribers' => [
+                Validation::class,
             ],
         ];
     }
@@ -246,6 +260,7 @@ final class ConfigProvider
                 'middleware' => [
                     TokenMiddleware::class,
                     BodyParamsMiddleware::class,
+                    'ConfigInputFilterMiddleware',
                     SetOwnerMiddleware::class,
                     AddConfigAction::class,
                 ],
@@ -259,6 +274,7 @@ final class ConfigProvider
                     'DbConfigResourceMiddleware',
                     ValidateOwnerMiddleware::class,
                     BodyParamsMiddleware::class,
+                    'ConfigInputFilterMiddleware',
                     SetOwnerMiddleware::class,
                     UpdateConfigAction::class,
                 ],
