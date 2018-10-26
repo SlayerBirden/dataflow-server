@@ -12,7 +12,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class DeleteUserAction implements MiddlewareInterface
@@ -50,6 +50,6 @@ final class DeleteUserAction implements MiddlewareInterface
         $em = $this->managerRegistry->getManagerForClass(User::class);
         $em->remove($user);
         $em->flush();
-        return (new GeneralSuccessResponseFactory())('User was deleted', 'user', $this->hydrator->extract($user));
+        return (new ResponseFactory())('User was deleted', 200, 'user', $this->hydrator->extract($user));
     }
 }

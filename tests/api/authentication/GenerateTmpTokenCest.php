@@ -52,7 +52,6 @@ class GenerateTmpTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'token' => [
                     'owner' => [
@@ -78,9 +77,6 @@ class GenerateTmpTokenCest
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     /**
@@ -97,9 +93,6 @@ class GenerateTmpTokenCest
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     /**
@@ -115,7 +108,6 @@ class GenerateTmpTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'validation' => [
                     [
@@ -140,8 +132,5 @@ class GenerateTmpTokenCest
             ],
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 }

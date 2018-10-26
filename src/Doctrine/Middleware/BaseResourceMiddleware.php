@@ -9,7 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 
 final class BaseResourceMiddleware implements ResourceMiddlewareInterface
 {
@@ -55,29 +55,21 @@ final class BaseResourceMiddleware implements ResourceMiddlewareInterface
     {
         $id = $request->getAttribute($this->idAttributeName);
 
-        if ($id !== null) {
-            try {
-                $em = $this->managerRegistry->getManagerForClass($this->entityName);
-                $entity = $em->find($this->entityName, $id);
-                if ($entity) {
-                    return $handler->handle(
-                        $request->withAttribute(self::DATA_RESOURCE, $entity)
-                    );
-                } else {
-                    $msg = sprintf('Could not load %s by provided ID.', $this->dataObjectName);
-                    return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 404);
-                }
-            } catch (ORMInvalidArgumentException $exception) {
-                $this->logger->error((string)$exception);
-                $msg = sprintf('Error during loading %s.', $this->dataObjectName);
-                return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 400);
-            } catch (\Exception $exception) {
-                $this->logger->error((string)$exception);
-                return (new GeneralErrorResponseFactory())('Internal error', $this->dataObjectName);
+        try {
+            $em = $this->managerRegistry->getManagerForClass($this->entityName);
+            $entity = $em->find($this->entityName, $id);
+            if ($entity) {
+                return $handler->handle(
+                    $request->withAttribute(self::DATA_RESOURCE, $entity)
+                );
+            } else {
+                $msg = sprintf('Could not load %s by provided ID.', $this->dataObjectName);
+                return (new ResponseFactory())($msg, 404, $this->dataObjectName);
             }
-        } else {
-            $msg = sprintf('No %s provided.', $this->idAttributeName);
-            return (new GeneralErrorResponseFactory())($msg, $this->dataObjectName, 400);
+        } catch (ORMInvalidArgumentException $exception) {
+            $this->logger->error((string)$exception);
+            $msg = sprintf('Error during loading %s.', $this->dataObjectName);
+            return (new ResponseFactory())($msg, 400, $this->dataObjectName);
         }
     }
 }

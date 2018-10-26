@@ -26,7 +26,6 @@ class DeleteConfigCest
         $I->sendDELETE('/config/1');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configuration' => [
                     'title' => 'Test config',
@@ -42,7 +41,6 @@ class DeleteConfigCest
         $I->sendDELETE('/config/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'configuration' => null
             ]
@@ -67,8 +65,5 @@ class DeleteConfigCest
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendDELETE('/config/2');
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 }

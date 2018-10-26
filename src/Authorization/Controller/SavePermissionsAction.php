@@ -19,8 +19,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -94,12 +93,12 @@ final class SavePermissionsAction implements MiddlewareInterface
             $msg = 'Successfully set permissions to resources.';
             $extractedPermissions = (new ListExtractor())($this->hydrator, $permissions);
             $count = count($extractedPermissions);
-            return (new GeneralSuccessResponseFactory())($msg, 'permissions', $extractedPermissions, 200, $count);
+            return (new ResponseFactory())($msg, 200, 'permissions', $extractedPermissions, $count);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $em->rollback();
             $msg = 'There was an error while setting the permissions.';
-            return (new GeneralErrorResponseFactory())($msg, 'permissions', 400, [], 0);
+            return (new ResponseFactory())($msg, 400, 'permissions', [], 0);
         }
     }
 

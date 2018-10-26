@@ -12,8 +12,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Collection\CriteriaBuilder;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class GetUsersAction implements MiddlewareInterface
@@ -53,15 +52,15 @@ final class GetUsersAction implements MiddlewareInterface
 
             if ($count > 0) {
                 $arrayUsers = (new ListExtractor())($this->hydrator, $users->toArray());
-                return (new GeneralSuccessResponseFactory())('Success', 'users', $arrayUsers, 200, $count);
+                return (new ResponseFactory())('Success', 200, 'users', $arrayUsers, $count);
             } else {
                 $msg = 'Could not find users using given conditions.';
-                return (new GeneralErrorResponseFactory())($msg, 'users', 404, [], 0);
+                return (new ResponseFactory())($msg, 404, 'users', [], 0);
             }
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $msg = 'There was an error while fetching users.';
-            return (new GeneralErrorResponseFactory())($msg, 'users', 400, [], 0);
+            return (new ResponseFactory())($msg, 400, 'users', [], 0);
         }
     }
 }

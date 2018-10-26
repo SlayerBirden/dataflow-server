@@ -95,9 +95,6 @@ class UpdatePasswordCest
             'new_password' => 'there is a clown on a wing',
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson([
-            'success' => true,
-        ]);
 
         // check that new password works
         /** @var User $user */
@@ -118,7 +115,6 @@ class UpdatePasswordCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'validation' => [
                     [
@@ -139,9 +135,6 @@ class UpdatePasswordCest
             'new_password' => 'cool new password',
         ]);
         $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     public function updatePasswordWithoutProvidingOld(ApiTester $I)
@@ -153,9 +146,6 @@ class UpdatePasswordCest
             'new_password' => 'cool new password',
         ]);
         $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     public function updatePasswordUseUsedPw(ApiTester $I)
@@ -177,8 +167,5 @@ class UpdatePasswordCest
             'new_password' => 'old cool long password',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 }

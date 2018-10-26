@@ -49,7 +49,6 @@ class InvalidateTokensCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'tokens' => [
                     [
@@ -72,7 +71,6 @@ class InvalidateTokensCest
         $I->sendPost('/invalidatetokens');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'count' => 2
             ],
@@ -89,7 +87,6 @@ class InvalidateTokensCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'tokens' => [],
                 'count' => 0

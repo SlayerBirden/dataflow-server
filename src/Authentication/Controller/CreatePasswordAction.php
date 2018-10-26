@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Password;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -78,6 +78,6 @@ final class CreatePasswordAction implements MiddlewareInterface
         $em->persist($password);
         $em->flush();
         $msg = 'Password has been successfully created!';
-        return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($password));
+        return (new ResponseFactory())($msg, 200, 'password', $this->hydrator->extract($password));
     }
 }

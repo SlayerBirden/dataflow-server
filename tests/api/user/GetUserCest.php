@@ -14,7 +14,6 @@ class GetUserCest
         $I->sendGET('/user/1');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'user' => [
                     'email' => 'test1@example.com',
@@ -30,7 +29,6 @@ class GetUserCest
         $I->sendGET('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'user' => null
             ]

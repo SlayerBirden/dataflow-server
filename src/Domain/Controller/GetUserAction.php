@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class GetUserAction implements MiddlewareInterface
@@ -30,6 +30,6 @@ final class GetUserAction implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $user = $request->getAttribute(ResourceMiddlewareInterface::DATA_RESOURCE);
-        return (new GeneralSuccessResponseFactory())('Success', 'user', $this->hydrator->extract($user));
+        return (new ResponseFactory())('Success', 200, 'user', $this->hydrator->extract($user));
     }
 }

@@ -14,8 +14,7 @@ use SlayerBirden\DataFlowServer\Db\Entities\DbConfiguration;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
 
@@ -57,12 +56,12 @@ final class UpdateConfigAction implements MiddlewareInterface
             $em->persist($dbConfig);
             $em->flush();
             $msg = 'Configuration has been updated!';
-            return (new GeneralSuccessResponseFactory())($msg, 'configuration', $this->hydrator->extract($dbConfig));
+            return (new ResponseFactory())($msg, 200, 'configuration', $this->hydrator->extract($dbConfig));
         } catch (ORMInvalidArgumentException | ValidationException $exception) {
-            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'configuration', 400);
+            return (new ResponseFactory())($exception->getMessage(), 400, 'configuration');
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Error while updating configuration.', 'configuration', 400);
+            return (new ResponseFactory())('Error while updating configuration.', 400, 'configuration');
         }
     }
 }

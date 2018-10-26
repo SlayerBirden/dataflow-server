@@ -52,7 +52,6 @@ class CreatePasswordCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'password' => [
                     'owner' => [
@@ -97,7 +96,6 @@ class CreatePasswordCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'password' => null,
                 'validation' => [
@@ -129,9 +127,6 @@ class CreatePasswordCest
             'password' => 'abra cadabra',
         ]);
         $I->seeResponseCodeIs(HttpCode::PRECONDITION_FAILED);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     /**
@@ -149,7 +144,6 @@ class CreatePasswordCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'password' => null,
                 'validation' => [
@@ -173,7 +167,6 @@ class CreatePasswordCest
         $I->sendPOST('/password');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'password' => null,
             ],

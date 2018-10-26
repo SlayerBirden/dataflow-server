@@ -29,7 +29,6 @@ class UpdateUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'user' => [
                     'first' => 'Bob',
@@ -51,7 +50,6 @@ class UpdateUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'user' => null
             ]
@@ -70,7 +68,6 @@ class UpdateUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'user' => [
                     'id' => 1,
@@ -93,7 +90,6 @@ class UpdateUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'user' => null,
                 'validation' => [
@@ -114,7 +110,6 @@ class UpdateUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'user' => [
                     'first' => 'Tester',

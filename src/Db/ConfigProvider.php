@@ -15,7 +15,6 @@ use SlayerBirden\DataFlowServer\Db\Factory\DbConfigHydratorFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\DbConfigurationRepositoryFactory;
 use SlayerBirden\DataFlowServer\Db\Factory\InputFilterMiddlewareFactory;
-use SlayerBirden\DataFlowServer\Db\Validation\ConfigValidator;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerFilterMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
@@ -33,7 +32,6 @@ final class ConfigProvider
             ConfigAbstractFactory::class => $this->getAbstractFactoryConfig(),
             'dependencies' => $this->getDependenciesConfig(),
             'doctrine' => $this->getDoctrineConfig(),
-            'validators' => $this->getValidatorsConfig(),
             'input_filter_specs' => [
                 'ConfigInputFilter' => $this->getConfigInputFilterSpec(),
             ],
@@ -215,18 +213,6 @@ final class ConfigProvider
             ],
             'subscribers' => [
                 Validation::class,
-            ],
-        ];
-    }
-
-    public function getValidatorsConfig(): array
-    {
-        return [
-            'aliases' => [
-                'configValidator' => ConfigValidator::class,
-            ],
-            'factories' => [
-                ConfigValidator::class => InvokableFactory::class,
             ],
         ];
     }

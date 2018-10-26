@@ -18,7 +18,6 @@ class AddUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'user' => [
                     'first' => 'Test',
@@ -39,7 +38,6 @@ class AddUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'validation' => [
                     [
@@ -61,7 +59,6 @@ class AddUserCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'validation' => [
                     [
@@ -82,8 +79,5 @@ class AddUserCest
             'email' => 'test1@example.com',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 }

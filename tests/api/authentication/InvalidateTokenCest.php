@@ -52,7 +52,6 @@ class InvalidateTokenCest
         $I->sendPut('/invalidatetoken/' . (string)$this->tokenId);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'token' => [
                     'owner' => [
@@ -72,7 +71,6 @@ class InvalidateTokenCest
         $I->sendPut('/invalidatetoken/1');
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [],
         ]);
     }
@@ -85,7 +83,6 @@ class InvalidateTokenCest
         $I->sendPut('/invalidatetoken/100');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'token' => null,
             ],

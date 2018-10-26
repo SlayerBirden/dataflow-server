@@ -17,8 +17,7 @@ use SlayerBirden\DataFlowServer\Authentication\PasswordManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -87,14 +86,14 @@ final class UpdatePasswordAction implements MiddlewareInterface
             $em->commit();
 
             $msg = 'Password successfully updated.';
-            return (new GeneralSuccessResponseFactory())($msg, 'password', $this->hydrator->extract($pw));
+            return (new ResponseFactory())($msg, 200, 'password', $this->hydrator->extract($pw));
         } catch (PasswordRestrictionsException | \InvalidArgumentException $exception) {
             $em->rollback();
-            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'password', 400);
+            return (new ResponseFactory())($exception->getMessage(), 400, 'password');
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
             $em->rollback();
-            return (new GeneralErrorResponseFactory())('There was an error while updating password.', 'password', 400);
+            return (new ResponseFactory())('There was an error while updating password.', 400, 'password');
         }
     }
 

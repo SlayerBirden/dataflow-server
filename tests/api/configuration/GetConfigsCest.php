@@ -53,7 +53,6 @@ class GetConfigsCest
         }
         $configs = array_merge($configs, $otherConfigs);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configurations' => $configs,
                 'count' => 11,
@@ -68,7 +67,6 @@ class GetConfigsCest
         $I->sendGET('/configs?p=2');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configurations' => [
                     [
@@ -87,7 +85,6 @@ class GetConfigsCest
         $I->sendGET('/configs?f[title]=mysql');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configurations' => [
                     [
@@ -106,7 +103,6 @@ class GetConfigsCest
         $I->sendGET('/configs?s[title]=asc');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configurations' => [
                     [
@@ -125,7 +121,6 @@ class GetConfigsCest
         $I->sendGET('/configs?f[title]=bla');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'configurations' => [],
                 'count' => 0,
@@ -140,7 +135,6 @@ class GetConfigsCest
         $I->sendGET('/configs?f[abracadabra]=30');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'configurations' => [],
                 'count' => 0,

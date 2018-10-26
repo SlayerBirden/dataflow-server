@@ -14,8 +14,7 @@ use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class InvalidateTokensAction implements MiddlewareInterface
@@ -84,7 +83,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
 
         if ($collection->count() === 0) {
             $msg = 'No tokens found to invalidate for given criteria.';
-            return (new GeneralErrorResponseFactory())($msg, 'tokens', 400, [], 0);
+            return (new ResponseFactory())($msg, 400, 'tokens', [], 0);
         }
         $em = $this->managerRegistry->getManagerForClass(Token::class);
         foreach ($collection as $token) {
@@ -94,7 +93,7 @@ final class InvalidateTokensAction implements MiddlewareInterface
         $em->flush();
         $msg = 'Tokens have been deactivated.';
         $extracted = (new ListExtractor())($this->hydrator, $collection->toArray());
-        return (new GeneralSuccessResponseFactory())($msg, 'tokens', $extracted, 200, $collection->count());
+        return (new ResponseFactory())($msg, 200, 'tokens', $extracted, $collection->count());
     }
 
     private function getUsers(array $users): array

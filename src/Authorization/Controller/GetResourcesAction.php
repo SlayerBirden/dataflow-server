@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 
 final class GetResourcesAction implements MiddlewareInterface
 {
@@ -29,6 +29,6 @@ final class GetResourcesAction implements MiddlewareInterface
     {
         $resources = $this->resourceManager->getAllResources();
         $count = count($resources);
-        return (new GeneralSuccessResponseFactory())('Success', 'resources', $resources, 200, $count);
+        return (new ResponseFactory())('Success', 200, 'resources', $resources, $count);
     }
 }

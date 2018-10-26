@@ -15,8 +15,7 @@ use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
 
@@ -57,17 +56,16 @@ final class UpdateUserAction implements MiddlewareInterface
             $em = $this->managerRegistry->getManagerForClass(User::class);
             $em->persist($user);
             $em->flush();
-            $msg = 'User has been updated!';
-            return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($user));
+            return (new ResponseFactory())('User has been updated!', 200, 'user', $this->hydrator->extract($user));
         } catch (ORMInvalidArgumentException | ValidationException $exception) {
-            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
+            return (new ResponseFactory())($exception->getMessage(), 400, 'user');
         } catch (UniqueConstraintViolationException $exception) {
             $msg = 'Email address already taken.';
             $userData = isset($user) ? $this->hydrator->extract($user) : null;
-            return (new GeneralErrorResponseFactory())($msg, 'user', 400, $userData);
+            return (new ResponseFactory())($msg, 400, 'user', $userData);
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Error saving user.', 'user', 400);
+            return (new ResponseFactory())('Error saving user.', 400, 'user');
         }
     }
 }

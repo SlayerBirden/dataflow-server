@@ -13,8 +13,7 @@ use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -71,9 +70,9 @@ final class GenerateTemporaryTokenAction implements MiddlewareInterface
     {
         try {
             $token = $this->tokenManager->getTmpToken($user, $resources);
-            return (new GeneralSuccessResponseFactory())('Token created', 'token', $this->hydrator->extract($token));
+            return (new ResponseFactory())('Token created', 200, 'token', $this->hydrator->extract($token));
         } catch (PermissionDeniedException $exception) {
-            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'token', 400);
+            return (new ResponseFactory())($exception->getMessage(), 400, 'token');
         }
     }
 }

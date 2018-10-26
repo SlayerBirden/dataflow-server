@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class InvalidateTokenAction implements MiddlewareInterface
@@ -52,7 +52,6 @@ final class InvalidateTokenAction implements MiddlewareInterface
         $em = $this->managerRegistry->getManagerForClass(get_class($token));
         $em->persist($token);
         $em->flush();
-        $msg = 'Token invalidated.';
-        return (new GeneralSuccessResponseFactory())($msg, 'token', $this->hydrator->extract($token));
+        return (new ResponseFactory())('Token invalidated.', 200, 'token', $this->hydrator->extract($token));
     }
 }

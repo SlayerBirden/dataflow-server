@@ -14,9 +14,7 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Validation\Exception\ValidationException;
 use Zend\Hydrator\HydratorInterface;
 
@@ -58,14 +56,14 @@ final class AddUserAction implements MiddlewareInterface
             $em->persist($entity);
             $em->flush();
             $msg = 'User has been successfully created!';
-            return (new GeneralSuccessResponseFactory())($msg, 'user', $this->hydrator->extract($entity));
+            return (new ResponseFactory())($msg, 200, 'user', $this->hydrator->extract($entity));
         } catch (ORMInvalidArgumentException | ValidationException $exception) {
-            return (new GeneralErrorResponseFactory())($exception->getMessage(), 'user', 400);
+            return (new ResponseFactory())($exception->getMessage(), 400, 'user');
         } catch (UniqueConstraintViolationException $exception) {
-            return (new GeneralErrorResponseFactory())('Provided email already exists.', 'user', 400);
+            return (new ResponseFactory())('Provided email already exists.', 400, 'user');
         } catch (ORMException $exception) {
             $this->logger->error((string)$exception);
-            return (new GeneralErrorResponseFactory())('Error during creation operation.', 'user', 400);
+            return (new ResponseFactory())('Error during creation operation.', 400, 'user');
         }
     }
 }

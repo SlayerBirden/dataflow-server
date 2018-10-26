@@ -27,7 +27,6 @@ class GetConfigCest
         $I->sendGET('/config/1');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configuration' => [
                     'title' => 'Test config',
@@ -43,7 +42,6 @@ class GetConfigCest
         $I->sendGET('/config/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'configuration' => null
             ]
@@ -55,6 +53,14 @@ class GetConfigCest
         $I->wantTo('get db configuration using invalid id');
         $I->haveHttpHeader('Content-Type', 'application/json');
         $I->sendGET('/config/bar');
+        $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
+    }
+
+    public function getConfigurationNoId(ApiTester $I)
+    {
+        $I->wantTo('get db configuration without id');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendGET('/config/');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
     }
 }

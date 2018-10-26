@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 
 final class ActivePasswordMiddleware implements MiddlewareInterface
 {
@@ -33,7 +33,7 @@ final class ActivePasswordMiddleware implements MiddlewareInterface
 
         if ($this->hasActivePassword($user)) {
             $msg = 'You already have an active password. Please use "update" routine.';
-            return (new GeneralErrorResponseFactory())($msg, 'password', 412);
+            return (new ResponseFactory())($msg, 412, 'password');
         }
 
         return $handler->handle($request);

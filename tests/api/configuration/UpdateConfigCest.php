@@ -30,7 +30,6 @@ class UpdateConfigCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configuration' => [
                     'title' => 'sqlite updated',
@@ -50,9 +49,25 @@ class UpdateConfigCest
         ]);
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'configuration' => null
+            ]
+        ]);
+    }
+
+    public function updatePartialConfig(ApiTester $I)
+    {
+        $I->wantTo('update only 1 field');
+        $I->haveHttpHeader('Content-Type', 'application/json');
+        $I->sendPUT('/config/1', [
+            'title' => 'Test config',
+        ]);
+        $I->seeResponseCodeIs(HttpCode::OK);
+        $I->seeResponseContainsJson([
+            'data' => [
+                'configuration' => [
+                    'title' => 'Test config',
+                ]
             ]
         ]);
     }
@@ -61,17 +76,11 @@ class UpdateConfigCest
     {
         $I->wantTo('update incomplete db configuration');
         $I->haveHttpHeader('Content-Type', 'application/json');
-        $I->sendPUT('/config/1', [
+        $I->sendPOST('/config', [
             'title' => 'Test config',
+            'dbname' => 'test',
+            'url' => null,
         ]);
-        $I->seeResponseCodeIs(HttpCode::OK);
-        $I->seeResponseContainsJson([
-            'success' => true,
-            'data' => [
-                'configuration' => [
-                    'title' => 'Test config',
-                ]
-            ]
-        ]);
+        $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
     }
 }

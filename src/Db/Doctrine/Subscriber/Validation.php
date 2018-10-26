@@ -30,7 +30,7 @@ final class Validation implements EventSubscriber
     public function preUpdate(PreUpdateEventArgs $args): void
     {
         $entity = $args->getObject();
-        if ($this->shouldHandle($entity)) {
+        if ($entity instanceof DbConfiguration) {
             $this->validate($entity);
         }
     }
@@ -42,20 +42,9 @@ final class Validation implements EventSubscriber
     public function prePersist(LifecycleEventArgs $args): void
     {
         $entity = $args->getObject();
-        if ($this->shouldHandle($entity)) {
+        if ($entity instanceof DbConfiguration) {
             $this->validate($entity);
         }
-    }
-
-    /**
-     * Check if object should be handled
-     *
-     * @param object $entity
-     * @return bool
-     */
-    private function shouldHandle($entity): bool
-    {
-        return $entity instanceof DbConfiguration;
     }
 
     /**

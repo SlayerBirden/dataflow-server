@@ -25,7 +25,6 @@ class DeleteUserCest
         $I->sendDELETE('/user/2');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'user' => [
                     'email' => 'test@example.com',
@@ -41,7 +40,6 @@ class DeleteUserCest
         $I->sendDELETE('/user/0');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'user' => null
             ]

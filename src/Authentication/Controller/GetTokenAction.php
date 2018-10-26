@@ -12,8 +12,7 @@ use SlayerBirden\DataFlowServer\Authentication\Exception\InvalidCredentialsExcep
 use SlayerBirden\DataFlowServer\Authentication\Exception\PermissionDeniedException;
 use SlayerBirden\DataFlowServer\Authentication\TokenManagerInterface;
 use SlayerBirden\DataFlowServer\Stdlib\Request\Parser;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralErrorResponseFactory;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Validation\ValidationResponseFactory;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\InputFilter\InputFilterInterface;
@@ -64,13 +63,13 @@ final class GetTokenAction implements MiddlewareInterface
         try {
             $token = $this->tokenManager->getToken($data['user'], $data['password'], $data['resources']);
             $msg = 'Token successfully created';
-            return (new GeneralSuccessResponseFactory())($msg, 'token', $this->extraction->extract($token));
+            return (new ResponseFactory())($msg, 200, 'token', $this->extraction->extract($token));
         } catch (InvalidCredentialsException $exception) {
             $msg = 'Invalid credentials provided. Please double check your user and password.';
-            return (new GeneralErrorResponseFactory())($msg, 'token', 401);
+            return (new ResponseFactory())($msg, 401, 'token');
         } catch (PermissionDeniedException $exception) {
             $msg = 'Provided user does not have permission to access requested resources.';
-            return (new GeneralErrorResponseFactory())($msg, 'token', 403);
+            return (new ResponseFactory())($msg, 403, 'token');
         }
     }
 }

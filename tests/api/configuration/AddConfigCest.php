@@ -19,7 +19,6 @@ class AddConfigCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configuration' => [
                     'title' => 'Test config',
@@ -38,9 +37,6 @@ class AddConfigCest
             'dbname' => 'test',
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
-        $I->seeResponseContainsJson([
-            'success' => false,
-        ]);
     }
 
     public function addCompleteNonUrlConfig(ApiTester $I)
@@ -58,7 +54,6 @@ class AddConfigCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'configuration' => [
                     'title' => 'Test config',

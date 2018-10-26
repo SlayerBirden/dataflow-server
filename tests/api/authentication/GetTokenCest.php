@@ -82,7 +82,6 @@ class GetTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'token' => [
                     'owner' => [
@@ -108,7 +107,6 @@ class GetTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::UNAUTHORIZED);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'token' => null,
             ],
@@ -129,7 +127,6 @@ class GetTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::FORBIDDEN);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'token' => null,
             ],
@@ -149,7 +146,6 @@ class GetTokenCest
         ]);
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'token' => null,
                 'validation' => [

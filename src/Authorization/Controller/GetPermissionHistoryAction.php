@@ -10,7 +10,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Collection\CriteriaBuilder;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\ListExtractor;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\GeneralSuccessResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
 use Zend\Hydrator\HydratorInterface;
 
 final class GetPermissionHistoryAction implements MiddlewareInterface
@@ -40,6 +40,6 @@ final class GetPermissionHistoryAction implements MiddlewareInterface
         $results = (new ListExtractor())($this->hydrator, $collection->toArray());
         $count = count($results);
 
-        return (new GeneralSuccessResponseFactory())('Success', 'history', $results, 200, $count);
+        return (new ResponseFactory())('Success', 200, 'history', $results, $count);
     }
 }

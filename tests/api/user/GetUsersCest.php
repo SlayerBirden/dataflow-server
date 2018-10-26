@@ -33,7 +33,6 @@ class GetUsersCest
             ];
         }
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'users' => $usersJson,
                 'count' => 11,
@@ -48,7 +47,6 @@ class GetUsersCest
         $I->sendGET('/users?p=2');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'users' => [
                     [
@@ -67,7 +65,6 @@ class GetUsersCest
         $I->sendGET('/users?f[email]=test1');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'users' => [
                     [
@@ -92,7 +89,6 @@ class GetUsersCest
         $I->sendGET('/users?s[id]=desc');
         $I->seeResponseCodeIs(HttpCode::OK);
         $I->seeResponseContainsJson([
-            'success' => true,
             'data' => [
                 'users' => [
                     [
@@ -111,7 +107,6 @@ class GetUsersCest
         $I->sendGET('/users?f[email]=bla');
         $I->seeResponseCodeIs(HttpCode::NOT_FOUND);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'users' => [],
                 'count' => 0,
@@ -126,7 +121,6 @@ class GetUsersCest
         $I->sendGET('/users?f[age]=30');
         $I->seeResponseCodeIs(HttpCode::BAD_REQUEST);
         $I->seeResponseContainsJson([
-            'success' => false,
             'data' => [
                 'users' => [],
                 'count' => 0,
