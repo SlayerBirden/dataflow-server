@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\ResponseFactory;
 
 final class ActivePasswordMiddleware implements MiddlewareInterface
 {

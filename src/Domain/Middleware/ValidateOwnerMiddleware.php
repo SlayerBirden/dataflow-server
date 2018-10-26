@@ -11,7 +11,7 @@ use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Doctrine\Middleware\ResourceMiddlewareInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\ResponseFactory;
 
 final class ValidateOwnerMiddleware implements MiddlewareInterface
 {

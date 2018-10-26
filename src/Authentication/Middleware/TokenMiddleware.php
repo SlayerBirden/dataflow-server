@@ -10,7 +10,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Token;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\ResponseFactory;
 use Zend\Expressive\Router\RouteResult;
 
 final class TokenMiddleware implements MiddlewareInterface

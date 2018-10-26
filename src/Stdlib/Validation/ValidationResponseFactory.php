@@ -37,7 +37,6 @@ final class ValidationResponseFactory
                 $dataObjectName => $value,
                 'validation' => $validation,
             ],
-            'success' => false,
             'msg' => new DangerMessage('There were validation errors.'),
         ], 400);
     }

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\ResponseFactory;
 
 $container = require __DIR__ . '/container.php';
 /** @var \Zend\Expressive\Application $app */

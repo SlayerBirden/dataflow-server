@@ -8,7 +8,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use SlayerBirden\DataFlowServer\Authorization\Service\ResourceManager;
-use SlayerBirden\DataFlowServer\Stdlib\Validation\ResponseFactory;
+use SlayerBirden\DataFlowServer\Stdlib\ResponseFactory;
 
 final class GetResourcesAction implements MiddlewareInterface
 {

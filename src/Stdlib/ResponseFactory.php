@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace SlayerBirden\DataFlowServer\Stdlib\Validation;
+namespace SlayerBirden\DataFlowServer\Stdlib;
 
 use Psr\Http\Message\ResponseInterface;
 use SlayerBirden\DataFlowServer\Notification\DangerMessage;
