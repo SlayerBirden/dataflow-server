@@ -20,6 +20,7 @@ $configs = [
     \Zend\Filter\ConfigProvider::class,
     \Zend\Validator\ConfigProvider::class,
     // App config
+    \SlayerBirden\DataFlowServer\Pipeline\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Db\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Domain\ConfigProvider::class,
     \SlayerBirden\DataFlowServer\Logger\ConfigProvider::class,

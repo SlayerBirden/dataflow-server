@@ -6,7 +6,7 @@ namespace SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy;
 use Zend\Hydrator\ExtractionInterface;
 use Zend\Hydrator\Strategy\StrategyInterface;
 
-final class NestedEntityStrategy implements StrategyInterface
+final class ExtractionNestedEntityStrategy implements StrategyInterface
 {
     /**
      * @var ExtractionInterface

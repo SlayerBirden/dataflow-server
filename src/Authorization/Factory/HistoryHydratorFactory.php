@@ -6,7 +6,7 @@ namespace SlayerBirden\DataFlowServer\Authorization\Factory;
 use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\DecoratedStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\Decoration\NullDecorator;
-use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ExtractionNestedEntityStrategy;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\NamingStrategy\MapNamingStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
@@ -19,13 +19,13 @@ final class HistoryHydratorFactory implements FactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        $permissionStrat = new NestedEntityStrategy(
+        $permissionStrat = new ExtractionNestedEntityStrategy(
             (new PermissionHydratorFactory())($container, 'PermissionHydrator')
         );
 
         $hydrator = new ClassMethods();
-        $hydrator->addStrategy('user', new NestedEntityStrategy(new ClassMethods()));
-        $hydrator->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+        $hydrator->addStrategy('user', new ExtractionNestedEntityStrategy(new ClassMethods()));
+        $hydrator->addStrategy('owner', new ExtractionNestedEntityStrategy(new ClassMethods()));
         $hydrator->addStrategy(
             'permission',
             new DecoratedStrategy($permissionStrat, new NullDecorator())

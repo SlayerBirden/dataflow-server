@@ -5,7 +5,7 @@ namespace SlayerBirden\DataFlowServer\Authentication\Factory;
 
 use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Hydrator\Strategy\HashStrategy;
-use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ExtractionNestedEntityStrategy;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\NamingStrategy\MapNamingStrategy;
 use Zend\Hydrator\Strategy\BooleanStrategy;
@@ -23,7 +23,7 @@ final class PasswordHydratorFactory implements FactoryInterface
         $hydrator->addStrategy('created_at', new DateTimeFormatterStrategy());
         $hydrator->addStrategy('due', new DateTimeFormatterStrategy());
         $hydrator->addStrategy('active', new BooleanStrategy(1, 0));
-        $hydrator->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+        $hydrator->addStrategy('owner', new ExtractionNestedEntityStrategy(new ClassMethods()));
         $hydrator->addStrategy('hash', $container->get(HashStrategy::class));
 
         $hydrator->setNamingStrategy(new MapNamingStrategy([

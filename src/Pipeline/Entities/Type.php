@@ -21,7 +21,7 @@ class Type
      * @ORM\Column(type="string")
      * @var string
      */
-    private $table;
+    private $tablename;
 
     /**
      * @return string
@@ -34,16 +34,16 @@ class Type
     /**
      * @return string
      */
-    public function getTable(): string
+    public function getTableName(): string
     {
-        return $this->table;
+        return $this->tablename;
     }
 
     /**
      * @param string $table
      */
-    public function setTable(string $table): void
+    public function setTableName(string $table): void
     {
-        $this->table = $table;
+        $this->tablename = $table;
     }
 }

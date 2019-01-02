@@ -5,7 +5,7 @@ namespace DataFlow\Tests\Unit\Doctrine\Hydrator\Strategy\Decoration;
 
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\DecoratedStrategy;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\Decoration\NullDecorator;
-use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ExtractionNestedEntityStrategy;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\ObjectProperty;
 
@@ -32,7 +32,7 @@ final class NullDecoratorTest extends \Codeception\Test\Unit
     {
         $this->hydrator = new ObjectProperty();
         $this->hydrator->addStrategy('b', new DecoratedStrategy(
-            new NestedEntityStrategy(new ObjectProperty()),
+            new ExtractionNestedEntityStrategy(new ObjectProperty()),
             new NullDecorator()
         ));
     }

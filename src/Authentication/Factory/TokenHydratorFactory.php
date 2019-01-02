@@ -6,7 +6,7 @@ namespace SlayerBirden\DataFlowServer\Authentication\Factory;
 use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Entities\Grant;
 use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\CollectionStrategy;
-use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\NestedEntityStrategy;
+use SlayerBirden\DataFlowServer\Doctrine\Hydrator\Strategy\ExtractionNestedEntityStrategy;
 use Zend\Hydrator\ClassMethods;
 use Zend\Hydrator\NamingStrategy\MapNamingStrategy;
 use Zend\Hydrator\Strategy\BooleanStrategy;
@@ -25,7 +25,7 @@ final class TokenHydratorFactory implements FactoryInterface
         $hydrator->addStrategy('due', new DateTimeFormatterStrategy());
         $hydrator->addStrategy('active', new BooleanStrategy(1, 0));
         $hydrator->addStrategy('grants', new CollectionStrategy(new ClassMethods(), Grant::class));
-        $hydrator->addStrategy('owner', new NestedEntityStrategy(new ClassMethods()));
+        $hydrator->addStrategy('owner', new ExtractionNestedEntityStrategy(new ClassMethods()));
 
         $hydrator->setNamingStrategy(new MapNamingStrategy([], [
             'isActive' => 'active',

@@ -4,13 +4,15 @@ declare(strict_types=1);
 namespace SlayerBirden\DataFlowServer\Pipeline\Entities;
 
 use Doctrine\ORM\Mapping as ORM;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Stdlib\Entities\TimestampableInterface;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="pipes")
  **/
-class Pipe
+class Pipe implements ClaimedResourceInterface, TimestampableInterface
 {
     /**
      * @ORM\Id
@@ -31,8 +33,8 @@ class Pipe
      */
     private $owner;
     /**
-     * @ORM\ManyToOne(targetEnti="\SlayerBirden\DataFlowServer\Pipeline\Entities\Type")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\ManyToOne(targetEntity="\SlayerBirden\DataFlowServer\Pipeline\Entities\Type")
+     * @ORM\JoinColumn(nullable=false, referencedColumnName="code")
      * @var Type
      */
     private $type;
