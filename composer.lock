@@ -3113,16 +3113,16 @@
         },
         {
             "name": "codeception/codeception",
-            "version": "2.5.1",
+            "version": "2.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/Codeception.git",
-                "reference": "e0a658c64e98811a6fd4f6aa7c3222e0609066a9"
+                "reference": "4f89de32929fef53ca6d83b159fe329b6d484c1c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/Codeception/zipball/e0a658c64e98811a6fd4f6aa7c3222e0609066a9",
-                "reference": "e0a658c64e98811a6fd4f6aa7c3222e0609066a9",
+                "url": "https://api.github.com/repos/Codeception/Codeception/zipball/4f89de32929fef53ca6d83b159fe329b6d484c1c",
+                "reference": "4f89de32929fef53ca6d83b159fe329b6d484c1c",
                 "shasum": ""
             },
             "require": {
@@ -3201,20 +3201,20 @@
                 "functional testing",
                 "unit testing"
             ],
-            "time": "2018-10-29T21:23:19+00:00"
+            "time": "2019-01-02T10:28:51+00:00"
         },
         {
             "name": "codeception/phpunit-wrapper",
-            "version": "7.5.0",
+            "version": "7.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeception/phpunit-wrapper.git",
-                "reference": "c4272e2d140ff408c8a93fa9aec659a8621cbd58"
+                "reference": "7c95e2022cbde2f013d52cc87ae878f1b996ed4d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeception/phpunit-wrapper/zipball/c4272e2d140ff408c8a93fa9aec659a8621cbd58",
-                "reference": "c4272e2d140ff408c8a93fa9aec659a8621cbd58",
+                "url": "https://api.github.com/repos/Codeception/phpunit-wrapper/zipball/7c95e2022cbde2f013d52cc87ae878f1b996ed4d",
+                "reference": "7c95e2022cbde2f013d52cc87ae878f1b996ed4d",
                 "shasum": ""
             },
             "require": {
@@ -3244,7 +3244,7 @@
                 }
             ],
             "description": "PHPUnit classes used by Codeception",
-            "time": "2018-12-07T10:48:17+00:00"
+            "time": "2018-12-31T10:33:06+00:00"
         },
         {
             "name": "codeception/stub",
@@ -3485,16 +3485,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v2.13.1",
+            "version": "v2.13.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FriendsOfPHP/PHP-CS-Fixer.git",
-                "reference": "54814c62d5beef3ba55297b9b3186ed8b8a1b161"
+                "reference": "ce6c4bbc24302f535c7bbf9ad35fbb0be4f5a4b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/54814c62d5beef3ba55297b9b3186ed8b8a1b161",
-                "reference": "54814c62d5beef3ba55297b9b3186ed8b8a1b161",
+                "url": "https://api.github.com/repos/FriendsOfPHP/PHP-CS-Fixer/zipball/ce6c4bbc24302f535c7bbf9ad35fbb0be4f5a4b2",
+                "reference": "ce6c4bbc24302f535c7bbf9ad35fbb0be4f5a4b2",
                 "shasum": ""
             },
             "require": {
@@ -3521,7 +3521,7 @@
             "require-dev": {
                 "johnkary/phpunit-speedtrap": "^1.1 || ^2.0 || ^3.0",
                 "justinrainbow/json-schema": "^5.0",
-                "keradus/cli-executor": "^1.1",
+                "keradus/cli-executor": "^1.2",
                 "mikey179/vfsstream": "^1.6",
                 "php-coveralls/php-coveralls": "^2.1",
                 "php-cs-fixer/accessible-object": "^1.0",
@@ -3572,7 +3572,7 @@
                 }
             ],
             "description": "A tool to automatically fix PHP code style",
-            "time": "2018-10-21T00:32:10+00:00"
+            "time": "2019-01-01T20:26:47+00:00"
         },
         {
             "name": "fzaninotto/faker",
@@ -5455,12 +5455,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/SlayerBirden/df-code-generator.git",
-                "reference": "ce5fed279759309a1267e0af865fe54da320f800"
+                "reference": "82a824a777d2ec10c4dbeb198ee0f53239082841"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/ce5fed279759309a1267e0af865fe54da320f800",
-                "reference": "ce5fed279759309a1267e0af865fe54da320f800",
+                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/82a824a777d2ec10c4dbeb198ee0f53239082841",
+                "reference": "82a824a777d2ec10c4dbeb198ee0f53239082841",
                 "shasum": ""
             },
             "require": {
@@ -5506,7 +5506,7 @@
                 }
             ],
             "description": "Code generation tool for DataFlow server",
-            "time": "2018-10-26T15:04:44+00:00"
+            "time": "2019-01-02T16:40:07+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",

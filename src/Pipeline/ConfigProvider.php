@@ -12,9 +12,12 @@ use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
+use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\AddPipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\DeletePipeAction;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\InputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeHydratorFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Middleware\TimestampableInsertMiddleware;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
@@ -35,7 +38,7 @@ final class ConfigProvider
         ];
     }
 
-    public function getDoctrineConfig(): array
+    private function getDoctrineConfig(): array
     {
         return [
             'entity_managers' => [
@@ -48,7 +51,7 @@ final class ConfigProvider
         ];
     }
 
-    public function getConfigAbstractFactoryConfig(): array
+    private function getConfigAbstractFactoryConfig(): array
     {
         return [
             AddPipeAction::class => [
@@ -56,21 +59,27 @@ final class ConfigProvider
                 'PipeHydrator',
                 LoggerInterface::class,
             ],
+            DeletePipeAction::class => [
+                EntityManagerRegistry::class,
+                'PipeHydrator',
+                LoggerInterface::class,
+            ],
         ];
     }
 
-    public function getDependenciesConfig(): array
+    private function getDependenciesConfig(): array
     {
         return [
             'factories' => [
                 'PipeHydrator' => PipeHydratorFactory::class,
                 'PipeInputFilter' => ProxyFilterManagerFactory::class,
                 'PipeInputFilterMiddleware' => InputFilterMiddlewareFactory::class,
+                'PipeResourceMiddleware' => PipeResourceMiddlewareFactory::class,
             ],
         ];
     }
 
-    public function getPipeInputFilterSpec(): array
+    private function getPipeInputFilterSpec(): array
     {
         return [
             'name' => [
@@ -106,7 +115,7 @@ final class ConfigProvider
         ];
     }
 
-    public function getRoutesConfig(): array
+    private function getRoutesConfig(): array
     {
         return [
             [
@@ -122,6 +131,19 @@ final class ConfigProvider
                 'name' => 'add_pipe',
                 'allowed_methods' => [
                     'POST',
+                ],
+            ],
+            [
+                'path' => '/pipe/{id:\\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipeResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    DeletePipeAction::class,
+                ],
+                'name' => 'delete_pipe',
+                'allowed_methods' => [
+                    'DELETE',
                 ],
             ],
         ];

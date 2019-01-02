@@ -18,7 +18,7 @@ class Pipe implements ClaimedResourceInterface, TimestampableInterface
      * @ORM\Id
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue
-     * @var integer
+     * @var integer|null
      **/
     private $id;
     /**
@@ -50,9 +50,9 @@ class Pipe implements ClaimedResourceInterface, TimestampableInterface
     private $updatedAt;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
