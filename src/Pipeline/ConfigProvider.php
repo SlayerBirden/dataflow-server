@@ -11,13 +11,29 @@ namespace SlayerBirden\DataFlowServer\Pipeline;
 use Psr\Log\LoggerInterface;
 use SlayerBirden\DataFlowServer\Authentication\Middleware\TokenMiddleware;
 use SlayerBirden\DataFlowServer\Doctrine\Persistence\EntityManagerRegistry;
+use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerFilterMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\AddPipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\AddTypeAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\DeletePipeAction;
-use SlayerBirden\DataFlowServer\Pipeline\Factory\InputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\DeleteTypeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipesAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetTypeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetTypesAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\UpdatePipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\UpdateTypeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeHydratorFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeRepositoryFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeHydratorFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeInputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeRepositoryFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\UpdatePipeInputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\UpdateTypeInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Stdlib\Middleware\TimestampableInsertMiddleware;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
@@ -33,6 +49,9 @@ final class ConfigProvider
             'dependencies' => $this->getDependenciesConfig(),
             'input_filter_specs' => [
                 'PipeInputFilter' => $this->getPipeInputFilterSpec(),
+                'UpdatePipeInputFilter' => $this->getUpdatePipeInputFilterSpec(),
+                'TypeInputFilter' => $this->getTypeInputFilterSpec(),
+                'UpdateTypeInputFilter' => $this->getUpdateTypeInputFilterSpec(),
             ],
             'routes' => $this->getRoutesConfig(),
         ];
@@ -64,6 +83,42 @@ final class ConfigProvider
                 'PipeHydrator',
                 LoggerInterface::class,
             ],
+            GetPipeAction::class => [
+                'PipeHydrator',
+            ],
+            GetPipesAction::class => [
+                'PipeRepository',
+                LoggerInterface::class,
+                'PipeHydrator',
+            ],
+            UpdatePipeAction::class => [
+                EntityManagerRegistry::class,
+                'PipeHydrator',
+                LoggerInterface::class,
+            ],
+            AddTypeAction::class => [
+                EntityManagerRegistry::class,
+                'TypeHydrator',
+                LoggerInterface::class,
+            ],
+            DeleteTypeAction::class => [
+                EntityManagerRegistry::class,
+                'TypeHydrator',
+                LoggerInterface::class,
+            ],
+            GetTypeAction::class => [
+                'TypeHydrator',
+            ],
+            GetTypesAction::class => [
+                'TypeRepository',
+                LoggerInterface::class,
+                'TypeHydrator',
+            ],
+            UpdateTypeAction::class => [
+                EntityManagerRegistry::class,
+                'TypeHydrator',
+                LoggerInterface::class,
+            ],
         ];
     }
 
@@ -73,8 +128,18 @@ final class ConfigProvider
             'factories' => [
                 'PipeHydrator' => PipeHydratorFactory::class,
                 'PipeInputFilter' => ProxyFilterManagerFactory::class,
-                'PipeInputFilterMiddleware' => InputFilterMiddlewareFactory::class,
+                'UpdatePipeInputFilter' => ProxyFilterManagerFactory::class,
+                'PipeInputFilterMiddleware' => PipeInputFilterMiddlewareFactory::class,
+                'UpdatePipeInputFilterMiddleware' => UpdatePipeInputFilterMiddlewareFactory::class,
                 'PipeResourceMiddleware' => PipeResourceMiddlewareFactory::class,
+                'PipeRepository' => PipeRepositoryFactory::class,
+                'TypeHydrator' => TypeHydratorFactory::class,
+                'TypeInputFilter' => ProxyFilterManagerFactory::class,
+                'UpdateTypeInputFilter' => ProxyFilterManagerFactory::class,
+                'TypeResourceMiddleware' => TypeResourceMiddlewareFactory::class,
+                'TypeInputFilterMiddleware' => TypeInputFilterMiddlewareFactory::class,
+                'UpdateTypeInputFilterMiddleware' => UpdateTypeInputFilterMiddlewareFactory::class,
+                'TypeRepository' => TypeRepositoryFactory::class,
             ],
         ];
     }
@@ -115,6 +180,108 @@ final class ConfigProvider
         ];
     }
 
+    private function getUpdatePipeInputFilterSpec(): array
+    {
+        return [
+            'name' => [
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function getTypeInputFilterSpec(): array
+    {
+        return [
+            'code' => [
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+            'tablename' => [
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function getUpdateTypeInputFilterSpec(): array
+    {
+        return [
+            'code' => [
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+            'tablename' => [
+                'required' => false,
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+    }
+
     private function getRoutesConfig(): array
     {
         return [
@@ -134,7 +301,7 @@ final class ConfigProvider
                 ],
             ],
             [
-                'path' => '/pipe/{id:\\d+}',
+                'path' => '/pipe/{id:\d+}',
                 'middleware' => [
                     TokenMiddleware::class,
                     'PipeResourceMiddleware',
@@ -144,6 +311,109 @@ final class ConfigProvider
                 'name' => 'delete_pipe',
                 'allowed_methods' => [
                     'DELETE',
+                ],
+            ],
+            [
+                'path' => '/pipe/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipeResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    GetPipeAction::class,
+                ],
+                'name' => 'get_pipe',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/pipes',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    SetOwnerFilterMiddleware::class,
+                    GetPipesAction::class,
+                ],
+                'name' => 'get_pipes',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/pipe/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipeResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    'UpdatePipeInputFilterMiddleware',
+                    SetOwnerMiddleware::class,
+                    UpdatePipeAction::class,
+                ],
+                'name' => 'update_pipe',
+                'allowed_methods' => [
+                    'PUT',
+                ],
+            ],
+            [
+                'path' => '/type',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    'TypeInputFilterMiddleware',
+                    AddTypeAction::class,
+                ],
+                'name' => 'add_type',
+                'allowed_methods' => [
+                    'POST',
+                ],
+            ],
+            [
+                'path' => '/type/{id:\w+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'TypeResourceMiddleware',
+                    DeleteTypeAction::class,
+                ],
+                'name' => 'delete_type',
+                'allowed_methods' => [
+                    'DELETE',
+                ],
+            ],
+            [
+                'path' => '/type/{id:\w+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'TypeResourceMiddleware',
+                    GetTypeAction::class,
+                ],
+                'name' => 'get_type',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/types',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    GetTypesAction::class,
+                ],
+                'name' => 'get_types',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/type/{id:\w+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'TypeResourceMiddleware',
+                    BodyParamsMiddleware::class,
+                    'UpdateTypeInputFilterMiddleware',
+                    UpdateTypeAction::class,
+                ],
+                'name' => 'update_type',
+                'allowed_methods' => [
+                    'PUT',
                 ],
             ],
         ];

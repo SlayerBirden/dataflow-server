@@ -5455,12 +5455,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/SlayerBirden/df-code-generator.git",
-                "reference": "82a824a777d2ec10c4dbeb198ee0f53239082841"
+                "reference": "cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/82a824a777d2ec10c4dbeb198ee0f53239082841",
-                "reference": "82a824a777d2ec10c4dbeb198ee0f53239082841",
+                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0",
+                "reference": "cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0",
                 "shasum": ""
             },
             "require": {
@@ -5469,6 +5469,7 @@
                 "fzaninotto/faker": "^1.8",
                 "nette/php-generator": "^3.2",
                 "symfony/console": "^4.0",
+                "symfony/serializer": "^4.0",
                 "twig/twig": "^2.4"
             },
             "require-dev": {
@@ -5506,7 +5507,7 @@
                 }
             ],
             "description": "Code generation tool for DataFlow server",
-            "time": "2019-01-02T16:40:07+00:00"
+            "time": "2019-01-03T15:57:11+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",
@@ -6163,6 +6164,86 @@
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
             "time": "2018-11-20T16:22:05+00:00"
+        },
+        {
+            "name": "symfony/serializer",
+            "version": "v4.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/serializer.git",
+                "reference": "1452962563adc7cfa8ab1307ac1664e2a93b8d69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/serializer/zipball/1452962563adc7cfa8ab1307ac1664e2a93b8d69",
+                "reference": "1452962563adc7cfa8ab1307ac1664e2a93b8d69",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1.3",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "conflict": {
+                "phpdocumentor/type-resolver": "<0.2.1",
+                "symfony/dependency-injection": "<3.4",
+                "symfony/property-access": "<3.4",
+                "symfony/property-info": "<3.4",
+                "symfony/yaml": "<3.4"
+            },
+            "require-dev": {
+                "doctrine/annotations": "~1.0",
+                "doctrine/cache": "~1.0",
+                "phpdocumentor/reflection-docblock": "^3.0|^4.0",
+                "symfony/cache": "~3.4|~4.0",
+                "symfony/config": "~3.4|~4.0",
+                "symfony/dependency-injection": "~3.4|~4.0",
+                "symfony/http-foundation": "~3.4|~4.0",
+                "symfony/property-access": "~3.4|~4.0",
+                "symfony/property-info": "~3.4|~4.0",
+                "symfony/validator": "~3.4|~4.0",
+                "symfony/yaml": "~3.4|~4.0"
+            },
+            "suggest": {
+                "doctrine/annotations": "For using the annotation mapping. You will also need doctrine/cache.",
+                "doctrine/cache": "For using the default cached annotation reader and metadata cache.",
+                "psr/cache-implementation": "For using the metadata cache.",
+                "symfony/config": "For using the XML mapping loader.",
+                "symfony/http-foundation": "To use the DataUriNormalizer.",
+                "symfony/property-access": "For using the ObjectNormalizer.",
+                "symfony/property-info": "To deserialize relations.",
+                "symfony/yaml": "For using the default YAML mapping loader."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Serializer\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Serializer Component",
+            "homepage": "https://symfony.com",
+            "time": "2018-12-02T13:25:28+00:00"
         },
         {
             "name": "symfony/stopwatch",

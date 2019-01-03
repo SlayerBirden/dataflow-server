@@ -12,7 +12,7 @@ use Interop\Container\ContainerInterface;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\Middleware\InputFilterMiddleware;
 use Zend\ServiceManager\Factory\FactoryInterface;
 
-final class InputFilterMiddlewareFactory implements FactoryInterface
+final class PipeInputFilterMiddlewareFactory implements FactoryInterface
 {
     public function __invoke(
         ContainerInterface $container,
