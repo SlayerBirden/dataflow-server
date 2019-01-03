@@ -5455,12 +5455,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/SlayerBirden/df-code-generator.git",
-                "reference": "cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0"
+                "reference": "18736d1871a6cd8c03ebc0fe85b195683b1eef1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0",
-                "reference": "cbb59f4ed4b7dc2f9f2898806e82d28dae5abde0",
+                "url": "https://api.github.com/repos/SlayerBirden/df-code-generator/zipball/18736d1871a6cd8c03ebc0fe85b195683b1eef1f",
+                "reference": "18736d1871a6cd8c03ebc0fe85b195683b1eef1f",
                 "shasum": ""
             },
             "require": {
@@ -5507,7 +5507,7 @@
                 }
             ],
             "description": "Code generation tool for DataFlow server",
-            "time": "2019-01-03T15:57:11+00:00"
+            "time": "2019-01-03T16:06:32+00:00"
         },
         {
             "name": "squizlabs/php_codesniffer",

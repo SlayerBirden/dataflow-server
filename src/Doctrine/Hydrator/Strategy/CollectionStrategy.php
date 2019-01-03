@@ -19,16 +19,17 @@ final class CollectionStrategy implements StrategyInterface
      * @var string
      */
     private $objectClassName;
-
     /**
-     * @param HydratorInterface $objectHydrator
-     * @param string $objectClassName
-     *
-     * @throws InvalidArgumentException
+     * @var StrategyInterface|null
      */
-    public function __construct(HydratorInterface $objectHydrator, string $objectClassName)
-    {
-        if (! class_exists($objectClassName)) {
+    private $hydrationStrategy;
+
+    public function __construct(
+        HydratorInterface $objectHydrator,
+        string $objectClassName,
+        StrategyInterface $hydrationStrategy = null
+    ) {
+        if (!class_exists($objectClassName)) {
             throw new InvalidArgumentException(sprintf(
                 'Object class name does not exist: "%s".',
                 $objectClassName
@@ -37,6 +38,7 @@ final class CollectionStrategy implements StrategyInterface
 
         $this->objectHydrator = $objectHydrator;
         $this->objectClassName = $objectClassName;
+        $this->hydrationStrategy = $hydrationStrategy;
     }
 
     /**
@@ -44,7 +46,7 @@ final class CollectionStrategy implements StrategyInterface
      */
     public function extract($value)
     {
-        if (! ($value instanceof Collection)) {
+        if (!($value instanceof Collection)) {
             throw new InvalidArgumentException(sprintf(
                 'Value needs to be a Doctrine Collection, got %s instead.',
                 is_object($value) ? get_class($value) : gettype($value)
@@ -52,7 +54,7 @@ final class CollectionStrategy implements StrategyInterface
         }
 
         return array_map(function ($object) {
-            if (! $object instanceof $this->objectClassName) {
+            if (!$object instanceof $this->objectClassName) {
                 throw new InvalidArgumentException(sprintf(
                     'Value needs to be an instance of "%s", got "%s" instead.',
                     $this->objectClassName,
@@ -69,7 +71,7 @@ final class CollectionStrategy implements StrategyInterface
      */
     public function hydrate($value): Collection
     {
-        if (! is_iterable($value)) {
+        if (!is_iterable($value)) {
             throw new InvalidArgumentException(sprintf(
                 'Value needs to be an Iterable, got %s instead.',
                 is_object($value) ? get_class($value) : gettype($value)
@@ -78,10 +80,15 @@ final class CollectionStrategy implements StrategyInterface
 
         $collection = new ArrayCollection();
         foreach ($value as $item) {
-            $collection->add($this->objectHydrator->hydrate(
-                $item,
-                new $this->objectClassName
-            ));
+            if ($this->hydrationStrategy !== null) {
+                $collectionItem = $this->hydrationStrategy->hydrate($item);
+            } else {
+                $collectionItem = $this->objectHydrator->hydrate(
+                    $item,
+                    new $this->objectClassName
+                );
+            }
+            $collection->add($collectionItem);
         }
 
         return $collection;

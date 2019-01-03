@@ -15,26 +15,39 @@ use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerFilterMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\SetOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Domain\Middleware\ValidateOwnerMiddleware;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\AddPipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\AddPipelineAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\AddTypeAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\DeletePipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\DeletePipelineAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\DeleteTypeAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipelineAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipelinesAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\GetPipesAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\GetTypeAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\GetTypesAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\UpdatePipeAction;
+use SlayerBirden\DataFlowServer\Pipeline\Controller\UpdatePipelineAction;
 use SlayerBirden\DataFlowServer\Pipeline\Controller\UpdateTypeAction;
-use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeInputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipelineInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeHydratorFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeRepositoryFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipelineHydratorFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipelineRepositoryFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipelineResourceMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\PipeValidatorFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeHydratorFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeRepositoryFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\TypeResourceMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\UpdatePipeInputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Factory\UpdatePipelineInputFilterMiddlewareFactory;
 use SlayerBirden\DataFlowServer\Pipeline\Factory\UpdateTypeInputFilterMiddlewareFactory;
+use SlayerBirden\DataFlowServer\Pipeline\Validation\PipeValidator;
 use SlayerBirden\DataFlowServer\Stdlib\Middleware\TimestampableInsertMiddleware;
+use SlayerBirden\DataFlowServer\Stdlib\Middleware\TimestampableUpdateMiddleware;
 use SlayerBirden\DataFlowServer\Zend\InputFilter\ProxyFilterManagerFactory;
 use Zend\Expressive\Helper\BodyParams\BodyParamsMiddleware;
 use Zend\ServiceManager\AbstractFactory\ConfigAbstractFactory;
@@ -52,7 +65,10 @@ final class ConfigProvider
                 'UpdatePipeInputFilter' => $this->getUpdatePipeInputFilterSpec(),
                 'TypeInputFilter' => $this->getTypeInputFilterSpec(),
                 'UpdateTypeInputFilter' => $this->getUpdateTypeInputFilterSpec(),
+                'PipelineInputFilter' => $this->getPipelineInputFilterSpec(),
+                'UpdatePipelineInputFilter' => $this->getUpdatePipelineInputFilterSpec(),
             ],
+            'validators' => $this->getValidatorsConfig(),
             'routes' => $this->getRoutesConfig(),
         ];
     }
@@ -119,6 +135,29 @@ final class ConfigProvider
                 'TypeHydrator',
                 LoggerInterface::class,
             ],
+            AddPipelineAction::class => [
+                EntityManagerRegistry::class,
+                'PipelineHydrator',
+                LoggerInterface::class,
+            ],
+            DeletePipelineAction::class => [
+                EntityManagerRegistry::class,
+                'PipelineHydrator',
+                LoggerInterface::class,
+            ],
+            GetPipelineAction::class => [
+                'PipelineHydrator',
+            ],
+            GetPipelinesAction::class => [
+                'PipelineRepository',
+                LoggerInterface::class,
+                'PipelineHydrator',
+            ],
+            UpdatePipelineAction::class => [
+                EntityManagerRegistry::class,
+                'PipelineHydrator',
+                LoggerInterface::class,
+            ],
         ];
     }
 
@@ -140,6 +179,13 @@ final class ConfigProvider
                 'TypeInputFilterMiddleware' => TypeInputFilterMiddlewareFactory::class,
                 'UpdateTypeInputFilterMiddleware' => UpdateTypeInputFilterMiddlewareFactory::class,
                 'TypeRepository' => TypeRepositoryFactory::class,
+                'PipelineHydrator' => PipelineHydratorFactory::class,
+                'PipelineInputFilter' => ProxyFilterManagerFactory::class,
+                'UpdatePipelineInputFilter' => ProxyFilterManagerFactory::class,
+                'PipelineInputFilterMiddleware' => PipelineInputFilterMiddlewareFactory::class,
+                'UpdatePipelineInputFilterMiddleware' => UpdatePipelineInputFilterMiddlewareFactory::class,
+                'PipelineResourceMiddleware' => PipelineResourceMiddlewareFactory::class,
+                'PipelineRepository' => PipelineRepositoryFactory::class,
             ],
         ];
     }
@@ -282,6 +328,66 @@ final class ConfigProvider
         ];
     }
 
+    private function getPipelineInputFilterSpec(): array
+    {
+        return [
+            'name' => [
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'notempty',
+                    ],
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+            'pipes' => [
+                'required' => false,
+                'validators' => [
+                    [
+                        'name' => 'pipesValidator',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    private function getUpdatePipelineInputFilterSpec(): array
+    {
+        return [
+            'name' => [
+                'filters' => [
+                    [
+                        'name' => 'stringtrim',
+                    ],
+                ],
+                'validators' => [
+                    [
+                        'name' => 'stringLength',
+                        'options' => [
+                            'max' => 255,
+                        ],
+                    ],
+                ],
+            ],
+            'pipes' => [
+                'validators' => [
+                    [
+                        'name' => 'pipesValidator',
+                    ],
+                ],
+            ],
+        ];
+    }
+
     private function getRoutesConfig(): array
     {
         return [
@@ -347,6 +453,7 @@ final class ConfigProvider
                     BodyParamsMiddleware::class,
                     'UpdatePipeInputFilterMiddleware',
                     SetOwnerMiddleware::class,
+                    TimestampableUpdateMiddleware::class,
                     UpdatePipeAction::class,
                 ],
                 'name' => 'update_pipe',
@@ -415,6 +522,89 @@ final class ConfigProvider
                 'allowed_methods' => [
                     'PUT',
                 ],
+            ],
+            [
+                'path' => '/pipeline',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    'PipelineInputFilterMiddleware',
+                    SetOwnerMiddleware::class,
+                    TimestampableInsertMiddleware::class,
+                    AddPipelineAction::class,
+                ],
+                'name' => 'add_pipeline',
+                'allowed_methods' => [
+                    'POST',
+                ],
+            ],
+            [
+                'path' => '/pipeline/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipelineResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    DeletePipelineAction::class,
+                ],
+                'name' => 'delete_pipeline',
+                'allowed_methods' => [
+                    'DELETE',
+                ],
+            ],
+            [
+                'path' => '/pipeline/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipelineResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    GetPipelineAction::class,
+                ],
+                'name' => 'get_pipeline',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/pipelines',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    SetOwnerFilterMiddleware::class,
+                    GetPipelinesAction::class,
+                ],
+                'name' => 'get_pipelines',
+                'allowed_methods' => [
+                    'GET',
+                ],
+            ],
+            [
+                'path' => '/pipeline/{id:\d+}',
+                'middleware' => [
+                    TokenMiddleware::class,
+                    'PipelineResourceMiddleware',
+                    ValidateOwnerMiddleware::class,
+                    BodyParamsMiddleware::class,
+                    'UpdatePipelineInputFilterMiddleware',
+                    SetOwnerMiddleware::class,
+                    TimestampableUpdateMiddleware::class,
+                    UpdatePipelineAction::class,
+                ],
+                'name' => 'update_pipeline',
+                'allowed_methods' => [
+                    'PUT',
+                ],
+            ],
+        ];
+    }
+
+    private function getValidatorsConfig(): array
+    {
+        return [
+            'aliases' => [
+                'pipesValidator' => PipeValidator::class,
+                'pipeValidator' => PipeValidator::class,
+            ],
+            'factories' => [
+                PipeValidator::class => PipeValidatorFactory::class,
             ],
         ];
     }

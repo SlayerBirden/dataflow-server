@@ -3,20 +3,23 @@ declare(strict_types=1);
 
 namespace SlayerBirden\DataFlowServer\Pipeline\Entities;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use SlayerBirden\DataFlowServer\Domain\Entities\ClaimedResourceInterface;
 use SlayerBirden\DataFlowServer\Domain\Entities\User;
+use SlayerBirden\DataFlowServer\Stdlib\Entities\TimestampableInterface;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="pipeline")
  **/
-class Pipeline
+class Pipeline implements ClaimedResourceInterface, TimestampableInterface
 {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      * @ORM\Column(type="integer")
-     * @var integer
+     * @var integer|null
      */
     private $id;
     /**
@@ -25,7 +28,7 @@ class Pipeline
      */
     private $name;
     /**
-     * @var Pipe[]
+     * @var Collection|Pipe[]
      * @ORM\ManyToMany(targetEntity="\SlayerBirden\DataFlowServer\Pipeline\Entities\Pipe")
      */
     private $pipes;
@@ -46,9 +49,9 @@ class Pipeline
     private $updatedAt;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -70,17 +73,17 @@ class Pipeline
     }
 
     /**
-     * @return Pipe[]
+     * @return Pipe[]|Collection
      */
-    public function getPipes(): array
+    public function getPipes(): Collection
     {
         return $this->pipes;
     }
 
     /**
-     * @param Pipe[] $pipes
+     * @param Collection|Pipe[] $pipes
      */
-    public function setPipes(array $pipes): void
+    public function setPipes(Collection $pipes): void
     {
         $this->pipes = $pipes;
     }
