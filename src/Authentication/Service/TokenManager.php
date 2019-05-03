@@ -49,7 +49,6 @@ final class TokenManager implements TokenManagerInterface
 
     /**
      * @inheritdoc
-     * @throws \Exception
      */
     public function getToken(string $user, string $password, array $resources): Token
     {
@@ -95,7 +94,6 @@ final class TokenManager implements TokenManagerInterface
      * https://stackoverflow.com/a/15875555/927404
      *
      * @return string
-     * @throws \Exception
      */
     private function generateToken(): string
     {

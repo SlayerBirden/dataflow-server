@@ -41,6 +41,12 @@
         "squizlabs/php_codesniffer": "^3.2",
         "flow/jsonpath": "^0.4"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "file:///srv/projects/df-code-generation"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
